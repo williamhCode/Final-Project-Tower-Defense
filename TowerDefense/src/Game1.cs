@@ -84,8 +84,8 @@ namespace TowerDefense
 
             _spriteBatch.Begin();
 
-            _spriteBatch.DrawCircle(new CircleF(circle1.Position.ToPoint(), circle1.Radius), 20, new Color(0, 0, 0), 2);
-            _spriteBatch.DrawPolygon(Vector2.Zero, new MonoGame.Extended.Shapes.Polygon(poly1.Vertices), new Color(0, 0, 0), 2);
+            _spriteBatch.DrawCircle(circle1.Position, circle1.Radius, 20, new Color(0, 0, 0), 2);
+            _spriteBatch.DrawPolygon(Vector2.Zero, poly1.Vertices, new Color(0, 0, 0), 2);
             
             _spriteBatch.End();
 
