@@ -19,12 +19,12 @@ namespace Collision
     public class Circle : Shape
     {
         public Vector2 Position { get; set; }
-        public float Radius { get; set; }
+        public float Radius { get; }
 
-        public Circle(float radius, Vector2 position)
+        public Circle(Vector2 position, float radius)
         {
-            Radius = radius;
             Position = position;
+            Radius = radius;
         }
 
         public Shape.ShapeType GetShapeType()
@@ -35,55 +35,56 @@ namespace Collision
 
     public class Polygon : Shape
     {
-        private Vector2 position;
-        public Vector2 Position
-        { 
-            get
-            {
-                return position;
-            }
-            set
-            {
-                if (value != position)
-                {
-                    position = value;
-                    UpdateVertices();
-                }
-            }
-        }
+        public Vector2 Position { get; set; }
+        public float Rotation { get; set; }
         private Vector2[] orgVertices;
-        public Vector2[] Vertices { get; set; }
-        public Vector2[] Normals { get; set; }
-        
-        public Polygon(Vector2[] vertices, Vector2 position)
-        {
-            orgVertices = vertices.OrderBy(vertex => Math.Atan2(vertex.Y, vertex.X)).ToArray();
-            Vertices = new Vector2[orgVertices.Length];
-            this.position = position;
-            UpdateVertices();
+        public Vector2[] Vertices { get; private set; }
 
-            Normals = new Vector2[orgVertices.Length];
-            for (int i = 0; i < orgVertices.Length; i++)
-            {
-                Vector2 v1 = orgVertices[i];
-                Vector2 v2 = orgVertices[(i + 1) % orgVertices.Length];
-                Vector2 normal = new Vector2(v1.Y - v2.Y, v2.X - v1.X);
-                normal.Normalize();
-                Normals[i] = normal;
-            }
+        /// <summary>
+        /// Note: Vertices must be in counter-clockwise order.
+        /// </summary>
+        public Polygon(Vector2 position, Vector2[] vertices, float rotation = 0)
+        {
+            Position = position;
+            Rotation = rotation;
+
+            orgVertices = vertices;
+            Vertices = new Vector2[orgVertices.Length];
+            UpdateVertices();
         }
 
-        private void UpdateVertices()
+        public void UpdateVertices()
         {
-            for (int i = 0; i < orgVertices.Length; i++)
-            {
-                Vertices[i] = orgVertices[i] + Position;
-            }
+            Matrix transform = Matrix.CreateRotationZ((float)Math.PI / 180 * Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, 0);
+            Vector2.Transform(orgVertices, ref transform, Vertices);
+        }
+
+        /// <summary>
+        /// Returns a counter-clockwise sorted array of the input vertices.
+        /// </summary>
+        public static Vector2[] OrderCounterClockwise(Vector2[] vertices)
+        {
+            Vector2 centroid = vertices.Aggregate((a, b) => a + b) / vertices.Length;
+            Vector2[] orderedVertices = vertices.OrderBy(v => Math.Atan2(v.Y - centroid.Y, v.X - centroid.X)).ToArray();
+            return orderedVertices;
         }
 
         public Shape.ShapeType GetShapeType()
         {
             return Shape.ShapeType.Polygon;
         }
+    }
+
+    public class Rectangle : Polygon
+    {
+        public Rectangle(Vector2 position, float width, float height, float rotation = 0)
+            : base(position, new Vector2[]
+            {
+                new Vector2(-width / 2, -height / 2),
+                new Vector2(width / 2, -height / 2),
+                new Vector2(width / 2, height / 2),
+                new Vector2(-width / 2, height / 2)
+            }, rotation)
+        { }
     }
 }

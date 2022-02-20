@@ -5,9 +5,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Diagnostics;
+using System.Linq;
 
 using Collision;
 using CF = Collision.CollisionFuncs;
@@ -19,8 +17,8 @@ namespace TowerDefense
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        Circle circle1;
-        Polygon poly1;
+        Circle circle1, circle2;
+        Polygon poly1, poly2;
 
         public Game1()
         {
@@ -32,22 +30,16 @@ namespace TowerDefense
 
         protected override void Initialize()
         {
-            // resize canvas
+            // set canvas size
             _graphics.PreferredBackBufferWidth = 1280;
             _graphics.PreferredBackBufferHeight = 720;
             _graphics.ApplyChanges();
 
             // init objects
-            circle1 = new Circle(100, new Vector2(100, 200));
-
-            var vertices = new Vector2[] 
-            {
-                new Vector2(-30, -30),
-                new Vector2(-30, 30),
-                new Vector2(30, 30),
-                new Vector2(30, -30),
-            };
-            poly1 = new Polygon(vertices, new Vector2(200, 300));
+            poly1 = new Collision.Rectangle(new Vector2(400, 300), 80, 80);
+            poly2 = new Collision.Rectangle(new Vector2(200, 300), 80, 80, rotation:30);
+            // circle1 = new Circle(new Vector2(200, 200), 50);
+            // circle2 = new Circle(new Vector2(400, 300), 50);
 
             base.Initialize();
         }
@@ -63,15 +55,18 @@ namespace TowerDefense
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-            
+
             MouseState mouseState = Mouse.GetState();
-            circle1.Position = new Vector2(mouseState.X, mouseState.Y);
+            poly1.Position = new Vector2(mouseState.X, mouseState.Y);
+            poly1.UpdateVertices();
 
             // TODO: Add your update logic here
-
             Vector2 mtv;
-            CF.IsColliding(circle1, poly1, out mtv);
-            poly1.Position += mtv;
+            if (CF.IsColliding(poly1, poly2, out mtv))
+            {
+                poly2.Position += mtv;
+                poly2.UpdateVertices();
+            }
 
             base.Update(gameTime);
         }
@@ -84,9 +79,11 @@ namespace TowerDefense
 
             _spriteBatch.Begin();
 
-            _spriteBatch.DrawCircle(circle1.Position, circle1.Radius, 20, new Color(0, 0, 0), 2);
+            // _spriteBatch.DrawCircle(circle1.Position, circle1.Radius, 20, new Color(0, 0, 0), 2);
+            // _spriteBatch.DrawCircle(circle2.Position, circle2.Radius, 20, new Color(0, 0, 0), 2);
             _spriteBatch.DrawPolygon(Vector2.Zero, poly1.Vertices, new Color(0, 0, 0), 2);
-            
+            _spriteBatch.DrawPolygon(Vector2.Zero, poly2.Vertices, new Color(0, 0, 0), 2);
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
