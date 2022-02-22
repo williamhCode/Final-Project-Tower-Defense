@@ -3,7 +3,7 @@ using System;
 
 namespace Collision
 {
-    public class CollisionFuncs
+    public static class CollisionFuncs
     {
         private delegate bool ShapeVsShape(Shape shape1, Shape shape2, ref Vector2 mtv);
 

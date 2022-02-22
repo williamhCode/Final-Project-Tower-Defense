@@ -1,11 +1,14 @@
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+
+using MonoGame.Extended;
 
 using System;
 using System.Linq;
 
 namespace Collision
 {
-    public interface Shape
+    public abstract class Shape
     {
         public enum ShapeType
         {
@@ -13,12 +16,15 @@ namespace Collision
             Polygon
         }
 
-        ShapeType GetShapeType();
+        public Vector2 Position { get; set; }
+
+        public abstract void Draw(SpriteBatch spriteBatch, Color color, float thickness);
+
+        public abstract ShapeType GetShapeType();
     }
 
     public class Circle : Shape
     {
-        public Vector2 Position { get; set; }
         public float Radius { get; }
 
         public Circle(Vector2 position, float radius)
@@ -27,7 +33,12 @@ namespace Collision
             Radius = radius;
         }
 
-        public Shape.ShapeType GetShapeType()
+        public override void Draw(SpriteBatch spriteBatch, Color color, float thickness)
+        {
+            spriteBatch.DrawCircle(Position, Radius, 20, color, thickness);
+        }
+
+        public override Shape.ShapeType GetShapeType()
         {
             return Shape.ShapeType.Circle;
         }
@@ -35,9 +46,8 @@ namespace Collision
 
     public class Polygon : Shape
     {
-        public Vector2 Position { get; set; }
         public float Rotation { get; set; }
-        private Vector2[] orgVertices;
+        private Vector2[] _orgVertices;
         public Vector2[] Vertices { get; private set; }
 
         /// <summary>
@@ -48,15 +58,25 @@ namespace Collision
             Position = position;
             Rotation = rotation;
 
-            orgVertices = vertices;
-            Vertices = new Vector2[orgVertices.Length];
+            _orgVertices = vertices;
+            Vertices = new Vector2[_orgVertices.Length];
             UpdateVertices();
         }
 
         public void UpdateVertices()
         {
             Matrix transform = Matrix.CreateRotationZ((float)Math.PI / 180 * Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, 0);
-            Vector2.Transform(orgVertices, ref transform, Vertices);
+            Vector2.Transform(_orgVertices, ref transform, Vertices);
+        }
+
+        public override void Draw(SpriteBatch spriteBatch, Color color, float thickness)
+        {
+            spriteBatch.DrawPolygon(Vector2.Zero, Vertices, color, thickness);
+        }
+
+        public override Shape.ShapeType GetShapeType()
+        {
+            return Shape.ShapeType.Polygon;
         }
 
         /// <summary>
@@ -67,11 +87,6 @@ namespace Collision
             Vector2 centroid = vertices.Aggregate((a, b) => a + b) / vertices.Length;
             Vector2[] orderedVertices = vertices.OrderBy(v => Math.Atan2(v.Y - centroid.Y, v.X - centroid.X)).ToArray();
             return orderedVertices;
-        }
-
-        public Shape.ShapeType GetShapeType()
-        {
-            return Shape.ShapeType.Polygon;
         }
     }
 
