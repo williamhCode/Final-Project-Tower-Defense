@@ -17,8 +17,7 @@ namespace TowerDefense
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        Circle circle1, circle2;
-        Polygon poly1, poly2;
+        private Player player;
 
         public Game1()
         {
@@ -36,10 +35,7 @@ namespace TowerDefense
             _graphics.ApplyChanges();
 
             // init objects
-            poly1 = new Collision.Rectangle(new Vector2(400, 300), 80, 80);
-            poly2 = new Collision.Rectangle(new Vector2(200, 300), 80, 80, rotation:30);
-            // circle1 = new Circle(new Vector2(200, 200), 50);
-            // circle2 = new Circle(new Vector2(400, 300), 50);
+            player = new Player(new Vector2(500, 500));
 
             base.Initialize();
         }
@@ -53,20 +49,19 @@ namespace TowerDefense
 
         protected override void Update(GameTime gameTime)
         {
+            float dt = gameTime.GetElapsedSeconds();
+
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            MouseState mouseState = Mouse.GetState();
-            poly1.Position = new Vector2(mouseState.X, mouseState.Y);
-            poly1.UpdateVertices();
-
-            // TODO: Add your update logic here
-            Vector2 mtv;
-            if (CF.IsColliding(poly1, poly2, out mtv))
-            {
-                poly2.Position += mtv;
-                poly2.UpdateVertices();
-            }
+            KeyboardState state = Keyboard.GetState();
+            
+            var direction = new Vector2(
+                Convert.ToSingle(state.IsKeyDown(Keys.Right)) - Convert.ToSingle(state.IsKeyDown(Keys.Left)),
+                Convert.ToSingle(state.IsKeyDown(Keys.Down)) - Convert.ToSingle(state.IsKeyDown(Keys.Up))
+            );
+            player.Move(direction, dt);
+            player.Update(dt);
 
             base.Update(gameTime);
         }
@@ -75,14 +70,9 @@ namespace TowerDefense
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // TODO: Add your drawing code here
-
             _spriteBatch.Begin();
 
-            // _spriteBatch.DrawCircle(circle1.Position, circle1.Radius, 20, new Color(0, 0, 0), 2);
-            // _spriteBatch.DrawCircle(circle2.Position, circle2.Radius, 20, new Color(0, 0, 0), 2);
-            _spriteBatch.DrawPolygon(Vector2.Zero, poly1.Vertices, new Color(0, 0, 0), 2);
-            _spriteBatch.DrawPolygon(Vector2.Zero, poly2.Vertices, new Color(0, 0, 0), 2);
+            player.Draw(_spriteBatch);
 
             _spriteBatch.End();
 
