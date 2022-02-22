@@ -13,6 +13,7 @@ namespace TowerDefense
         public Vector2 Position
         {
             get { return _position; }
+            // changing the position also changes its shape's position
             set
             {
                 _position = value;

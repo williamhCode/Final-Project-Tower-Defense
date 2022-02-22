@@ -1,12 +1,18 @@
 using Microsoft.Xna.Framework;
 
+using System;
+
 namespace TowerDefense
 {
     public static class MathFuncs
     {
-        public static Vector2 MoveTowards(this Vector2 curr, Vector2 target, float intensity)
+        public static Vector2 MoveTowards(this Vector2 curr, Vector2 target, float force)
         {
-            return curr + Vector2.Ceiling((target - curr).Normalized() * intensity);
+            Vector2 diff = target - curr;
+            Vector2 change = diff.Normalized() * force;
+            // clamp value based to the difference
+            change = (diff.LengthSquared() < change.LengthSquared() ? diff : change);
+            return curr + change;
         }
 
         /// <summary>
