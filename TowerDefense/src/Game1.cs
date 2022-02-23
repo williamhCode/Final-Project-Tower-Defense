@@ -7,6 +7,10 @@ using MonoGame.Extended;
 using System;
 using System.Linq;
 
+using TowerDefense.Entities;
+using TowerDefense.Math;
+using TowerDefense.Sprite;
+
 using Collision;
 using CF = Collision.CollisionFuncs;
 

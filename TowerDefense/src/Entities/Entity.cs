@@ -3,9 +3,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 using MonoGame.Extended;
 
+using TowerDefense.Sprite;
+using TowerDefense.Math;
+
 using Collision;
 
-namespace TowerDefense
+namespace TowerDefense.Entities
 {
     public abstract class Entity
     {
