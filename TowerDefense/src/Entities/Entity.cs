@@ -36,9 +36,9 @@ namespace TowerDefense.Entities
 
     public class Player : Entity
     {
-        private const float MAX_SPEED = 300;
-        private const float FRICTION = 1000;
-        private const float ACCELERATION = 1000;
+        private const float MAX_SPEED = 200;
+        private const float FRICTION = 1200;
+        private const float ACCELERATION = 1200;
 
         public enum State
         {
@@ -89,7 +89,7 @@ namespace TowerDefense.Entities
                 _idleSprites,
                 _movingSprites
             };
-            _lastSprite = getCurrSprite();
+            _lastSprite = _sprites[(int)_state][(int)_direction];
         }
 
         private Direction DecideDirection(Vector2 direction)
@@ -125,11 +125,6 @@ namespace TowerDefense.Entities
             return dir;
         }
 
-        public AnimatedSprite getCurrSprite()
-        {
-            return _sprites[(int)_state][(int)_direction];
-        }
-
         public void Move(Vector2 direction, float dt)
         {
             direction = direction.Normalized();
@@ -150,7 +145,7 @@ namespace TowerDefense.Entities
         {
             Position += Velocity * dt;
 
-            _currSprite = getCurrSprite();
+            _currSprite = _sprites[(int)_state][(int)_direction];
 
             if (_lastSprite != _currSprite)
                 _currSprite.Reset();
