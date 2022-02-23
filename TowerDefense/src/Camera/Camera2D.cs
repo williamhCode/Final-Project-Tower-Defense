@@ -18,7 +18,7 @@ namespace TowerDefense.Camera
             _baseTransform *= Matrix.CreateScale(1, -1, 1);
 
             Pan = Vector2.Zero;
-            Zoom = 1;
+            Zoom = 2;
         }
 
         public Matrix getTransform()

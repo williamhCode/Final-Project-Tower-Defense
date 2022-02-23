@@ -65,7 +65,7 @@ namespace TowerDefense.Collision
 
         public void UpdateVertices()
         {
-            Matrix transform = Matrix.CreateRotationZ((float)Math.PI / 180 * Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, 0);
+            Matrix transform = Matrix.CreateRotationZ(MathF.PI / 180 * Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, 0);
             Vector2.Transform(_orgVertices, ref transform, Vertices);
         }
 
