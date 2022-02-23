@@ -6,7 +6,7 @@ using MonoGame.Extended;
 using System;
 using System.Linq;
 
-namespace Collision
+namespace TowerDefense.Collision
 {
     public abstract class Shape
     {

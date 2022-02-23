@@ -3,9 +3,11 @@ using Microsoft.Xna.Framework.Graphics;
 
 using MonoGame.Extended;
 
-using Collision;
+using TowerDefense.Collision;
+using TowerDefense.Sprite;
+using TowerDefense.Maths;
 
-namespace TowerDefense
+namespace TowerDefense.Entities
 {
     public abstract class Entity
     {
@@ -31,9 +33,9 @@ namespace TowerDefense
     
     public class Player : Entity
     {
-        private const float MAX_SPEED = 300;
-        private const float FRICTION = 1000;
-        private const float ACCELERATION = 1000;
+        private const float MAX_SPEED = 500;
+        private const float FRICTION = 2000;
+        private const float ACCELERATION = 2000;
 
         public Player(Vector2 position)
         {

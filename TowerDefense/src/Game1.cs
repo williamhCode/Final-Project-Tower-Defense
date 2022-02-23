@@ -7,8 +7,8 @@ using MonoGame.Extended;
 using System;
 using System.Linq;
 
-using Collision;
-using CF = Collision.CollisionFuncs;
+using TowerDefense.Camera;
+using TowerDefense.Entities;
 
 namespace TowerDefense
 {
@@ -17,7 +17,8 @@ namespace TowerDefense
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
-        private Player player;
+        Camera2D camera;
+        Player player;
 
         public Game1()
         {
@@ -35,7 +36,8 @@ namespace TowerDefense
             _graphics.ApplyChanges();
 
             // init objects
-            player = new Player(new Vector2(500, 500));
+            camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            player = new Player(new Vector2(0, 0));
 
             base.Initialize();
         }
@@ -55,10 +57,10 @@ namespace TowerDefense
                 Exit();
 
             KeyboardState state = Keyboard.GetState();
-            
+
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.Right)) - Convert.ToSingle(state.IsKeyDown(Keys.Left)),
-                Convert.ToSingle(state.IsKeyDown(Keys.Down)) - Convert.ToSingle(state.IsKeyDown(Keys.Up))
+                Convert.ToSingle(state.IsKeyDown(Keys.Up)) - Convert.ToSingle(state.IsKeyDown(Keys.Down))
             );
             player.Move(direction, dt);
             player.Update(dt);
@@ -70,7 +72,7 @@ namespace TowerDefense
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin();
+            _spriteBatch.Begin(rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
 
             player.Draw(_spriteBatch);
 

@@ -1,7 +1,7 @@
 using Microsoft.Xna.Framework;
 using System;
 
-namespace Collision
+namespace TowerDefense.Collision
 {
     public static class CollisionFuncs
     {
