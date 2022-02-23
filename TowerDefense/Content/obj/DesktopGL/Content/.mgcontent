@@ -4,15 +4,15 @@
   <Platform>DesktopGL</Platform>
   <Config />
   <SourceFiles>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/axe.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle down.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle left.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle right.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle up.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk down.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk left.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk right.png</File>
-    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk up.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/axe.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/idle down.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/idle left.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/idle right.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/idle up.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/walk down.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/walk left.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/walk right.png</File>
+    <File>C:/Users/24tylert/Final-Project-Tower-Defense/TowerDefense/Content/player sprites/walk up.png</File>
   </SourceFiles>
   <DestFiles>
     <File xsi:nil="true" />
