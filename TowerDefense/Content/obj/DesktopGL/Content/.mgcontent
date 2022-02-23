@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SourceFileCollection xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <Profile>Reach</Profile>
+  <Platform>DesktopGL</Platform>
+  <Config />
+  <SourceFiles>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/axe.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle down.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle left.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle right.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/idle up.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk down.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk left.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk right.png</File>
+    <File>C:/Users/22CalebR/Desktop/Final-Project-Tower-Defense/TowerDefense/Content/walk up.png</File>
+  </SourceFiles>
+  <DestFiles>
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+    <File xsi:nil="true" />
+  </DestFiles>
+</SourceFileCollection>

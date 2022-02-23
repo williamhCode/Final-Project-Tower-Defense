@@ -2,7 +2,7 @@ using Microsoft.Xna.Framework;
 
 using System;
 
-namespace TowerDefense
+namespace TowerDefense.Math
 {
     public static class MathFuncs
     {
