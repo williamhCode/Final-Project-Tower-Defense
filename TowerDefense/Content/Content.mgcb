@@ -25,18 +25,6 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/axe.png
 
-#begin Sprites/Player/down_anim.png
-/importer:TextureImporter
-/processor:TextureProcessor
-/processorParam:ColorKeyColor=255,0,255,255
-/processorParam:ColorKeyEnabled=True
-/processorParam:GenerateMipmaps=False
-/processorParam:PremultiplyAlpha=True
-/processorParam:ResizeToPowerOfTwo=False
-/processorParam:MakeSquare=False
-/processorParam:TextureFormat=Color
-/build:Sprites/Player/down_anim.png
-
 #begin Sprites/Player/down_idle.png
 /importer:TextureImporter
 /processor:TextureProcessor
@@ -49,7 +37,7 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/down_idle.png
 
-#begin Sprites/Player/left_anim.png
+#begin Sprites/Player/down_moving.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -59,7 +47,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/Player/left_anim.png
+/build:Sprites/Player/down_moving.png
 
 #begin Sprites/Player/left_idle.png
 /importer:TextureImporter
@@ -73,7 +61,7 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/left_idle.png
 
-#begin Sprites/Player/right_anim.png
+#begin Sprites/Player/left_moving.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -83,7 +71,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/Player/right_anim.png
+/build:Sprites/Player/left_moving.png
 
 #begin Sprites/Player/right_idle.png
 /importer:TextureImporter
@@ -97,7 +85,7 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/right_idle.png
 
-#begin Sprites/Player/up_anim.png
+#begin Sprites/Player/right_moving.png
 /importer:TextureImporter
 /processor:TextureProcessor
 /processorParam:ColorKeyColor=255,0,255,255
@@ -107,7 +95,7 @@
 /processorParam:ResizeToPowerOfTwo=False
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
-/build:Sprites/Player/up_anim.png
+/build:Sprites/Player/right_moving.png
 
 #begin Sprites/Player/up_idle.png
 /importer:TextureImporter
@@ -120,4 +108,16 @@
 /processorParam:MakeSquare=False
 /processorParam:TextureFormat=Color
 /build:Sprites/Player/up_idle.png
+
+#begin Sprites/Player/up_moving.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Player/up_moving.png
 
