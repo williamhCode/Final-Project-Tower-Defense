@@ -68,22 +68,24 @@ namespace TowerDefense.Entities
 
             _state = State.Idle;
             _direction = Direction.Down;
+            
+            var animState = new AnimationState();
 
             var Content = Game1.content;
             Content.RootDirectory = "Content/Sprites/Player";
 
             float frameTime = 0.05f;
             _idleSprites = new AnimatedSprite[] {
-                new AnimatedSprite(Content.Load<Texture2D>("up_idle"), 1, 1, frameTime),
-                new AnimatedSprite(Content.Load<Texture2D>("down_idle"), 1, 1, frameTime),
-                new AnimatedSprite(Content.Load<Texture2D>("left_idle"), 1, 1, frameTime),
-                new AnimatedSprite(Content.Load<Texture2D>("right_idle"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
             };
             _movingSprites = new AnimatedSprite[] {
-                new AnimatedSprite(Content.Load<Texture2D>("up_moving"), 1, 8, frameTime),
-                new AnimatedSprite(Content.Load<Texture2D>("down_moving"), 1, 8, frameTime),
-                new AnimatedSprite(Content.Load<Texture2D>("left_moving"), 1, 9, frameTime),
-                new AnimatedSprite(Content.Load<Texture2D>("right_moving"), 1, 9, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
+                new AnimatedSprite(Content.Load<Texture2D>("player"), 1, 1, frameTime),
             };
             _sprites = new AnimatedSprite[][] {
                 _idleSprites,

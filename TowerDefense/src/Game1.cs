@@ -62,6 +62,15 @@ namespace TowerDefense
 
             KeyboardState state = Keyboard.GetState();
 
+            if (state.IsKeyDown(Keys.OemPlus))
+            {
+                camera.Zoom += 0.1f;
+            }
+            if (state.IsKeyDown(Keys.OemMinus))
+            {
+                camera.Zoom -= 0.1f;
+            }
+
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
                 Convert.ToSingle(state.IsKeyDown(Keys.W)) - Convert.ToSingle(state.IsKeyDown(Keys.S))

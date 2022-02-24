@@ -1,5 +1,7 @@
 using Microsoft.Xna.Framework;
 
+using System;
+
 namespace TowerDefense.Camera
 {
     public class Camera2D
@@ -8,7 +10,12 @@ namespace TowerDefense.Camera
         Matrix _baseTransform;
 
         public Vector2 Pan { get; set; }
-        public float Zoom { get; set; }
+        private float _zoom;
+        public float Zoom 
+        { 
+            get { return _zoom; }
+            set { _zoom = Math.Max(2, value); }
+        }
 
         public Camera2D(float width, float height)
         {

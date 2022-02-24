@@ -1,7 +1,5 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
-
-using System;
  
 namespace TowerDefense.Sprite
 {
@@ -43,7 +41,6 @@ namespace TowerDefense.Sprite
                 time = 0;
                 currentFrame = 0;
             }
-
         }
  
         public void Draw(SpriteBatch spriteBatch, Vector2 position)
@@ -52,7 +49,6 @@ namespace TowerDefense.Sprite
             int height = Texture.Height / Rows;
             int row = currentFrame / Columns;
             int column = currentFrame % Columns;
-            // Console.WriteLine(column);
             Rectangle sourceRectangle = new Rectangle(width * column, height * row, width, height);
             spriteBatch.Draw(Texture, position - new Vector2(width / 2, 0), sourceRectangle, Color.White, 0, Vector2.Zero, 1, SpriteEffects.FlipVertically, 0);
         }
