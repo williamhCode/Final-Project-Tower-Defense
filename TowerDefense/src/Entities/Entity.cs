@@ -27,7 +27,9 @@ namespace TowerDefense.Entities
             }
         }
         public Vector2 Velocity { get; set; }
-        public virtual Collision.Shape Shape { get; set; }
+        public Collision.Shape Shape { get; set; }
+
+        protected AnimationState animationState;
 
         public abstract void Update(float dt);
         public abstract void Draw(SpriteBatch spriteBatch);
@@ -40,7 +42,18 @@ namespace TowerDefense.Entities
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
-        private AnimationState animationState;
+        public static AnimationState AnimationState;
+
+        public static void LoadContent(ContentManager content)
+        {
+            content.RootDirectory = "Content/Sprites/Player";
+
+            float frameTime = 0.05f;
+            AnimationState = new AnimationState();
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), "idle", "up");
+            AnimationState.SetState("idle");
+            AnimationState.SetDirection("up");
+        }
 
         public Player(Vector2 position)
         {
@@ -48,14 +61,7 @@ namespace TowerDefense.Entities
             Position = position;
             Velocity = new Vector2(0, 0);
 
-            var Content = Game1.content;
-            Content.RootDirectory = "Content/Sprites/Player";
-
-            float frameTime = 0.05f;
-            animationState = new AnimationState();
-            animationState.AddSprite(new AnimatedSprite(Content.Load<Texture2D>("player"), 32, 32, frameTime), "idle", "up");
-            animationState.SetState("idle");
-            animationState.SetDirection("up");
+            animationState = AnimationState;
         }
 
         // private Direction DecideDirection(Vector2 direction)
