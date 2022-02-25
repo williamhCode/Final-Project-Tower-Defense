@@ -69,4 +69,5 @@ namespace TowerDefense.Entities
             Shape.Draw(spriteBatch, new Color(0, 0, 0), 2);
         }
     }
+   
 }

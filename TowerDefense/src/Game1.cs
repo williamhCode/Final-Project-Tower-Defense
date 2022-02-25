@@ -19,7 +19,7 @@ namespace TowerDefense
 
         Camera2D camera;
         Player player;
-
+        
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -38,6 +38,7 @@ namespace TowerDefense
             // init objects
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             player = new Player(new Vector2(0, 0));
+           
 
             base.Initialize();
         }
@@ -64,7 +65,8 @@ namespace TowerDefense
             );
             player.Move(direction, dt);
             player.Update(dt);
-
+           
+           
             base.Update(gameTime);
         }
 
@@ -75,6 +77,8 @@ namespace TowerDefense
             _spriteBatch.Begin(rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
 
             player.Draw(_spriteBatch);
+
+            
 
             _spriteBatch.End();
 
