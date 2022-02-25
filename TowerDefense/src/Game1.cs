@@ -1,4 +1,5 @@
 ﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -17,6 +18,8 @@ namespace TowerDefense
         private GraphicsDeviceManager _graphics;
         private SpriteBatch _spriteBatch;
 
+        public static ContentManager content;
+
         Camera2D camera;
         Player player;
         
@@ -25,6 +28,7 @@ namespace TowerDefense
             _graphics = new GraphicsDeviceManager(this);
 
             Content.RootDirectory = "Content";
+            content = Content;
             IsMouseVisible = true;
         }
 
@@ -59,9 +63,18 @@ namespace TowerDefense
 
             KeyboardState state = Keyboard.GetState();
 
+            if (state.IsKeyDown(Keys.OemPlus))
+            {
+                camera.Zoom += 0.1f;
+            }
+            if (state.IsKeyDown(Keys.OemMinus))
+            {
+                camera.Zoom -= 0.1f;
+            }
+
             var direction = new Vector2(
-                Convert.ToSingle(state.IsKeyDown(Keys.Right)) - Convert.ToSingle(state.IsKeyDown(Keys.Left)),
-                Convert.ToSingle(state.IsKeyDown(Keys.Up)) - Convert.ToSingle(state.IsKeyDown(Keys.Down))
+                Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
+                Convert.ToSingle(state.IsKeyDown(Keys.W)) - Convert.ToSingle(state.IsKeyDown(Keys.S))
             );
             player.Move(direction, dt);
             player.Update(dt);
@@ -74,7 +87,7 @@ namespace TowerDefense
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin(rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
 
             player.Draw(_spriteBatch);
 
