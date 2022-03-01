@@ -94,7 +94,6 @@ namespace TowerDefense.Entities
         public override void Update(float dt)
         {
             Position += Velocity * dt;
-            Console.WriteLine(Velocity);
 
             animationState.Update(dt);
         }
