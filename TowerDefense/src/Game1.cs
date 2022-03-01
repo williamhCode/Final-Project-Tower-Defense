@@ -1,4 +1,4 @@
-﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -34,6 +34,8 @@ namespace TowerDefense
 
         protected override void Initialize()
         {
+            base.Initialize();
+
             // set canvas size
             _graphics.PreferredBackBufferWidth = 1280;
             _graphics.PreferredBackBufferHeight = 720;
@@ -42,20 +44,19 @@ namespace TowerDefense
             // init objects
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             player = new Player(new Vector2(0, 0));
-           
-
-            base.Initialize();
         }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
 
-            // TODO: use this.Content to load your game content here
+            Player.LoadContent(content);
         }
 
         protected override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
             float dt = gameTime.GetElapsedSeconds();
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -78,13 +79,12 @@ namespace TowerDefense
             );
             player.Move(direction, dt);
             player.Update(dt);
-           
-           
-            base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
+            base.Draw(gameTime);
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
@@ -94,8 +94,6 @@ namespace TowerDefense
             
 
             _spriteBatch.End();
-
-            base.Draw(gameTime);
         }
     }
 }
