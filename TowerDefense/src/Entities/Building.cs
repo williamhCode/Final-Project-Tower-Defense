@@ -20,17 +20,5 @@ namespace TowerDefense.Entities
             Position = position;
             Velocity = new Vector2(0, 0);
         }
-
-        public override void Update(float dt)
-        {
-            animationState.Update(dt);
-        }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            Shape.Draw(spriteBatch, new Color(0, 0, 0), 1);
-
-            animationState.Sprite.Draw(spriteBatch, Position);
-        }
     }
 }

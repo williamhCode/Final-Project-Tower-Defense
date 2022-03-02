@@ -1,7 +1,5 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
-
 
 using MonoGame.Extended;
 
@@ -33,5 +31,9 @@ namespace TowerDefense.Entities
 
         public abstract void Update(float dt);
         public abstract void Draw(SpriteBatch spriteBatch);
+        public void DrawDebug(SpriteBatch spriteBatch)
+        {
+            Shape.Draw(spriteBatch, Color.Black, 1);
+        }
     }
 }

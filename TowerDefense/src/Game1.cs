@@ -10,6 +10,7 @@ using System.Linq;
 
 using TowerDefense.Camera;
 using TowerDefense.Entities;
+using static TowerDefense.Collision.CollisionFuncs;
 
 namespace TowerDefense
 {
@@ -29,6 +30,8 @@ namespace TowerDefense
 
         Camera2D camera;
         Player player;
+        Wall[] walls;
+        Entity[] entities;
         
         public Game1()
         {
@@ -49,7 +52,17 @@ namespace TowerDefense
 
             // init objects
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
             player = new Player(new Vector2(300, 300));
+            entities = new Entity[] {
+                player,
+                new Wall(new Vector2(200, 232)),
+                new Wall(new Vector2(200, 264)),
+                new Wall(new Vector2(200, 296)),
+                new Wall(new Vector2(232, 232)),
+                new Wall(new Vector2(264, 232)),
+            };
+            walls = entities.OfType<Wall>().ToArray();
         }
 
         protected override void LoadContent()
@@ -58,6 +71,7 @@ namespace TowerDefense
             font = Content.Load<SpriteFont>("Font/Frame");
             // TODO: use this.Content to load your game content here
             Player.LoadContent(Content);
+            Wall.LoadContent(Content);
         }
 
         protected override void Update(GameTime gameTime)
@@ -90,6 +104,14 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.MouseToScreen(mousePosition));
             player.Update(dt);
+
+            foreach (var wall in walls)
+            {
+                if (IsColliding(wall.Shape, player.Shape, out Vector2 mtv))
+                {
+                    player.Position += mtv;
+                }
+            }
         }
 
         protected override void Draw(GameTime gameTime)
@@ -99,8 +121,13 @@ namespace TowerDefense
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.Transform);
-
-            player.Draw(_spriteBatch);
+            
+            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
+            foreach (var entity in entities_temp)
+            {
+                entity.DrawDebug(_spriteBatch);
+                entity.Draw(_spriteBatch);
+            }
 
             _spriteBatch.End();
 

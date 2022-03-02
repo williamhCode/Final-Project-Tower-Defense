@@ -76,8 +76,6 @@ namespace TowerDefense.Entities
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            Shape.Draw(spriteBatch, new Color(0, 0, 0), 1);
-
             animationState.Sprite.Draw(spriteBatch, Position - new Vector2(16, 32));
         }
     }
