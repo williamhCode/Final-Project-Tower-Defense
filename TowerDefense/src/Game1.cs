@@ -15,17 +15,24 @@ namespace TowerDefense
 {
     public class Game1 : Game
     {
-        private GraphicsDeviceManager _graphics;
-        private SpriteBatch _spriteBatch;
-
+        public const int defaultResolutionX = 1280;
+        public const int defaultResolutionY = 720;
+        public const int tilesize = 32;
+        public static Texture2D playerSpriteSheet;
+        public static Texture2D BanditSpriteSheet;
+        public static Texture2D objectSpriteSheet;
+        private GraphicsDeviceManager graphics;
+        private SpriteBatch spriteBatch;
         public static ContentManager content;
+        public SpriteFont font;
+
 
         Camera2D camera;
         Player player;
 
         public Game1()
         {
-            _graphics = new GraphicsDeviceManager(this);
+            graphics = new GraphicsDeviceManager(this);
 
             Content.RootDirectory = "Content";
             content = Content;
@@ -35,9 +42,9 @@ namespace TowerDefense
         protected override void Initialize()
         {
             // set canvas size
-            _graphics.PreferredBackBufferWidth = 1280;
-            _graphics.PreferredBackBufferHeight = 720;
-            _graphics.ApplyChanges();
+            graphics.PreferredBackBufferWidth = 1280;
+            graphics.PreferredBackBufferHeight = 720;
+            graphics.ApplyChanges();
 
             // init objects
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
@@ -48,8 +55,8 @@ namespace TowerDefense
 
         protected override void LoadContent()
         {
-            _spriteBatch = new SpriteBatch(GraphicsDevice);
-
+            spriteBatch = new SpriteBatch(GraphicsDevice);
+            font = Content.Load<SpriteFont>("Font/Frame");
             // TODO: use this.Content to load your game content here
         }
 
@@ -83,15 +90,19 @@ namespace TowerDefense
 
         protected override void Draw(GameTime gameTime)
         {
+            float frameRate = 1/ (float)gameTime.ElapsedGameTime.TotalSeconds;
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            _spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
+            spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
 
-            player.Draw(_spriteBatch);
+            player.Draw(spriteBatch);
+            spriteBatch.DrawString(font, "Frame Rate: " + frameRate, new Vector2(10, 10), Color.Black);
 
-            _spriteBatch.End();
+            spriteBatch.End();
 
             base.Draw(gameTime);
+
         }
     }
 }

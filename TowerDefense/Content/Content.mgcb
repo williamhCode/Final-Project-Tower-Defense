@@ -13,6 +13,13 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Font/Frame.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:Font/Frame.spritefont
+
 #begin Sprites/bandit/bandit.png
 /importer:TextureImporter
 /processor:TextureProcessor
