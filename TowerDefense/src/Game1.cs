@@ -1,4 +1,4 @@
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -94,16 +94,20 @@ namespace TowerDefense
 
         protected override void Draw(GameTime gameTime)
         {
-            float frameRate = 1/ (float)gameTime.ElapsedGameTime.TotalSeconds;
+            float frameRate = 1 / gameTime.GetElapsedSeconds();
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             _spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.Transform);
 
             player.Draw(_spriteBatch);
-            _spriteBatch.DrawString(font, "Frame Rate: " + frameRate, new Vector2(10, 10), Color.Black);
 
-            
+            _spriteBatch.End();
+
+
+            _spriteBatch.Begin();
+
+            _spriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
 
             _spriteBatch.End();
         }
