@@ -1,16 +1,16 @@
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Content;
 
 using MonoGame.Extended;
 
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
-using TowerDefense.Maths;
 
 using System;
 
 namespace TowerDefense.Entities
-{
+{   
     public abstract class Entity
     {
         private Vector2 _position;

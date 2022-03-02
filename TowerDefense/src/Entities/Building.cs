@@ -14,6 +14,8 @@ namespace TowerDefense.Entities
 {
     public abstract class Building : Entity
     {
+        public int Health { get; set; }
+
         public Building(Vector2 position)
         {
             Position = position;

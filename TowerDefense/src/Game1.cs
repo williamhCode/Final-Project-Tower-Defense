@@ -8,6 +8,7 @@ using MonoGame.Extended;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 
 using TowerDefense.Camera;
 using TowerDefense.Entities;
@@ -67,14 +68,29 @@ namespace TowerDefense
 
             walls = entities.OfType<Wall>().ToArray();
         }
+        
+        private Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
+        {
+            return 
+            assembly.GetTypes()
+                    .Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal))
+                    .ToArray();
+        }
 
         protected override void LoadContent()
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             font = Content.Load<SpriteFont>("Font/Frame");
             // TODO: use this.Content to load your game content here
-            Player.LoadContent(Content);
-            Wall.LoadContent(Content);
+            var classes = GetTypesInNamespace(Assembly.GetExecutingAssembly(), "TowerDefense.Entities");
+            foreach (var c in classes)
+            {
+                var loadContent = c.GetMethod("LoadContent");
+                if (loadContent != null)
+                {
+                    loadContent.Invoke(null, new object[] { Content });
+                }
+            }
         }
 
         protected override void Update(GameTime gameTime)
