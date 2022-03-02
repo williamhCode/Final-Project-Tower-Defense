@@ -81,7 +81,8 @@ namespace TowerDefense
         {
             _spriteBatch = new SpriteBatch(GraphicsDevice);
             font = Content.Load<SpriteFont>("Font/Frame");
-            // TODO: use this.Content to load your game content here
+
+            // loads all content by invoking the LoadContent method of each class in Entities
             var classes = GetTypesInNamespace(Assembly.GetExecutingAssembly(), "TowerDefense.Entities");
             foreach (var c in classes)
             {
