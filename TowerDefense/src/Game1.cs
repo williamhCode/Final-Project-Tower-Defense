@@ -22,7 +22,7 @@ namespace TowerDefense
         public static Texture2D BanditSpriteSheet;
         public static Texture2D objectSpriteSheet;
         private GraphicsDeviceManager graphics;
-        private SpriteBatch spriteBatch;
+        private SpriteBatch _spriteBatch;
         public static ContentManager content;
         public SpriteFont font;
 
@@ -35,12 +35,13 @@ namespace TowerDefense
             graphics = new GraphicsDeviceManager(this);
 
             Content.RootDirectory = "Content";
-            content = Content;
             IsMouseVisible = true;
         }
 
         protected override void Initialize()
         {
+            base.Initialize();
+
             // set canvas size
             graphics.PreferredBackBufferWidth = 1280;
             graphics.PreferredBackBufferHeight = 720;
@@ -49,19 +50,20 @@ namespace TowerDefense
             // init objects
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
             player = new Player(new Vector2(0, 0));
-
-            base.Initialize();
         }
 
         protected override void LoadContent()
         {
-            spriteBatch = new SpriteBatch(GraphicsDevice);
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
             font = Content.Load<SpriteFont>("Font/Frame");
             // TODO: use this.Content to load your game content here
+            Player.LoadContent(Content);
         }
 
         protected override void Update(GameTime gameTime)
         {
+            base.Update(gameTime);
+
             float dt = gameTime.GetElapsedSeconds();
 
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
@@ -77,32 +79,32 @@ namespace TowerDefense
             {
                 camera.Zoom -= 0.1f;
             }
+            camera.Update();
 
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
                 Convert.ToSingle(state.IsKeyDown(Keys.W)) - Convert.ToSingle(state.IsKeyDown(Keys.S))
             );
             player.Move(direction, dt);
+            var mouseState = Mouse.GetState();
+            var mousePosition = new Vector2(mouseState.X, mouseState.Y);
+            player.DecideDirection(camera.MouseToScreen(mousePosition));
             player.Update(dt);
 
-            base.Update(gameTime);
         }
 
         protected override void Draw(GameTime gameTime)
         {
             float frameRate = 1/ (float)gameTime.ElapsedGameTime.TotalSeconds;
-
+            
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.getTransform());
+            _spriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.Transform);
 
-            player.Draw(spriteBatch);
-            spriteBatch.DrawString(font, "Frame Rate: " + frameRate, new Vector2(10, 10), Color.Black);
+            player.Draw(_spriteBatch);
+            _spriteBatch.DrawString(font, "Frame Rate: " + frameRate, new Vector2(10, 10), Color.Black);
 
-            spriteBatch.End();
-
-            base.Draw(gameTime);
-
+            _spriteBatch.End();
         }
     }
 }

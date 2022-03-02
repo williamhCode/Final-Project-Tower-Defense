@@ -1,29 +1,42 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
- 
+
 namespace TowerDefense.Sprite
 {
     public class AnimatedSprite
     {
         public Texture2D Texture { get; set; }
-        public int Rows { get; set; }
-        public int Columns { get; set; }
+        public int Width { get; set; }
+        public int Height { get; set; }
         public float FrameTime { get; set; }
+        public bool Flipped { get; set; }
+
+        private int rows;
+        private int columns;
 
         private int currentFrame;
         private int totalFrames;
-
         private float time;
- 
-        public AnimatedSprite(Texture2D texture, int rows, int columns, float frameTime)
+
+        /// <param name="texture">The texture to use for the sprite</param>
+        /// <param name="width">The width of each frame</param>
+        /// <param name="height">The height of each frame</param>
+        /// <param name="frameTime">The amount of time to display each frame</param>
+        /// <param name="flipped">Whether or not to flip the sprite horizontally</param>
+        public AnimatedSprite(Texture2D texture, int width, int height, float frameTime, bool flipped = false)
         {
             Texture = texture;
-            Rows = rows;
-            Columns = columns;
+            Width = width;
+            Height = height;
             FrameTime = frameTime;
+            Flipped = flipped;
+
+            rows = Texture.Height / height;
+            columns = Texture.Width / width;
 
             currentFrame = 0;
-            totalFrames = Rows * Columns;
+            totalFrames = rows * columns;
+            time = 0;
         }
 
         public void Reset()
@@ -31,7 +44,7 @@ namespace TowerDefense.Sprite
             time = 0;
             currentFrame = 0;
         }
- 
+
         public void Update(float dt)
         {
             time += dt;
@@ -42,15 +55,15 @@ namespace TowerDefense.Sprite
                 currentFrame = 0;
             }
         }
- 
+
         public void Draw(SpriteBatch spriteBatch, Vector2 position)
         {
-            int width = Texture.Width / Columns;
-            int height = Texture.Height / Rows;
-            int row = currentFrame / Columns;
-            int column = currentFrame % Columns;
-            Rectangle sourceRectangle = new Rectangle(width * column, height * row, width, height);
-            spriteBatch.Draw(Texture, position - new Vector2(width / 2, 0), sourceRectangle, Color.White, 0, Vector2.Zero, 1, SpriteEffects.FlipVertically, 0);
+            int row = currentFrame / columns;
+            int column = currentFrame % columns;
+            Rectangle sourceRectangle = new Rectangle(Width * column, Height * row, Width, Height);
+
+            var flip = SpriteEffects.FlipVertically | (Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
+            spriteBatch.Draw(Texture, position - new Vector2(Width / 2, 0), sourceRectangle, Color.White, 0, Vector2.Zero, 1, flip, 0);
         }
     }
 }
