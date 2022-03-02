@@ -34,7 +34,7 @@ namespace TowerDefense.Entities
 
         public Player(Vector2 position)
         {
-            Shape = new Circle(position, 10);
+            Shape = new Circle(position, 5);
             Position = position;
             Velocity = new Vector2(0, 0);
 
