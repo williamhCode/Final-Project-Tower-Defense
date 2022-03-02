@@ -13,14 +13,18 @@ namespace TowerDefense.Entities
     {
         private const float MAX_SPEED = 300;
         private const float FRICTION = 0;
-        private const float ACCELERATION = 10000;
-        private int
-        public Enemy(Vector2 position)
+        private int spd;
+        private int health;
+        private Boolean dead;
+        public Enemy(Vector2 position,int speed,int size)
         {
 
-            Shape = new Circle(position, 50);
+            
             Position = position;
             Velocity = new Vector2(0, 0);
+            spd = speed;
+            Shape = new Circle(position, size);
+            dead = false;
 
         }
         public void Move(float dt)
@@ -37,7 +41,7 @@ namespace TowerDefense.Entities
                 xdis = (xdis / Math.Sqrt(((xdis)*(xdis))+((ydis)*(ydis))));
                 ydis = (ydis / Math.Sqrt(((xdis) * (xdis)) + ((ydis) * (ydis))));
                 Vector2 direction = new Vector2((float)xdis, ((float)ydis));
-                Velocity = Velocity.MoveTowards(direction * MAX_SPEED, ACCELERATION * dt);
+                Velocity = Velocity.MoveTowards(direction * MAX_SPEED, spd * dt);
             }
             
             
@@ -55,7 +59,13 @@ namespace TowerDefense.Entities
         }
         public void Damage()
         {
+            health--;
 
+            if (health <= 0)
+            {
+                dead = true;
+
+            }
         }
 
 
