@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using TowerDefense.Camera;
@@ -31,7 +32,7 @@ namespace TowerDefense
         Camera2D camera;
         Player player;
         Wall[] walls;
-        Entity[] entities;
+        List<Entity> entities;
         
         public Game1()
         {
@@ -54,14 +55,16 @@ namespace TowerDefense
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             player = new Player(new Vector2(300, 300));
-            entities = new Entity[] {
+            entities = new List<Entity> {
                 player,
-                new Wall(new Vector2(200, 232)),
-                new Wall(new Vector2(200, 264)),
-                new Wall(new Vector2(200, 296)),
-                new Wall(new Vector2(232, 232)),
-                new Wall(new Vector2(264, 232)),
             };
+            // add walls to entities
+            for (int i = 0; i < 10; i++)
+            {
+                entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
+                entities.Add(new Wall(new Vector2(100, (i+1) * 16 + 100)));
+            }
+
             walls = entities.OfType<Wall>().ToArray();
         }
 
@@ -110,6 +113,7 @@ namespace TowerDefense
                 if (IsColliding(wall.Shape, player.Shape, out Vector2 mtv))
                 {
                     player.Position += mtv;
+                    player.Shape.Update();
                 }
             }
         }

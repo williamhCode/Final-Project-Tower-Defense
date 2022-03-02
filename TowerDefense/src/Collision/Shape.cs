@@ -21,6 +21,8 @@ namespace TowerDefense.Collision
         public abstract void Draw(SpriteBatch spriteBatch, Color color, float thickness);
 
         public abstract ShapeType GetShapeType();
+
+        public abstract void Update();
     }
 
     public class Circle : Shape
@@ -42,6 +44,11 @@ namespace TowerDefense.Collision
         {
             return Shape.ShapeType.Circle;
         }
+
+        public override void Update()
+        {
+            // do nothing
+        }
     }
 
     public class Polygon : Shape
@@ -60,10 +67,10 @@ namespace TowerDefense.Collision
 
             _orgVertices = vertices;
             Vertices = new Vector2[_orgVertices.Length];
-            UpdateVertices();
+            Update();
         }
 
-        public void UpdateVertices()
+        public override void Update()
         {
             Matrix transform = Matrix.CreateRotationZ(MathF.PI / 180 * Rotation) * Matrix.CreateTranslation(Position.X, Position.Y, 0);
             Vector2.Transform(_orgVertices, ref transform, Vertices);

@@ -21,7 +21,8 @@ namespace TowerDefense.Entities
             set
             {
                 _position = value;
-                Shape.Position = value;
+                if (Shape != null)
+                    Shape.Position = value;
             }
         }
         public Vector2 Velocity { get; set; }
@@ -30,7 +31,9 @@ namespace TowerDefense.Entities
         protected AnimationState animationState;
 
         public abstract void Update(float dt);
+
         public abstract void Draw(SpriteBatch spriteBatch);
+        
         public void DrawDebug(SpriteBatch spriteBatch)
         {
             Shape.Draw(spriteBatch, Color.Black, 1);

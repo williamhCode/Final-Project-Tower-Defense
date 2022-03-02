@@ -34,9 +34,9 @@ namespace TowerDefense.Entities
 
         public Player(Vector2 position)
         {
-            Shape = new Circle(position, 5);
             Position = position;
             Velocity = new Vector2(0, 0);
+            Shape = new Circle(position, 5);
 
             animationState = AnimationState;
         }
@@ -70,7 +70,7 @@ namespace TowerDefense.Entities
         public override void Update(float dt)
         {
             Position += Velocity * dt;
-
+            Shape.Update();
             animationState.Update(dt);
         }
 

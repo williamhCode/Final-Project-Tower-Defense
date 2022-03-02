@@ -22,13 +22,14 @@ namespace TowerDefense.Entities
 
             float frameTime = 0f;
             AnimationState = new AnimationState();
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("wall_1"), 32, 50, frameTime), "full", "none");
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("wall_2"), 16, 24, frameTime), "full", "none");
             AnimationState.State = "full";
             AnimationState.Direction = "none";
         }
 
         public Wall(Vector2 position) : base(position)
         {
+            Shape = new Collision.Rectangle(position, 16, 16);
             animationState = AnimationState;
             animationState.Update(0);
         }
@@ -40,7 +41,7 @@ namespace TowerDefense.Entities
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(16, 34));
+            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(8, 16));
         }
     }
 }

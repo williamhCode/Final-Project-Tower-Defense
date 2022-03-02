@@ -16,7 +16,6 @@ namespace TowerDefense.Entities
     {
         public Building(Vector2 position)
         {
-            Shape = new Collision.Rectangle(position, 32, 32);
             Position = position;
             Velocity = new Vector2(0, 0);
         }
