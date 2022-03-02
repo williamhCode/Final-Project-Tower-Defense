@@ -62,8 +62,8 @@ namespace TowerDefense.Sprite
             int column = currentFrame % columns;
             Rectangle sourceRectangle = new Rectangle(Width * column, Height * row, Width, Height);
 
-            var flip = SpriteEffects.FlipVertically | (Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None);
-            spriteBatch.Draw(Texture, position - new Vector2(Width / 2, 0), sourceRectangle, Color.White, 0, Vector2.Zero, 1, flip, 0);
+            var flip = Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+            spriteBatch.Draw(Texture, position, sourceRectangle, Color.White, 0, Vector2.Zero, 1, flip, 0);
         }
     }
 }

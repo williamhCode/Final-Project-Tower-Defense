@@ -40,7 +40,7 @@ namespace TowerDefense
 
             // init objects
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-            player = new Player(new Vector2(0, 0));
+            player = new Player(new Vector2(300, 300));
         }
 
         protected override void LoadContent()
@@ -73,7 +73,7 @@ namespace TowerDefense
 
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
-                Convert.ToSingle(state.IsKeyDown(Keys.W)) - Convert.ToSingle(state.IsKeyDown(Keys.S))
+                Convert.ToSingle(state.IsKeyDown(Keys.S)) - Convert.ToSingle(state.IsKeyDown(Keys.W))
             );
             player.Move(direction, dt);
             var mouseState = Mouse.GetState();

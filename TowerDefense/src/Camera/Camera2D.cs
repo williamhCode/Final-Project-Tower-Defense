@@ -6,7 +6,6 @@ namespace TowerDefense.Camera
 {
     public class Camera2D
     {
-        private Vector2 offset;
         private Matrix baseTransform;
 
         public Matrix Transform { get; private set; }
@@ -21,10 +20,8 @@ namespace TowerDefense.Camera
 
         public Camera2D(float width, float height)
         {
-            offset = new Vector2(width / 2, height / 2);
-
             baseTransform = Matrix.Identity;
-            baseTransform *= Matrix.CreateScale(1, -1, 1);
+            baseTransform *= Matrix.CreateScale(1, 1, 1);
 
             Pan = Vector2.Zero;
             Zoom = 2;
@@ -32,8 +29,7 @@ namespace TowerDefense.Camera
 
         public void Update()
         {
-            Vector2 translation = offset + Pan;
-            Transform = baseTransform * Matrix.CreateScale(Zoom, Zoom, 1) * Matrix.CreateTranslation(translation.X, translation.Y, 0);
+            Transform = baseTransform * Matrix.CreateScale(Zoom, Zoom, 1) * Matrix.CreateTranslation(Pan.X, Pan.Y, 0);
         }
 
         // public Vector2 ScreenToMouse(Vector2 mouseCoords)
