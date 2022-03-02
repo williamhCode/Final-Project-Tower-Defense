@@ -9,7 +9,9 @@ namespace TowerDefense.Camera
         private Vector2 offset;
         private Matrix baseTransform;
 
+        public Matrix Transform { get; private set; }
         public Vector2 Pan { get; set; }
+
         private float _zoom;
         public float Zoom 
         { 
@@ -28,20 +30,20 @@ namespace TowerDefense.Camera
             Zoom = 2;
         }
 
-        public Matrix getTransform()
+        public void Update()
         {
             Vector2 translation = offset + Pan;
-            return baseTransform * Matrix.CreateScale(Zoom, Zoom, 1) * Matrix.CreateTranslation(translation.X, translation.Y, 0);
+            Transform = baseTransform * Matrix.CreateScale(Zoom, Zoom, 1) * Matrix.CreateTranslation(translation.X, translation.Y, 0);
         }
 
-        // public Vector2 MouseToScreen(Vector2 mouseCoords)
+        // public Vector2 ScreenToMouse(Vector2 mouseCoords)
         // {
             
         // }
     
-        // public Vector2 ScreenToMouse(Vector2 screenCoords)
-        // {
-            
-        // }
+        public Vector2 MouseToScreen(Vector2 screenCoords)
+        {
+            return Vector2.Transform(screenCoords, Matrix.Invert(Transform));
+        }
     }
 }

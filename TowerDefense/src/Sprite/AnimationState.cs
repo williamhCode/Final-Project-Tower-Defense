@@ -10,11 +10,16 @@ namespace TowerDefense.Sprite
     {
         Dictionary<string, Dictionary<string, AnimatedSprite>> stateSprites;
 
+        public AnimatedSprite Sprite
+        {
+            get { return currSprite; }
+        }
+
         private AnimatedSprite currSprite;
         private AnimatedSprite lastSprite;
 
-        private string state;
-        private string direction;
+        public string State { get; set; }
+        public string Direction { get; set; }
 
         public AnimationState()
         {
@@ -35,31 +40,16 @@ namespace TowerDefense.Sprite
             }
         }
 
-        public void SetState(string state)
-        {
-            this.state = state;
-        }
-
-        public void SetDirection(string direction)
-        {
-            this.direction = direction;
-        }
-
         public void Update(float dt)
         {
-            currSprite = stateSprites[state][direction];
+            currSprite = stateSprites[State][Direction];
 
             if (lastSprite != currSprite)
                 currSprite.Reset();
-                
+
             currSprite.Update(dt);
 
             lastSprite = currSprite;
-        }
-
-        public AnimatedSprite GetSprite()
-        {
-            return currSprite;
         }
     }
 }
