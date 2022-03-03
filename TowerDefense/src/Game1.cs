@@ -130,7 +130,9 @@ namespace TowerDefense
             player.DecideDirection(camera.MouseToScreen(mousePosition));
             player.Update(dt);
 
-            foreach (var wall in walls)
+            var temp_walls = walls.OrderBy(w => (w.Position - player.Position).LengthSquared()).ToArray();
+
+            foreach (var wall in temp_walls)
             {
                 if (IsColliding(wall.Shape, player.Shape, out Vector2 mtv))
                 {
