@@ -88,7 +88,6 @@ namespace TowerDefense
 
             // loads all content by invoking the LoadContent method of each class in Entities
             var classes = GetTypesInNamespace(Assembly.GetExecutingAssembly(), "TowerDefense.Entities");
-            Array.ForEach(classes, Console.WriteLine);
 
             foreach (var c in classes)
             {
