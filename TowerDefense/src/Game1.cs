@@ -12,6 +12,7 @@ using System.Reflection;
 
 using TowerDefense.Camera;
 using TowerDefense.Entities;
+using TowerDefense.Entities.Buildings;
 using static TowerDefense.Collision.CollisionFuncs;
 
 namespace TowerDefense
@@ -69,11 +70,14 @@ namespace TowerDefense
             walls = entities.OfType<Wall>().ToArray();
         }
         
+        /// <summary>
+        /// Gets all Types in the given namespace including sub-namespaces.
+        /// </summary>
         private Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
         {
             return 
             assembly.GetTypes()
-                    .Where(t => String.Equals(t.Namespace, nameSpace, StringComparison.Ordinal))
+                    .Where(t => t.Namespace.Contains(nameSpace, StringComparison.Ordinal))
                     .ToArray();
         }
 
@@ -84,6 +88,8 @@ namespace TowerDefense
 
             // loads all content by invoking the LoadContent method of each class in Entities
             var classes = GetTypesInNamespace(Assembly.GetExecutingAssembly(), "TowerDefense.Entities");
+            Array.ForEach(classes, Console.WriteLine);
+
             foreach (var c in classes)
             {
                 var loadContent = c.GetMethod("LoadContent");

@@ -10,7 +10,7 @@ using TowerDefense.Maths;
 
 using System;
 
-namespace TowerDefense.Entities
+namespace TowerDefense.Entities.Buildings
 {
     public class Wall : Building
     {
