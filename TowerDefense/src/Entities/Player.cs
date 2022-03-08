@@ -18,18 +18,18 @@ namespace TowerDefense.Entities
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
-        public static AnimationState AnimationState;
+        public static AnimationState<string> AnimationState;
 
         public static void LoadContent(ContentManager content)
         {
             content.RootDirectory = "Content/Sprites/Player";
 
             float frameTime = 0.05f;
-            AnimationState = new AnimationState();
+            AnimationState = new AnimationState<string>("state", "direction");
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), "idle", "right");
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), "idle", "left");
-            AnimationState.State = "idle";
-            AnimationState.Direction = "right";
+            AnimationState.SetState("state", "idle");
+            AnimationState.SetState("direction", "right");
         }
 
         public Player(Vector2 position)
@@ -59,11 +59,11 @@ namespace TowerDefense.Entities
             Vector2 direction = coords - Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                animationState.Direction = "right";
+                AnimationState.SetState("state", "right");
             }
             else
             {
-                animationState.Direction = "left";
+                AnimationState.SetState("state", "left");
             }
         }
 

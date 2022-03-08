@@ -14,17 +14,16 @@ namespace TowerDefense.Entities.Buildings
 {
     public class Wall : Building
     {
-        public static AnimationState AnimationState;
+        public static AnimationState<string> AnimationState;
 
         public static void LoadContent(ContentManager content)
         {
             content.RootDirectory = "Content/Sprites/Walls";
 
             float frameTime = 0f;
-            AnimationState = new AnimationState();
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("wall_2"), 16, 24, frameTime), "full", "none");
-            AnimationState.State = "full";
-            AnimationState.Direction = "none";
+            AnimationState = new AnimationState<string>("state");
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("wall_2"), 16, 24, frameTime), "full");
+            AnimationState.SetState("state", "full");
         }
 
         public Wall(Vector2 position) : base(position)

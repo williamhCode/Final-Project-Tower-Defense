@@ -3,12 +3,13 @@ using Microsoft.Xna.Framework;
 
 using System.Collections.Generic;
 using System;
+using System.Linq;
 
 namespace TowerDefense.Sprite
 {
-    public class AnimationState
+    public class AnimationState<T>
     {
-        Dictionary<string, Dictionary<string, AnimatedSprite>> stateSprites;
+        Dictionary<Array, AnimatedSprite> stateSprites;
 
         public AnimatedSprite Sprite
         {
@@ -18,31 +19,32 @@ namespace TowerDefense.Sprite
         private AnimatedSprite currSprite;
         private AnimatedSprite lastSprite;
 
-        public string State { get; set; }
-        public string Direction { get; set; }
+        private Dictionary<string, T> states;
 
-        public AnimationState()
+        public AnimationState(params string[] identifiers)
         {
-            stateSprites = new Dictionary<string, Dictionary<string, AnimatedSprite>>();
+            stateSprites = new Dictionary<Array, AnimatedSprite>();
+
+            states = new Dictionary<string, T>();
+            foreach (string identifier in identifiers)
+            {
+                states.Add(identifier, default(T));
+            }
         }
 
-        public void AddSprite(AnimatedSprite sprite, string state, string direction)
+        public void AddSprite(AnimatedSprite sprite, params T[] values)
         {
-            if (stateSprites.TryGetValue(state, out Dictionary<string, AnimatedSprite> stateDict))
-            {
-                stateDict.Add(direction, sprite);
-            }
-            else
-            {
-                stateDict = new Dictionary<string, AnimatedSprite>();
-                stateDict.Add(direction, sprite);
-                stateSprites.Add(state, stateDict);
-            }
+            stateSprites.Add(values, sprite);
+        }
+
+        public void SetState(string identifier, T value)
+        {
+            states[identifier] = value;
         }
 
         public void Update(float dt)
         {
-            currSprite = stateSprites[State][Direction];
+            currSprite = stateSprites[states.Values.ToArray()];
 
             if (lastSprite != currSprite)
                 currSprite.Reset();
