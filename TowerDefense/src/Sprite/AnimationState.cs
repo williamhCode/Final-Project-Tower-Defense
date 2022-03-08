@@ -9,7 +9,7 @@ namespace TowerDefense.Sprite
 {
     public class AnimationState<T>
     {
-        Dictionary<Array, AnimatedSprite> stateSprites;
+        Dictionary<string, AnimatedSprite> stateSprites;
 
         public AnimatedSprite Sprite
         {
@@ -21,9 +21,12 @@ namespace TowerDefense.Sprite
 
         private Dictionary<string, T> states;
 
+        /// <summary>
+        /// Note: params are identifiers for the state names.
+        /// </summary>
         public AnimationState(params string[] identifiers)
         {
-            stateSprites = new Dictionary<Array, AnimatedSprite>();
+            stateSprites = new Dictionary<string, AnimatedSprite>();
 
             states = new Dictionary<string, T>();
             foreach (string identifier in identifiers)
@@ -32,9 +35,12 @@ namespace TowerDefense.Sprite
             }
         }
 
+        /// <summary>
+        /// Note: values correspond in the same order to the identifiers in the constructor, and have the Generic Type.
+        /// </summary>
         public void AddSprite(AnimatedSprite sprite, params T[] values)
         {
-            stateSprites.Add(values, sprite);
+            stateSprites.Add(string.Join(",", values), sprite);
         }
 
         public void SetState(string identifier, T value)
@@ -42,9 +48,14 @@ namespace TowerDefense.Sprite
             states[identifier] = value;
         }
 
+        public T GetState(string identifier)
+        {
+            return states[identifier];
+        }
+
         public void Update(float dt)
         {
-            currSprite = stateSprites[states.Values.ToArray()];
+            currSprite = stateSprites[string.Join(",", states.Values.ToArray())];
 
             if (lastSprite != currSprite)
                 currSprite.Reset();

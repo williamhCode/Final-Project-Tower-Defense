@@ -28,8 +28,6 @@ namespace TowerDefense.Entities
         public Vector2 Velocity { get; set; }
         public Collision.Shape Shape { get; set; }
 
-        protected AnimationState animationState;
-
         public abstract void Update(float dt);
 
         public abstract void Draw(SpriteBatch spriteBatch);

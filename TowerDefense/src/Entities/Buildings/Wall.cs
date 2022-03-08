@@ -14,7 +14,9 @@ namespace TowerDefense.Entities.Buildings
 {
     public class Wall : Building
     {
+        
         public static AnimationState<string> AnimationState;
+        private AnimationState<string> animationState;
 
         public static void LoadContent(ContentManager content)
         {

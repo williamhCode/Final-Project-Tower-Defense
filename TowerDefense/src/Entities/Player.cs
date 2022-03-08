@@ -19,6 +19,7 @@ namespace TowerDefense.Entities
         private const float ACCELERATION = 1200;
 
         public static AnimationState<string> AnimationState;
+        private AnimationState<string> animationState;
 
         public static void LoadContent(ContentManager content)
         {
@@ -59,11 +60,11 @@ namespace TowerDefense.Entities
             Vector2 direction = coords - Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                AnimationState.SetState("state", "right");
+                AnimationState.SetState("direction", "right");
             }
             else
             {
-                AnimationState.SetState("state", "left");
+                AnimationState.SetState("direction", "left");
             }
         }
 
