@@ -30,7 +30,6 @@ namespace TowerDefense
         public static ContentManager content;
         public SpriteFont font;
 
-
         Camera2D camera;
         Player player;
         Wall[] walls;
