@@ -86,6 +86,7 @@ namespace TowerDefense
             });
             this.UiSystem.Add("InfoBox", box);
         }
+        
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
