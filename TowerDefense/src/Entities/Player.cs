@@ -14,23 +14,37 @@ namespace TowerDefense.Entities
 {
     public class Player : Entity
     {
+        enum PlayerState
+        {
+            Idle,
+            Walking,
+            Attacking,
+            Dead
+        }
+
+        enum Direction
+        {
+            Left,
+            Right
+        }
+
         private const float MAX_SPEED = 200;
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
-        public static AnimationState<string> AnimationState;
-        private AnimationState<string> animationState;
+        public static AnimationState<Enum> AnimationState;
+        private AnimationState<Enum> animationState;
 
         public static void LoadContent(ContentManager content)
         {
             content.RootDirectory = "Content/Sprites/Player";
 
             float frameTime = 0.05f;
-            AnimationState = new AnimationState<string>("state", "direction");
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), "idle", "right");
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), "idle", "left");
-            AnimationState.SetState("state", "idle");
-            AnimationState.SetState("direction", "right");
+            AnimationState = new AnimationState<Enum>("state", "direction");
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
+            AnimationState.SetState("state", PlayerState.Idle);
+            AnimationState.SetState("direction", Direction.Right);
         }
 
         public Player(Vector2 position)
@@ -60,11 +74,11 @@ namespace TowerDefense.Entities
             Vector2 direction = coords - Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                AnimationState.SetState("direction", "right");
+                AnimationState.SetState("direction", Direction.Right);
             }
             else
             {
-                AnimationState.SetState("direction", "left");
+                AnimationState.SetState("direction", Direction.Left);
             }
         }
 
