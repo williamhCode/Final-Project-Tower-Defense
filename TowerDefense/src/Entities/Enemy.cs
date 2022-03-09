@@ -15,7 +15,7 @@ namespace TowerDefense.Entities
         private const float FRICTION = 0;
         private int spd;
         private int health;
-        private Boolean dead;
+        private Boolean isDead;
         public Enemy(Vector2 position,int speed,int size)
         {
 
@@ -24,7 +24,7 @@ namespace TowerDefense.Entities
             Velocity = new Vector2(0, 0);
             spd = speed;
             Shape = new Circle(position, size);
-            dead = false;
+            isDead = false;
 
         }
         public void Move(float dt)
@@ -63,7 +63,7 @@ namespace TowerDefense.Entities
 
             if (health <= 0)
             {
-                dead = true;
+                isDead = true;
 
             }
         }
