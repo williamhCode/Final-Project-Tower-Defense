@@ -51,32 +51,37 @@ namespace TowerDefense
                 this.GraphicsDeviceManager.PreferredBackBufferHeight = 720;
                 this.GraphicsDeviceManager.ApplyChanges();
             }
-            base.LoadContent();
 
-            this.UiSystem.AutoScaleReferenceSize = new Point(1280,720);
-            this.UiSystem.AutoScaleWithScreen = true;
-            this.UiSystem.GlobalScale = 5;
+            base.LoadContent();
 
             font = Content.Load<SpriteFont>("Font/Frame");
             Player.LoadContent(Content);
-
 
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
             };
-
             this.UiSystem.Style = style;
+            this.UiSystem.AutoScaleReferenceSize = new Point(1280,720);
+            this.UiSystem.AutoScaleWithScreen = true;
+            this.UiSystem.GlobalScale = 5;
 
-            this.root = new Panel(Anchor.Center, new Vector2(100,100), Vector2.Zero, false, true);
+            this.root = new Panel(Anchor.TopLeft, new Vector2(100,100), Vector2.Zero, false, true);
             this.root.ScrollBar.SmoothScrolling = true;
             this.UiSystem.Add("TestUi", this.root);
-
+            float timesPressed = 0f;
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
-            box.AddChild(new Paragraph(Anchor.AutoLeft, 1, "This is some example text"));
+            var bar1 = box.AddChild(new ProgressBar(Anchor.Center, new Vector2(100,10), MLEM.Misc.Direction2.Right, 100f, timesPressed));
             box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
             {
-                OnPressed = element => this.UiSystem.Remove("InfoBox"),
+                /*
+                OnPressed = close => 
+                {
+                    this.UiSystem.Remove("TestUi");
+                    this.UiSystem.Remove("InfoBox");
+                },
+                */
+                OnPressed = increase => timesPressed += 1f,
                 PositionOffset = new Vector2(0, 1)
             });
             this.UiSystem.Add("InfoBox", box);
@@ -111,13 +116,10 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.MouseToScreen(mousePosition));
             player.Update(dt);
-
-            this.UiSystem.Update(gameTime);
         }
 
         protected override void DoDraw(GameTime gameTime)
         {
-            this.UiSystem.DrawEarly(gameTime, this.SpriteBatch);
 
             float frameRate = 1 / gameTime.GetElapsedSeconds();
             
@@ -134,7 +136,6 @@ namespace TowerDefense
             SpriteBatch.End();
 
             base.DoDraw(gameTime);
-            this.UiSystem.Draw(gameTime, this.SpriteBatch);
         }
 
         protected override void UnloadContent()
