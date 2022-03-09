@@ -76,11 +76,12 @@ namespace TowerDefense
             box.AddChild(new Paragraph(Anchor.AutoLeft, 1, "This is some example text"));
             box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
             {
-                OnPressed = element => this.UiSystem.Remove("InfoBox"),
+                OnPressed = close => this.UiSystem.Remove("InfoBox"),
                 PositionOffset = new Vector2(0, 1)
             });
             this.UiSystem.Add("InfoBox", box);
         }
+        
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
