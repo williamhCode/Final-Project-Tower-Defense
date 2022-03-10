@@ -30,7 +30,7 @@ namespace TowerDefense
 {
     public class Game1 : MlemGame
     {
-        // constants
+        // variables
         public static Game1 Instance {get; private set;}
         public SpriteFont font;
         private Camera2D camera;
@@ -51,17 +51,16 @@ namespace TowerDefense
             base.Initialize();
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
+            // entities initialization
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
             };
-            // add walls to entities
             for (int i = 0; i < 10; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
                 entities.Add(new Wall(new Vector2(100, (i+1) * 16 + 100)));
             }
-
             walls = entities.OfType<Wall>().ToArray();
         }
         
@@ -100,7 +99,6 @@ namespace TowerDefense
                     loadContent.Invoke(null, new object[] { Content });
                 }
             }
-        
 
             var style = new UntexturedStyle(this.SpriteBatch)
             {
@@ -111,6 +109,7 @@ namespace TowerDefense
             this.UiSystem.AutoScaleWithScreen = true;
             this.UiSystem.GlobalScale = 5;
 
+            /*
             this.root = new Panel(Anchor.TopLeft, new Vector2(100,100), Vector2.Zero, false, true);
             this.root.ScrollBar.SmoothScrolling = true;
             this.UiSystem.Add("TestUi", this.root);
@@ -119,17 +118,16 @@ namespace TowerDefense
             var bar1 = box.AddChild(new ProgressBar(Anchor.Center, new Vector2(100,10), MLEM.Misc.Direction2.Right, 100f, timesPressed));
             box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
             {
-                /*
                 OnPressed = close => 
                 {
                     this.UiSystem.Remove("TestUi");
                     this.UiSystem.Remove("InfoBox");
-                },
-                */
+                },  
                 OnPressed = increase => timesPressed += 1f,
                 PositionOffset = new Vector2(0, 1)
             });
             this.UiSystem.Add("InfoBox", box);
+            */
         }
         
         protected override void DoUpdate(GameTime gameTime)
@@ -138,11 +136,13 @@ namespace TowerDefense
 
             float dt = gameTime.GetElapsedSeconds();
 
+            // game inputs
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
             KeyboardState state = Keyboard.GetState();
-
+            
+            // camera
             if (state.IsKeyDown(Keys.OemPlus))
             {
                 camera.Zoom += 0.1f;
@@ -153,6 +153,7 @@ namespace TowerDefense
             }
             camera.Update();
 
+            // player movement
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
                 Convert.ToSingle(state.IsKeyDown(Keys.S)) - Convert.ToSingle(state.IsKeyDown(Keys.W))
@@ -163,6 +164,7 @@ namespace TowerDefense
             player.DecideDirection(camera.MouseToScreen(mousePosition));
             player.Update(dt);
 
+            // collision detection and resolution
             var temp_walls = walls.OrderBy(w => (w.Position - player.Position).LengthSquared()).ToArray();
 
             foreach (var wall in temp_walls)
@@ -177,7 +179,6 @@ namespace TowerDefense
 
         protected override void DoDraw(GameTime gameTime)
         {
-
             float frameRate = 1 / gameTime.GetElapsedSeconds();
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
