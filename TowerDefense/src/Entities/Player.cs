@@ -16,7 +16,7 @@ namespace TowerDefense.Entities
     public class Player : Entity
     {
         private const string PLAYERSTATE = "PlayerState";
-        enum PlayerState
+        private enum PlayerState
         {
             Idle,
             Walking,
@@ -25,7 +25,7 @@ namespace TowerDefense.Entities
         }
 
         private const string DIRECTION = "Direction";
-        enum Direction
+        private enum Direction
         {
             Left,
             Right
@@ -54,7 +54,7 @@ namespace TowerDefense.Entities
         {
             Position = position;
             Velocity = new Vector2(0, 0);
-            Shape = new Circle(position, 5);
+            Shape = new Circle(position, 6);
 
             animationState = AnimationState;
         }
@@ -77,11 +77,11 @@ namespace TowerDefense.Entities
             Vector2 direction = coords - Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                AnimationState.SetState(DIRECTION, Direction.Right);
+                animationState.SetState(DIRECTION, Direction.Right);
             }
             else
             {
-                AnimationState.SetState(DIRECTION, Direction.Left);
+                animationState.SetState(DIRECTION, Direction.Left);
             }
         }
 

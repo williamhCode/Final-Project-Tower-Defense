@@ -23,6 +23,7 @@ using System.Reflection;
 
 using TowerDefense.Camera;
 using TowerDefense.Entities;
+using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using static TowerDefense.Collision.CollisionFuncs;
 
@@ -36,9 +37,9 @@ namespace TowerDefense
         private Camera2D camera;
         private Player player;
         private Panel root;
-        private Wall[] walls;
+        private List<Wall> walls;
         private List<Entity> entities;
-        
+        private List<Enemy> enemies;
 
         public Game1()
         {
@@ -55,13 +56,15 @@ namespace TowerDefense
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
+                new Bandit(new Vector2(100, 100), 10),
             };
             for (int i = 0; i < 10; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
                 entities.Add(new Wall(new Vector2(100, (i+1) * 16 + 100)));
             }
-            walls = entities.OfType<Wall>().ToArray();
+            walls = entities.OfType<Wall>().ToList();
+            enemies = entities.OfType<Enemy>().ToList();
         }
         
         /// <summary>
@@ -162,19 +165,39 @@ namespace TowerDefense
             var mouseState = Mouse.GetState();
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.MouseToScreen(mousePosition));
-            player.Update(dt);
+
+            // enemy movement
+            foreach (var e in enemies)
+            {
+                e.Move(player.Position, dt);
+            }
+
+            // updates
+            foreach (var e in entities)
+            {
+                e.Update(dt);
+            }
 
             // collision detection and resolution
-            var temp_walls = walls.OrderBy(w => (w.Position - player.Position).LengthSquared()).ToArray();
-
-            foreach (var wall in temp_walls)
+            // create new list from Player and Enemy entities
+            var entitiesToCheck = new List<Entity>();
+            entitiesToCheck.AddRange(entities.OfType<Player>());
+            entitiesToCheck.AddRange(entities.OfType<Enemy>());
+            
+            foreach (var e in entitiesToCheck)
             {
-                if (IsColliding(wall.Shape, player.Shape, out Vector2 mtv))
+                var temp_walls = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
+
+                foreach (var wall in temp_walls)
                 {
-                    player.Position += mtv;
-                    player.Shape.Update();
+                    if (IsColliding(wall.Shape, e.Shape, out Vector2 mtv))
+                    {
+                        e.Position += mtv;
+                        e.Shape.Update();
+                    }
                 }
             }
+
         }
 
         protected override void DoDraw(GameTime gameTime)
