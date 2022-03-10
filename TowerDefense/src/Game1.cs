@@ -15,8 +15,16 @@ using MLEM.Startup;
 using MLEM.Font;
 using MonoGame.Framework.Utilities;
 using MonoGame.Extended;
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
+
 using TowerDefense.Camera;
 using TowerDefense.Entities;
+using TowerDefense.Entities.Buildings;
+using static TowerDefense.Collision.CollisionFuncs;
 
 namespace TowerDefense
 {
@@ -28,6 +36,8 @@ namespace TowerDefense
         private Camera2D camera;
         private Player player;
         private Panel root;
+        private Wall[] walls;
+        private List<Entity> entities;
         
 
         public Game1()
@@ -40,7 +50,30 @@ namespace TowerDefense
         {
             base.Initialize();
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+
             player = new Player(new Vector2(300, 300));
+            entities = new List<Entity> {
+                player,
+            };
+            // add walls to entities
+            for (int i = 0; i < 10; i++)
+            {
+                entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
+                entities.Add(new Wall(new Vector2(100, (i+1) * 16 + 100)));
+            }
+
+            walls = entities.OfType<Wall>().ToArray();
+        }
+        
+        /// <summary>
+        /// Gets all Types in the given namespace including sub-namespaces.
+        /// </summary>
+        private Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
+        {
+            return 
+            assembly.GetTypes()
+                    .Where(t => t.Namespace.Contains(nameSpace, StringComparison.Ordinal))
+                    .ToArray();
         }
 
         protected override void LoadContent()
@@ -55,7 +88,19 @@ namespace TowerDefense
             base.LoadContent();
 
             font = Content.Load<SpriteFont>("Font/Frame");
-            Player.LoadContent(Content);
+
+            // loads all content by invoking the LoadContent method of each class in Entities
+            var classes = GetTypesInNamespace(Assembly.GetExecutingAssembly(), "TowerDefense.Entities");
+
+            foreach (var c in classes)
+            {
+                var loadContent = c.GetMethod("LoadContent");
+                if (loadContent != null)
+                {
+                    loadContent.Invoke(null, new object[] { Content });
+                }
+            }
+        
 
             var style = new UntexturedStyle(this.SpriteBatch)
             {
@@ -117,6 +162,17 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.MouseToScreen(mousePosition));
             player.Update(dt);
+
+            var temp_walls = walls.OrderBy(w => (w.Position - player.Position).LengthSquared()).ToArray();
+
+            foreach (var wall in temp_walls)
+            {
+                if (IsColliding(wall.Shape, player.Shape, out Vector2 mtv))
+                {
+                    player.Position += mtv;
+                    player.Shape.Update();
+                }
+            }
         }
 
         protected override void DoDraw(GameTime gameTime)
@@ -128,14 +184,21 @@ namespace TowerDefense
 
             // Drawing the player
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.Transform, blendState: BlendState.AlphaBlend);
-            player.Draw(SpriteBatch);
+
+            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
+            foreach (var entity in entities_temp)
+            {
+                entity.DrawDebug(SpriteBatch);
+                entity.Draw(SpriteBatch);
+            }
+
             SpriteBatch.End();
 
             // Drawing the Text
             SpriteBatch.Begin();
             SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
             SpriteBatch.End();
-
+            
             base.DoDraw(gameTime);
         }
 

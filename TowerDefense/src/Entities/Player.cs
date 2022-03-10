@@ -9,34 +9,52 @@ using TowerDefense.Sprite;
 using TowerDefense.Maths;
 
 using System;
+using System.Linq;
 
 namespace TowerDefense.Entities
 {
     public class Player : Entity
     {
+        private const string PLAYERSTATE = "PlayerState";
+        enum PlayerState
+        {
+            Idle,
+            Walking,
+            Attacking,
+            Dead
+        }
+
+        private const string DIRECTION = "Direction";
+        enum Direction
+        {
+            Left,
+            Right
+        }
+
         private const float MAX_SPEED = 200;
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
-        public static AnimationState AnimationState;
+        public static AnimationState<Enum> AnimationState;
+        private AnimationState<Enum> animationState;
 
         public static void LoadContent(ContentManager content)
         {
             content.RootDirectory = "Content/Sprites/Player";
 
             float frameTime = 0.05f;
-            AnimationState = new AnimationState();
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), "idle", "right");
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), "idle", "left");
-            AnimationState.State = "idle";
-            AnimationState.Direction = "right";
+            AnimationState = new AnimationState<Enum>(PLAYERSTATE, DIRECTION);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
+            AnimationState.SetState(PLAYERSTATE, PlayerState.Idle);
+            AnimationState.SetState(DIRECTION, Direction.Right);
         }
 
         public Player(Vector2 position)
         {
-            Shape = new Circle(position, 10);
             Position = position;
             Velocity = new Vector2(0, 0);
+            Shape = new Circle(position, 5);
 
             animationState = AnimationState;
         }
@@ -59,25 +77,23 @@ namespace TowerDefense.Entities
             Vector2 direction = coords - Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                animationState.Direction = "right";
+                AnimationState.SetState(DIRECTION, Direction.Right);
             }
             else
             {
-                animationState.Direction = "left";
+                AnimationState.SetState(DIRECTION, Direction.Left);
             }
         }
 
         public override void Update(float dt)
         {
             Position += Velocity * dt;
-
+            Shape.Update();
             animationState.Update(dt);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            Shape.Draw(spriteBatch, new Color(0, 0, 0), 1);
-
             animationState.Sprite.Draw(spriteBatch, Position - new Vector2(16, 32));
         }
     }
