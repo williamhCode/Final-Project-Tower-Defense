@@ -31,7 +31,7 @@ namespace TowerDefense
     public class Game1 : MlemGame
     {
         // variables
-        public static Game1 Instance {get; private set;}
+        public static Game1 Instance { get; private set; }
         public SpriteFont font;
         private Camera2D camera;
         private Panel root;
@@ -48,7 +48,7 @@ namespace TowerDefense
         public Game1()
         {
             Instance = this;
-            this.IsMouseVisible = true;   
+            this.IsMouseVisible = true;
         }
 
         protected override void Initialize()
@@ -65,11 +65,11 @@ namespace TowerDefense
             for (int i = 0; i < 10; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
-                entities.Add(new Wall(new Vector2(100, (i+1) * 16 + 100)));
+                entities.Add(new Wall(new Vector2(100, (i + 1) * 16 + 100)));
             }
             walls = entities.OfType<Wall>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
-            
+
             // tile map initialization
             tileMap = new string[20][];
             for (int i = 0; i < tileMap.Length; i++)
@@ -85,13 +85,13 @@ namespace TowerDefense
                 }
             }
         }
-        
+
         /// <summary>
         /// Gets all Types in the given namespace including sub-namespaces.
         /// </summary>
         private Type[] GetTypesInNamespace(Assembly assembly, string nameSpace)
         {
-            return 
+            return
             assembly.GetTypes()
                     .Where(t => t.Namespace.Contains(nameSpace, StringComparison.Ordinal))
                     .ToArray();
@@ -99,7 +99,7 @@ namespace TowerDefense
 
         protected override void LoadContent()
         {
-            if(PlatformInfo.MonoGamePlatform == MonoGamePlatform.DesktopGL)
+            if (PlatformInfo.MonoGamePlatform == MonoGamePlatform.DesktopGL)
             {
                 this.GraphicsDeviceManager.PreferredBackBufferWidth = 1280;
                 this.GraphicsDeviceManager.PreferredBackBufferHeight = 720;
@@ -107,7 +107,7 @@ namespace TowerDefense
             }
 
             base.LoadContent();
-            
+
             // load tile textures
             tileTextures = new Dictionary<string, Texture2D>();
 
@@ -139,7 +139,7 @@ namespace TowerDefense
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
             };
             this.UiSystem.Style = style;
-            this.UiSystem.AutoScaleReferenceSize = new Point(1280,720);
+            this.UiSystem.AutoScaleReferenceSize = new Point(1280, 720);
             this.UiSystem.AutoScaleWithScreen = true;
             this.UiSystem.GlobalScale = 5;
 
@@ -163,7 +163,7 @@ namespace TowerDefense
             this.UiSystem.Add("InfoBox", box);
             */
         }
-        
+
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
@@ -175,7 +175,7 @@ namespace TowerDefense
                 Exit();
 
             KeyboardState state = Keyboard.GetState();
-            
+
             // player movement
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
@@ -200,7 +200,7 @@ namespace TowerDefense
 
             // collision detection and resolution
             // create new list from Player and Enemy entities
-            var entitiesToCheck = entities.Where(e => 
+            var entitiesToCheck = entities.Where(e =>
             {
                 if (e is Player || e is Enemy)
                     return true;
@@ -237,11 +237,12 @@ namespace TowerDefense
         protected override void DoDraw(GameTime gameTime)
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
-            
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
+            // draw tilemap
             for (int row = 0; row < tileMap.Length; row++)
             {
                 for (int col = 0; col < tileMap[row].Length; col++)
@@ -254,6 +255,7 @@ namespace TowerDefense
                 }
             }
 
+            // draw entities
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
@@ -267,7 +269,7 @@ namespace TowerDefense
             SpriteBatch.Begin();
             SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
             SpriteBatch.End();
-            
+
             base.DoDraw(gameTime);
         }
 
