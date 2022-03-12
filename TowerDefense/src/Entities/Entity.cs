@@ -26,7 +26,7 @@ namespace TowerDefense.Entities
             }
         }
         public Vector2 Velocity { get; set; }
-        public Collision.Shape Shape { get; set; }
+        public Collision.CShape Shape { get; set; }
 
         public abstract void Update(float dt);
 

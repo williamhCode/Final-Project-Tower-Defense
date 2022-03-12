@@ -30,7 +30,7 @@ namespace TowerDefense.Entities.Buildings
 
         public Wall(Vector2 position) : base(position)
         {
-            Shape = new Collision.Rectangle(position, 16, 16);
+            Shape = new Collision.CRectangle(position, 16, 16);
             animationState = AnimationState;
             animationState.Update(0);
         }

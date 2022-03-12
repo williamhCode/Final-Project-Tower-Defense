@@ -16,9 +16,6 @@ using MLEM.Font;
 using MonoGame.Framework.Utilities;
 using MonoGame.Extended;
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 
 using TowerDefense.Camera;
@@ -26,6 +23,8 @@ using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using static TowerDefense.Collision.CollisionFuncs;
+
+using System.Diagnostics;
 
 namespace TowerDefense
 {
@@ -35,11 +34,16 @@ namespace TowerDefense
         public static Game1 Instance {get; private set;}
         public SpriteFont font;
         private Camera2D camera;
-        private Player player;
         private Panel root;
-        private List<Wall> walls;
+
+        private Player player;
         private List<Entity> entities;
-        private List<Enemy> enemies;
+        private Wall[] walls;
+        private Enemy[] enemies;
+
+        private double totalTime = 0.0f;
+        private int count = 0;
+        int c = 0;
 
         public Game1()
         {
@@ -63,8 +67,8 @@ namespace TowerDefense
                 entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
                 entities.Add(new Wall(new Vector2(100, (i+1) * 16 + 100)));
             }
-            walls = entities.OfType<Wall>().ToList();
-            enemies = entities.OfType<Enemy>().ToList();
+            walls = entities.OfType<Wall>().ToArray();
+            enemies = entities.OfType<Enemy>().ToArray();
         }
         
         /// <summary>
@@ -145,17 +149,6 @@ namespace TowerDefense
 
             KeyboardState state = Keyboard.GetState();
             
-            // camera
-            if (state.IsKeyDown(Keys.OemPlus))
-            {
-                camera.Zoom += 0.1f;
-            }
-            if (state.IsKeyDown(Keys.OemMinus))
-            {
-                camera.Zoom -= 0.1f;
-            }
-            camera.Update();
-
             // player movement
             var direction = new Vector2(
                 Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
@@ -164,7 +157,7 @@ namespace TowerDefense
             player.Move(direction, dt);
             var mouseState = Mouse.GetState();
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
-            player.DecideDirection(camera.MouseToScreen(mousePosition));
+            player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
             // enemy movement
             foreach (var e in enemies)
@@ -180,10 +173,14 @@ namespace TowerDefense
 
             // collision detection and resolution
             // create new list from Player and Enemy entities
-            var entitiesToCheck = new List<Entity>();
-            entitiesToCheck.AddRange(entities.OfType<Player>());
-            entitiesToCheck.AddRange(entities.OfType<Enemy>());
-            
+            var entitiesToCheck = entities.Where(e => 
+            {
+                if (e is Player || e is Enemy)
+                    return true;
+                return false;
+            }
+            ).ToArray();
+
             foreach (var e in entitiesToCheck)
             {
                 var temp_walls = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
@@ -198,6 +195,16 @@ namespace TowerDefense
                 }
             }
 
+            // camera
+            if (state.IsKeyDown(Keys.OemPlus))
+            {
+                camera.Zoom *= 1.1f;
+            }
+            if (state.IsKeyDown(Keys.OemMinus))
+            {
+                camera.Zoom /= 1.1f;
+            }
+            camera.LookAt(player.Position);
         }
 
         protected override void DoDraw(GameTime gameTime)
@@ -207,7 +214,7 @@ namespace TowerDefense
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             // Drawing the player
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.Transform, blendState: BlendState.AlphaBlend);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)

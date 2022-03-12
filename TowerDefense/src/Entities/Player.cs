@@ -54,7 +54,7 @@ namespace TowerDefense.Entities
         {
             Position = position;
             Velocity = new Vector2(0, 0);
-            Shape = new Circle(position, 6);
+            Shape = new CCircle(position, 5);
 
             animationState = AnimationState;
         }

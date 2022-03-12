@@ -44,7 +44,7 @@ namespace TowerDefense.Entities.Enemies
 
         public Bandit(Vector2 position, int health) : base(position, health)
         {
-            Shape = new Circle(position, 6);
+            Shape = new CCircle(position, 5);
 
             animationState = AnimationState;
         }
@@ -52,7 +52,14 @@ namespace TowerDefense.Entities.Enemies
         public override void Move(Vector2 goal, float dt)
         {
             Vector2 direction = (goal - Position).Normalized();
-            Velocity = Velocity.MoveTowards(direction * MAX_SPEED, ACCELERATION * dt);
+            if ((goal - Position).Length() < 10)
+            {
+                Velocity = Velocity.MoveTowards(Vector2.Zero, FRICTION * dt);
+            }
+            else
+            {
+                Velocity = Velocity.MoveTowards(direction * MAX_SPEED, ACCELERATION * dt);
+            }
             DecideDirection(goal);
         }
 
