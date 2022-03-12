@@ -15,7 +15,7 @@ namespace TowerDefense.Entities
 {
     public class Player : Entity
     {
-        private const string PLAYERSTATE = "PlayerState";
+        private const string PLAYER_STATE = "PlayerState";
         private enum PlayerState
         {
             Idle,
@@ -43,10 +43,10 @@ namespace TowerDefense.Entities
             content.RootDirectory = "Content/Sprites/Player";
 
             float frameTime = 0.05f;
-            AnimationState = new AnimationState<Enum>(PLAYERSTATE, DIRECTION);
+            AnimationState = new AnimationState<Enum>(PLAYER_STATE, DIRECTION);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
-            AnimationState.SetState(PLAYERSTATE, PlayerState.Idle);
+            AnimationState.SetState(PLAYER_STATE, PlayerState.Idle);
             AnimationState.SetState(DIRECTION, Direction.Right);
         }
 

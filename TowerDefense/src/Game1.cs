@@ -41,9 +41,9 @@ namespace TowerDefense
         private Wall[] walls;
         private Enemy[] enemies;
 
-        private double totalTime = 0.0f;
-        private int count = 0;
-        int c = 0;
+        public const int TILE_SIZE = 32;
+        public Dictionary<string, Texture2D> tileTextures;
+        public string[][] tileMap;
 
         public Game1()
         {
@@ -60,7 +60,7 @@ namespace TowerDefense
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
-                new Bandit(new Vector2(100, 100), 10),
+                // new Bandit(new Vector2(100, 100), 10),
             };
             for (int i = 0; i < 10; i++)
             {
@@ -69,6 +69,21 @@ namespace TowerDefense
             }
             walls = entities.OfType<Wall>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
+            
+            // tile map initialization
+            tileMap = new string[20][];
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                tileMap[i] = new string[20];
+            }
+
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                for (int j = 0; j < tileMap[i].Length; j++)
+                {
+                    tileMap[i][j] = "grass";
+                }
+            }
         }
         
         /// <summary>
@@ -92,7 +107,18 @@ namespace TowerDefense
             }
 
             base.LoadContent();
+            
+            // load tile textures
+            tileTextures = new Dictionary<string, Texture2D>();
 
+            Content.RootDirectory = "Content";
+            string[] tileNames = new string[] { "grass", "dirt" };
+            foreach (string name in tileNames)
+            {
+                tileTextures.Add(name, Content.Load<Texture2D>("Sprites/Tiles/" + name));
+            }
+
+            // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
             // loads all content by invoking the LoadContent method of each class in Entities
@@ -107,6 +133,7 @@ namespace TowerDefense
                 }
             }
 
+            // UI initialization
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
@@ -213,8 +240,19 @@ namespace TowerDefense
             
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // Drawing the player
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
+
+            for (int row = 0; row < tileMap.Length; row++)
+            {
+                for (int col = 0; col < tileMap[row].Length; col++)
+                {
+                    var tile = tileMap[row][col];
+                    if (tile != null)
+                    {
+                        SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
+                    }
+                }
+            }
 
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)

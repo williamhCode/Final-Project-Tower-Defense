@@ -15,7 +15,7 @@ namespace TowerDefense.Entities.Enemies
 {
     public class Bandit : Enemy
     {
-        private const string BANDITSTATE = "PlayerState";
+        private const string BANDIT_STATE = "PlayerState";
         private enum BanditState
         {
             Idle,
@@ -35,10 +35,10 @@ namespace TowerDefense.Entities.Enemies
             content.RootDirectory = "Content/Sprites/Bandit";
 
             float frameTime = 0.05f;
-            AnimationState = new AnimationState<Enum>(BANDITSTATE, DIRECTION);
+            AnimationState = new AnimationState<Enum>(BANDIT_STATE, DIRECTION);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("bandit"), 32, 32, frameTime), BanditState.Idle, Direction.Right);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("bandit"), 32, 32, frameTime, flipped: true), BanditState.Idle, Direction.Left);
-            AnimationState.SetState(BANDITSTATE, BanditState.Idle);
+            AnimationState.SetState(BANDIT_STATE, BanditState.Idle);
             AnimationState.SetState(DIRECTION, Direction.Right);
         }
 

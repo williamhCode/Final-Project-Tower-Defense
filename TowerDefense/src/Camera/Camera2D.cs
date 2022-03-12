@@ -1,7 +1,8 @@
 using Microsoft.Xna.Framework;
 
 using System;
-using System.Diagnostics;
+
+using MonoGame.Extended;
 
 namespace TowerDefense.Camera
 {
@@ -27,6 +28,11 @@ namespace TowerDefense.Camera
             Height = height;
             Pan = Vector2.Zero;
             Zoom = 2;
+        }
+        
+        public RectangleF GetViewport()
+        {
+            return new RectangleF(Pan.X, Pan.Y, Width / Zoom, Height / Zoom);
         }
 
         public Matrix GetTransform()
