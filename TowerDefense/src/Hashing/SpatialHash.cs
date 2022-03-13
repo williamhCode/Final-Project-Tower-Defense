@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using TowerDefense.Entities;
 using Microsoft.Xna.Framework;
 
+using TowerDefense.Collision;
+
 namespace TowerDefense.Hashing
 {
     public class SpatialHash
@@ -29,13 +31,6 @@ namespace TowerDefense.Hashing
             hashTable[key].Add(entity);    
         }
 
-        public void RemoveEntity(Entity entity)
-        {
-            var key = PositionToKey(entity.Position);
-            if (hashTable.ContainsKey(key))
-                hashTable[key].Remove(entity);
-        }
-
         public List<Entity> GetEntities(Vector2 position)
         {
             var key = PositionToKey(position);
@@ -44,13 +39,15 @@ namespace TowerDefense.Hashing
             return new List<Entity>();
         }
 
-        public List<Entity> QueryEntities(Vector2 position, float radius)
+        // public List<Entity> QueryEntitiesCollision(Vector2 position, CShape);
+
+        public List<Entity> QueryEntitiesRange(Vector2 position, float radius)
         {
             var entities = new List<Entity>();
-            var minX = Math.Floor(position.X / CellSize) - 1;
-            var maxX = Math.Floor(position.X / CellSize) + 1;
-            var minY = Math.Floor(position.Y / CellSize) - 1;
-            var maxY = Math.Floor(position.Y / CellSize) + 1;
+            var minX = Math.Floor(position.X / CellSize) - Math.Floor(radius / CellSize);
+            var maxX = Math.Floor(position.X / CellSize) + Math.Floor(radius / CellSize);
+            var minY = Math.Floor(position.Y / CellSize) - Math.Floor(radius / CellSize);
+            var maxY = Math.Floor(position.Y / CellSize) + Math.Floor(radius / CellSize);
 
             for (var x = minX; x <= maxX; x++)
             {
