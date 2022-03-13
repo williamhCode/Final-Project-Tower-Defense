@@ -214,10 +214,10 @@ namespace TowerDefense
 
                 foreach (var wall in temp_walls)
                 {
-                    if (IsColliding(wall.Shape, e.Shape, out Vector2 mtv))
+                    if (IsColliding(wall.CShape, e.CShape, out Vector2 mtv))
                     {
                         e.Position += mtv;
-                        e.Shape.Update();
+                        e.CShape.Update();
                     }
                 }
             }

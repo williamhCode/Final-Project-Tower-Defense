@@ -54,7 +54,7 @@ namespace TowerDefense.Entities
         {
             Position = position;
             Velocity = new Vector2(0, 0);
-            Shape = new CCircle(position, 5);
+            CShape = new CCircle(position, 5);
 
             animationState = AnimationState;
         }
@@ -88,7 +88,7 @@ namespace TowerDefense.Entities
         public override void Update(float dt)
         {
             Position += Velocity * dt;
-            Shape.Update();
+            CShape.Update();
             animationState.Update(dt);
         }
 

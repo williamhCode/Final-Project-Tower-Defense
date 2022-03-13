@@ -14,7 +14,7 @@ namespace TowerDefense.Sprite
         private int rows;
         private int columns;
 
-        private int currentFrame;
+        public int CurrentFrame { get; set; }
         private int totalFrames;
         private float time;
 
@@ -34,32 +34,32 @@ namespace TowerDefense.Sprite
             rows = Texture.Height / height;
             columns = Texture.Width / width;
 
-            currentFrame = 0;
+            CurrentFrame = 0;
             totalFrames = rows * columns;
             time = 0;
         }
 
-        public void Reset()
+        public void Reset(int offset=0)
         {
-            time = 0;
-            currentFrame = 0;
+            CurrentFrame = offset;
+            time = CurrentFrame * FrameTime;
         }
 
         public void Update(float dt)
         {
             time += dt;
-            currentFrame = (int)(time / FrameTime);
-            if (currentFrame == totalFrames)
+            CurrentFrame = (int)(time / FrameTime);
+            if (CurrentFrame == totalFrames)
             {
                 time = 0;
-                currentFrame = 0;
+                CurrentFrame = 0;
             }
         }
 
         public void Draw(SpriteBatch spriteBatch, Vector2 position)
         {
-            int row = currentFrame / columns;
-            int column = currentFrame % columns;
+            int row = CurrentFrame / columns;
+            int column = CurrentFrame % columns;
             Rectangle sourceRectangle = new Rectangle(Width * column, Height * row, Width, Height);
 
             var flip = Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;

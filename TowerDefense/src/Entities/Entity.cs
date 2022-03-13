@@ -2,8 +2,6 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 
-using MonoGame.Extended;
-
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 
@@ -21,12 +19,12 @@ namespace TowerDefense.Entities
             set
             {
                 _position = value;
-                if (Shape != null)
-                    Shape.Position = value;
+                if (CShape != null)
+                    CShape.Position = value;
             }
         }
         public Vector2 Velocity { get; set; }
-        public Collision.CShape Shape { get; set; }
+        public Collision.CShape CShape { get; set; }
 
         public abstract void Update(float dt);
 
@@ -34,7 +32,7 @@ namespace TowerDefense.Entities
         
         public void DrawDebug(SpriteBatch spriteBatch)
         {
-            Shape.Draw(spriteBatch, Color.Black, 1);
+            CShape.Draw(spriteBatch, Color.Black, 1);
         }
     }
 }

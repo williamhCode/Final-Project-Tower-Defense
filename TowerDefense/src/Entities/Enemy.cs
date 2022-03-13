@@ -48,7 +48,7 @@ namespace TowerDefense.Entities
         public override void Update(float dt)
         {
             Position += Velocity * dt;
-            Shape.Update();
+            CShape.Update();
             animationState.Update(dt);
         }
         

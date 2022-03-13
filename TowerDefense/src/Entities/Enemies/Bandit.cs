@@ -44,7 +44,7 @@ namespace TowerDefense.Entities.Enemies
 
         public Bandit(Vector2 position, int health) : base(position, health)
         {
-            Shape = new CCircle(position, 5);
+            CShape = new CCircle(position, 5);
 
             animationState = AnimationState;
         }
