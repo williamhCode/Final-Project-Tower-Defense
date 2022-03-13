@@ -2,12 +2,15 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
+using Coroutine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Audio;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
@@ -15,12 +18,6 @@ using MLEM.Startup;
 using MLEM.Font;
 using MonoGame.Framework.Utilities;
 using MonoGame.Extended;
-
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-
 using TowerDefense.Camera;
 using TowerDefense.Entities;
 using TowerDefense.Entities.Buildings;
@@ -38,7 +35,7 @@ namespace TowerDefense
         private Panel root;
         private Wall[] walls;
         private List<Entity> entities;
-        
+
 
         public Game1()
         {
@@ -103,6 +100,7 @@ namespace TowerDefense
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
+                //TextScale = 0.1f,
             };
             this.UiSystem.Style = style;
             this.UiSystem.AutoScaleReferenceSize = new Point(1280,720);
@@ -115,15 +113,17 @@ namespace TowerDefense
             this.UiSystem.Add("TestUi", this.root);
             float timesPressed = 0f;
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
-            var bar1 = box.AddChild(new ProgressBar(Anchor.Center, new Vector2(100,10), MLEM.Misc.Direction2.Right, 100f, timesPressed));
-            box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
+            var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
+            CoroutineHandler.Start(WobbleProgressBar(bar1));
+            var button1 = box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
             {
-                OnPressed = close => 
+                OnPressed = element => 
                 {
-                    this.UiSystem.Remove("TestUi");
-                    this.UiSystem.Remove("InfoBox");
-                },  
-                OnPressed = increase => timesPressed += 1f,
+                    //this.UiSystem.Remove("TestUi");
+                    //this.UiSystem.Remove("InfoBox");
+                    timesPressed += 1f;
+                    CoroutineHandler.Start(WobbleButton(element));
+                }, 
                 PositionOffset = new Vector2(0, 1)
             });
             this.UiSystem.Add("InfoBox", box);
@@ -208,5 +208,37 @@ namespace TowerDefense
             base.UnloadContent();
         }
 
+        private static IEnumerator<Wait> WobbleButton(Element button)
+        {
+            var counter = 0f;
+            while(counter < 4 * Math.PI && button.Root != null)
+            {
+                button.Transform = Matrix.CreateTranslation((float)Math.Sin(counter / 2) * 2 * button.Scale, 0, 0);
+                counter += 0.1f;
+                yield return new Wait(0.01f);
+            }
+            button.Transform = Matrix.Identity;
+        }
+
+        private static IEnumerator<Wait> WobbleProgressBar(ProgressBar bar)
+        {
+            var reducing = false;
+            while(bar.Root != null)
+            {
+                if(reducing)
+                {
+                    bar.CurrentValue -= 0.1f;
+                    if(bar.CurrentValue <= 0)
+                        reducing = false;
+                }
+                else
+                {
+                    bar.CurrentValue += 0.1f;
+                    if(bar.CurrentValue >= bar.MaxValue)
+                        reducing = true;
+                }
+                yield return new Wait(0.01f);
+            }
+        }
     }
 }
