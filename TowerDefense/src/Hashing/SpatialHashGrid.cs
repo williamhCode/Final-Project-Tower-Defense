@@ -31,12 +31,18 @@ namespace TowerDefense.Hashing
             HashTable[key].Add(entity); 
         }
 
+        /// <summary>
+        /// Adds an entity to the grid using its position.
+        /// </summary>
         public void AddEntityPosition(Entity entity)
         {
             var key = PositionToKey(entity.Position);
             SafeAdd(entity, key);
         }
 
+        /// <summary>
+        /// Adds an entity to the grid using its collision shape.
+        /// </summary>
         public void AddEntityCShape(Entity entity)
         {
             CShape cShape = entity.CShape;
@@ -57,6 +63,9 @@ namespace TowerDefense.Hashing
             // entity.CShape.Keys = keys;
         }
 
+        /// <summary>
+        /// Queries entities in the grid using a position.
+        /// </summary>
         public List<Entity> QueryEntitiesPosition(Vector2 position)
         {
             var key = PositionToKey(position);
@@ -66,10 +75,13 @@ namespace TowerDefense.Hashing
                 return new List<Entity>();
         }
 
-        public List<Entity> QueryEntitiesRange(Vector2 position, float radius)
+        /// <summary>
+        /// Queries entities in the grid using a position and range.
+        /// </summary>
+        public List<Entity> QueryEntitiesRange(Vector2 position, float range)
         {
             var entities = new List<Entity>();
-            var (minX, maxX, minY, maxY) = GetRanges(position, radius, radius);
+            var (minX, maxX, minY, maxY) = GetRanges(position, range, range);
 
             for (int x = minX; x <= maxX; x++)
             {
@@ -83,7 +95,10 @@ namespace TowerDefense.Hashing
 
             return entities;
         }
-        
+
+        /// <summary>
+        /// Queries entities in the grid using a collision shape.
+        /// </summary>
         public List<Entity> QueryEntitiesCShape(CShape cShape)
         {
             var entities = new List<Entity>();
@@ -167,11 +182,17 @@ namespace TowerDefense.Hashing
             );
         }
 
+        /// <summary>
+        /// Clears the grid.
+        /// </summary>
         public void Clear()
         {
             HashTable.Clear();
         }
 
+        /// <summary>
+        /// Combines two grids.
+        /// </summary>
         public void Append(SpatialHashGrid other)
         {
             foreach (var key in other.HashTable.Keys)
