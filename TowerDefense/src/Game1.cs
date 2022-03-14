@@ -22,6 +22,7 @@ using TowerDefense.Camera;
 using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
+using TowerDefense.Hashing;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
@@ -41,9 +42,11 @@ namespace TowerDefense
         private Wall[] walls;
         private Enemy[] enemies;
 
-        public const int TILE_SIZE = 32;
-        public Dictionary<string, Texture2D> tileTextures;
-        public string[][] tileMap;
+        private SpatialHashGrid SHG;
+
+        private const int TILE_SIZE = 32;
+        private Dictionary<string, Texture2D> tileTextures;
+        private string[][] tileMap;
 
         public Game1()
         {
