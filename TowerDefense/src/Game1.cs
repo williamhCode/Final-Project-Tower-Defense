@@ -42,7 +42,7 @@ namespace TowerDefense
         private Wall[] walls;
         private Enemy[] enemies;
 
-        private SpatialHashGrid SHG;
+        private SpatialHashGrid SHGWalls;
 
         private const int TILE_SIZE = 32;
         private Dictionary<string, Texture2D> tileTextures;
@@ -63,9 +63,13 @@ namespace TowerDefense
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
-                // new Bandit(new Vector2(100, 100), 10),
             };
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 100; i++)
+            {
+                entities.Add(new Bandit(new Vector2(i * 16 + 200, 200), 10));
+                entities.Add(new Bandit(new Vector2(200, (i + 1) * 16 + 200), 10));
+            }
+            for (int i = 0; i < 100; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
                 entities.Add(new Wall(new Vector2(100, (i + 1) * 16 + 100)));
@@ -86,6 +90,12 @@ namespace TowerDefense
                 {
                     tileMap[i][j] = "grass";
                 }
+            }
+
+            SHGWalls = new SpatialHashGrid(32);
+            foreach (var wall in walls)
+            {
+                SHGWalls.AddEntityCShape(wall);
             }
         }
 
@@ -211,11 +221,18 @@ namespace TowerDefense
             }
             ).ToArray();
 
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
             foreach (var e in entitiesToCheck)
             {
-                var temp_walls = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
+                var wallsToCheck = SHGWalls.QueryEntitiesCShape(e.CShape);
+                wallsToCheck = wallsToCheck.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
 
-                foreach (var wall in temp_walls)
+                // var wallsToCheck = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
+
+                foreach (var wall in wallsToCheck)
                 {
                     if (IsColliding(wall.CShape, e.CShape, out Vector2 mtv))
                     {
@@ -224,6 +241,9 @@ namespace TowerDefense
                     }
                 }
             }
+
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed.TotalSeconds);
 
             // camera
             if (state.IsKeyDown(Keys.OemPlus))
@@ -234,7 +254,7 @@ namespace TowerDefense
             {
                 camera.Zoom /= 1.1f;
             }
-            camera.LookAt(player.Position);
+            // camera.LookAt(player.Position);
         }
 
         protected override void DoDraw(GameTime gameTime)

@@ -11,7 +11,7 @@ namespace TowerDefense.Collision
 {
     public abstract class CShape
     {
-        public List<string> Keys { get; set; }
+        // public List<string> Keys { get; set; }
 
         public enum ShapeType
         {

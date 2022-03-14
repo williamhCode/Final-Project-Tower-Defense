@@ -24,55 +24,37 @@ namespace TowerDefense.Hashing
             return (int)MathF.Floor(position.X / CellSize) + "," + (int)MathF.Floor(position.Y / CellSize);
         }
 
-        public void SafeAdd(Entity entity, string key)
+        private void SafeAdd(Entity entity, string key)
         {
             if (!HashTable.ContainsKey(key))
                 HashTable.Add(key, new List<Entity>());
             HashTable[key].Add(entity); 
         }
 
-        public void AddEntity(Entity entity)
+        public void AddEntityPosition(Entity entity)
         {
             var key = PositionToKey(entity.Position);
             SafeAdd(entity, key);
         }
 
-        public void AddEntityCollision(Entity entity)
+        public void AddEntityCShape(Entity entity)
         {
             CShape cShape = entity.CShape;
 
-            int minX, maxX, minY, maxY;
+            var (minX, maxX, minY, maxY) = GetCShapeRanges(cShape);
 
-            if (cShape is CCircle)
-            {
-                CCircle circle = (CCircle)cShape;
-                float width, height;
-                width = height = circle.Radius * 2;
-                (minX, maxX, minY, maxY) = GetRanges(circle.Position, width, height);
-                
-            }
-            else if (cShape is CRectangle)
-            {
-                CRectangle rectangle = (CRectangle)cShape;
-                (minX, maxX, minY, maxY) = GetCRectangleRanges(rectangle);
-            }
-            else
-            {
-                throw new Exception("Bad CShape type");
-            }
-
-            var keys = new List<string>();
+            // var keys = new List<string>();
             for (int x = minX; x <= maxX; x++)
             {
                 for (int y = minY; y <= maxY; y++)
                 {
                     string key = x + "," + y;
                     SafeAdd(entity, key);
-                    keys.Add(key);
+                    // keys.Add(key);
                 }
             }
 
-            entity.CShape.Keys = keys;
+            // entity.CShape.Keys = keys;
         }
 
         public List<Entity> QueryEntitiesPosition(Vector2 position)
@@ -87,7 +69,7 @@ namespace TowerDefense.Hashing
         public List<Entity> QueryEntitiesRange(Vector2 position, float radius)
         {
             var entities = new List<Entity>();
-            (int minX, int maxX, int minY, int maxY) = GetRanges(position, radius, radius);
+            var (minX, maxX, minY, maxY) = GetRanges(position, radius, radius);
 
             for (int x = minX; x <= maxX; x++)
             {
@@ -95,30 +77,49 @@ namespace TowerDefense.Hashing
                 {
                     string key = x + "," + y;
                     if (HashTable.ContainsKey(key))
-                        entities.AddRange(HashTable[key]);
+                        entities.AddRange(HashTable[key].Except(entities));
                 }
             }
 
             return entities;
         }
         
-        /// <summary>
-        /// Note: only use if the CShape.Keys is already set.
-        /// </summary>
         public List<Entity> QueryEntitiesCShape(CShape cShape)
         {
             var entities = new List<Entity>();
-            foreach (var key in cShape.Keys)
+            var (minX, maxX, minY, maxY) = GetCShapeRanges(cShape);
+
+            for (int x = minX; x <= maxX; x++)
             {
-                entities.AddRange(HashTable[key]);
+                for (int y = minY; y <= maxY; y++)
+                {
+                    string key = x + "," + y;
+                    if (HashTable.ContainsKey(key))
+                        entities.AddRange(HashTable[key].Except(entities));
+                }
             }
             return entities;
         }
 
         /// <summary>
-        /// Note: width and height are halved
+        /// Note: only use if the CShape.Keys is already set.
         /// </summary>
-        public (int, int, int, int) GetRanges(Vector2 position, float width, float height)
+        // public List<Entity> QueryEntitiesCollision(Entity entity)
+        // {
+        //     var entities = new List<Entity>();
+        //     foreach (var key in entity.CShape.Keys)
+        //     {
+        //         entities.AddRange(HashTable[key].Except(entities));
+        //     }
+        //     entities.Remove(entity);
+        //     Console.WriteLine(string.Join(", ", entities));
+        //     return entities;
+        // }
+
+        /// <summary>
+        /// Note: width and height are halved.
+        /// </summary>
+        private (int, int, int, int) GetRanges(Vector2 position, float width, float height)
         {
             int minX = (int)MathF.Floor((position.X - width) / CellSize);
             int maxX = (int)MathF.Floor((position.X + width) / CellSize);
@@ -127,10 +128,37 @@ namespace TowerDefense.Hashing
             return (minX, maxX, minY, maxY);
         }
 
-        public (int, int, int, int) GetCRectangleRanges(CRectangle rectangle)
+        private (int, int, int, int) GetCShapeRanges(CShape cShape)
         {
-            var topLeft = rectangle.Vertices[0];
-            var bottomRight = rectangle.Vertices[2];
+            int minX, maxX, minY, maxY;
+
+            if (cShape is CCircle)
+            {
+                CCircle cCircle = (CCircle)cShape;
+                (minX, maxX, minY, maxY) = GetCCircleRanges(cCircle);
+            }
+            else if (cShape is CRectangle)
+            {
+                CRectangle cRectangle = (CRectangle)cShape;
+                (minX, maxX, minY, maxY) = GetCRectangleRanges(cRectangle);
+            }
+            else
+            {
+                throw new Exception("Bad CShape type");
+            }
+
+            return (minX, maxX, minY, maxY);
+        }
+
+        private (int, int, int, int) GetCCircleRanges(CCircle cCircle)
+        {
+            return GetRanges(cCircle.Position, cCircle.Radius, cCircle.Radius);
+        }
+
+        private (int, int, int, int) GetCRectangleRanges(CRectangle cRectangle)
+        {
+            var topLeft = cRectangle.Vertices[0];
+            var bottomRight = cRectangle.Vertices[2];
             return (
                 (int)MathF.Floor(topLeft.X / CellSize),
                 (int)MathF.Floor(bottomRight.X / CellSize),
