@@ -19,7 +19,7 @@ namespace TowerDefense.Hashing
             HashTable = new Dictionary<string, List<Entity>>();
         }
 
-        public string PositionToKey(Vector2 position)
+        private string PositionToKey(Vector2 position)
         {
             return (int)MathF.Floor(position.X / CellSize) + "," + (int)MathF.Floor(position.Y / CellSize);
         }
