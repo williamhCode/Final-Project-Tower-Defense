@@ -66,14 +66,15 @@ namespace TowerDefense
             };
             for (int i = 0; i < 100; i++)
             {
-                entities.Add(new Bandit(new Vector2(i * 16 + 200, 200), 10));
-                entities.Add(new Bandit(new Vector2(200, (i + 1) * 16 + 200), 10));
-            }
-            for (int i = 0; i < 100; i++)
-            {
                 entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
                 entities.Add(new Wall(new Vector2(100, (i + 1) * 16 + 100)));
             }
+            for (int i = 0; i < 100; i++)
+            {
+                entities.Add(new Bandit(new Vector2(i * 16 + 200, 200), 10));
+                entities.Add(new Bandit(new Vector2(200, (i + 1) * 16 + 200), 10));
+            }
+            entities.RemoveAt(10);
             walls = entities.OfType<Wall>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
 
