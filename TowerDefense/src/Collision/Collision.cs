@@ -46,14 +46,16 @@ namespace TowerDefense.Collision
             if (overlap <= 0)
                 return false;
 
-            Vector2 normal;
-            if (dist == 0)
-                normal = new Vector2(1, 0);
-            else
-                normal = diff / dist;
-
             if (computeMtv)
-                mtv = normal * overlap;
+            {
+                Vector2 normal;
+                if (dist == 0)
+                    normal = new Vector2(1, 0);
+                else
+                    normal = diff / dist;
+
+                    mtv = normal * overlap;
+            }
 
             return true;
         }
@@ -191,7 +193,7 @@ namespace TowerDefense.Collision
             return min_proj;
         }
 
-        private static (float min_proj, float max_proj) ProjVertsOnAxis(Vector2[] vertices, Vector2 axis)
+        private static (float, float) ProjVertsOnAxis(Vector2[] vertices, Vector2 axis)
         {
             float min_proj = float.PositiveInfinity;
             float max_proj = float.NegativeInfinity;

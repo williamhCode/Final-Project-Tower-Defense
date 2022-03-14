@@ -31,6 +31,36 @@ namespace TowerDefense.Hashing
             HashTable[key].Add(entity); 
         }
 
+        public void RemoveEntityPosition(Entity entity)
+        {
+            string key = PositionToKey(entity.Position);
+            if (HashTable.ContainsKey(key))
+            {
+                HashTable[key].Remove(entity);
+                if (HashTable[key].Count == 0)
+                    HashTable.Remove(key);
+            }
+        }
+
+        public void RemoveEntityCShape(Entity entity)
+        {
+            var (minX, maxX, minY, maxY) = GetCShapeRanges(entity.CShape);
+
+            for (int x = minX; x <= maxX; x++)
+            {
+                for (int y = minY; y <= maxY; y++)
+                {
+                    string key = x + "," + y;
+                    if (HashTable.ContainsKey(key))
+                    {
+                        HashTable[key].Remove(entity);
+                        if (HashTable[key].Count == 0)
+                            HashTable.Remove(key);
+                    }
+                }
+            }
+        }
+
         /// <summary>
         /// Adds an entity to the grid using its position.
         /// </summary>

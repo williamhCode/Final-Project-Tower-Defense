@@ -66,8 +66,8 @@ namespace TowerDefense
             };
             for (int i = 0; i < 100; i++)
             {
-                entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
-                entities.Add(new Wall(new Vector2(100, (i + 1) * 16 + 100)));
+                entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
+                entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
             }
             for (int i = 0; i < 100; i++)
             {
@@ -96,7 +96,7 @@ namespace TowerDefense
             SHGWalls = new SpatialHashGrid(32);
             foreach (var wall in walls)
             {
-                SHGWalls.AddEntityCShape(wall);
+                SHGWalls.AddEntityPosition(wall);
             }
         }
 
@@ -255,7 +255,7 @@ namespace TowerDefense
             {
                 camera.Zoom /= 1.1f;
             }
-            // camera.LookAt(player.Position);
+            camera.LookAt(player.Position);
         }
 
         protected override void DoDraw(GameTime gameTime)

@@ -38,15 +38,15 @@ namespace TowerDefense.Entities.Enemies
             AnimationState = new AnimationState<Enum>(BANDIT_STATE, DIRECTION);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("bandit"), 32, 32, frameTime), BanditState.Idle, Direction.Right);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("bandit"), 32, 32, frameTime, flipped: true), BanditState.Idle, Direction.Left);
-            AnimationState.SetState(BANDIT_STATE, BanditState.Idle);
-            AnimationState.SetState(DIRECTION, Direction.Right);
         }
 
         public Bandit(Vector2 position, int health) : base(position, health)
         {
             CShape = new CCircle(position, 5);
 
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
+            animationState.SetState(BANDIT_STATE, BanditState.Idle);
+            animationState.SetState(DIRECTION, Direction.Right);
         }
 
         public override void Move(Vector2 goal, float dt)
