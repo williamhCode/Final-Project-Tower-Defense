@@ -46,7 +46,7 @@ namespace TowerDefense.Entities
             }
         }
 
-        public abstract void ApplyFlocking(SpatialHashGrid SHG, float dt);
+        public abstract void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt);
 
         public override void Update(float dt)
         {

@@ -65,14 +65,21 @@ namespace TowerDefense
             entities = new List<Entity> {
                 player,
             };
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < 30; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
                 entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
             }
-            for (int i = 0; i < 15; i++)
+            for (int i = 0; i < 3; i++)
             {
-                for (int j = 0; j < 15; j++)
+                for (int j = 0; j < 3; j++)
+                {
+                    entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 10));
+                }
+            }
+            for (int i = 0; i < 3; i++)
+            {
+                for (int j = 0; j < 3; j++)
                 {
                     entities.Add(new Bandit(new Vector2(i * 32 + 100, j * 32 + 100), 10));
                 }
@@ -102,7 +109,7 @@ namespace TowerDefense
                 SHGWalls.AddEntityPosition(wall);
             }
 
-            SHGFlocking = new SpatialHashGrid(120);
+            SHGFlocking = new SpatialHashGrid(90);
         }
 
         /// <summary>
@@ -215,7 +222,7 @@ namespace TowerDefense
             // enemy movement
             foreach (var e in enemies)
             {
-                e.Move(player.Position, dt);
+                // e.Move(player.Position, dt);
             }
             
             Stopwatch sw = new Stopwatch();
@@ -224,7 +231,7 @@ namespace TowerDefense
             // enemy flocking
             foreach (var e in enemies)
             {
-                e.ApplyFlocking(SHGFlocking, dt);
+                e.ApplyFlocking(SHGFlocking, player.Position, dt);
             }
 
             sw.Stop();

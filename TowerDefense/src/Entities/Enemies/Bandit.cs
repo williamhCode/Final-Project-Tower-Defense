@@ -29,8 +29,6 @@ namespace TowerDefense.Entities.Enemies
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
-        private const float FLOCKING_RADIUS = 60;
-        private const float SEPARATION_FACTOR = 10000;
 
         public static AnimationState<Enum> AnimationState;
 
@@ -68,33 +66,65 @@ namespace TowerDefense.Entities.Enemies
             DecideDirection(goal);
         }
 
-        public override void ApplyFlocking(SpatialHashGrid SHG, float dt)
-        {
-            var entitiesToCheck = SHG.QueryEntitiesRange(Position, FLOCKING_RADIUS);
-            entitiesToCheck.Remove(this);
-            var entitiesInRange = entitiesToCheck.Where(e => (e.Position - Position).Length() < FLOCKING_RADIUS).ToArray();
+        private const float COHESION_DIST = 60;
+        private const float COHESION_FACTOR = 10f;
+        private const float COHESION_SENSTIVITY = 0.01f;
 
-            var flockingVector = Vector2.Zero;
-            flockingVector += ComputeSeperation(entitiesInRange) * SEPARATION_FACTOR;
-            Velocity += flockingVector * dt;
+        private const float ALIGNMENT_DIST = 60;
+        private const float ALIGNMENT_FACTOR = 0.1f;
+        private const float ALIGNMENT_SENSTIVITY = 0.3f;
+
+        private const float SEPARATION_DIST = 60;
+        private const float SEPARATION_FACTOR = 3f;
+        private const float SEPARATION_SENSTIVITY = 100;
+
+
+        public override void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt)
+        {
+            var entitiesToCheck = SHG.QueryEntitiesRange(Position, SEPARATION_DIST);
+            entitiesToCheck.Remove(this);
+
+            var cohesion = Vector2.Zero;
+            var alignment = Vector2.Zero;
+            var separation = Vector2.Zero;
+
+            foreach (var e in entitiesToCheck)
+            {
+                var sqdist = Vector2.DistanceSquared(Position, e.Position);
+                var dist = MathF.Sqrt(sqdist);
+
+                if (sqdist < MathF.Pow(COHESION_DIST, 2))
+                {
+                    cohesion += (e.Position - Position) / 
+                    (dist / COHESION_SENSTIVITY + sqdist);
+                }
+                if (sqdist < MathF.Pow(ALIGNMENT_DIST, 2))
+                {
+                    alignment += (e.Velocity - Velocity).Normalized() /
+                    (1 / ALIGNMENT_SENSTIVITY + dist);
+                }
+                if (sqdist < MathF.Pow(SEPARATION_DIST, 2))
+                {
+                    separation += (Position - e.Position) / 
+                    (dist / SEPARATION_SENSTIVITY + sqdist);
+                }
+            }
+            
+            Vector2 direction = (goal - Position).Normalized();
+            DecideDirection(goal);
+
+            var force = 
+            cohesion * COHESION_FACTOR +
+            alignment * ALIGNMENT_FACTOR +
+            separation * SEPARATION_FACTOR +
+            direction * 0.1f;
+
+            Velocity += force * 1000 * dt;
+
             if (Velocity.Length() > MAX_SPEED)
             {
                 Velocity = Velocity.Normalized() * MAX_SPEED;
             }
-        }
-
-        private Vector2 ComputeSeperation(Entity[] inputList)
-        {
-            var outputVec = Vector2.Zero;
-            
-            foreach (var e in inputList)
-            {
-                var diff = Position - e.Position;
-                var dist = diff.Length();
-                outputVec += diff.Normalized() / dist;
-            }
-                
-            return outputVec;
         }
 
         public override void Update(float dt)
