@@ -43,6 +43,7 @@ namespace TowerDefense
         private Enemy[] enemies;
 
         private SpatialHashGrid SHGWalls;
+        private SpatialHashGrid SHGFlocking;
 
         private const int TILE_SIZE = 32;
         private Dictionary<string, Texture2D> tileTextures;
@@ -64,15 +65,17 @@ namespace TowerDefense
             entities = new List<Entity> {
                 player,
             };
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 10; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
                 entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
             }
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 15; i++)
             {
-                entities.Add(new Bandit(new Vector2(i * 16 + 200, 200), 10));
-                entities.Add(new Bandit(new Vector2(200, (i + 1) * 16 + 200), 10));
+                for (int j = 0; j < 15; j++)
+                {
+                    entities.Add(new Bandit(new Vector2(i * 32 + 100, j * 32 + 100), 10));
+                }
             }
             entities.RemoveAt(10);
             walls = entities.OfType<Wall>().ToArray();
@@ -98,6 +101,8 @@ namespace TowerDefense
             {
                 SHGWalls.AddEntityPosition(wall);
             }
+
+            SHGFlocking = new SpatialHashGrid(120);
         }
 
         /// <summary>
@@ -182,6 +187,12 @@ namespace TowerDefense
         {
             base.DoUpdate(gameTime);
 
+            SHGFlocking.Clear();
+            foreach (var enemy in enemies)
+            {
+                SHGFlocking.AddEntityPosition(enemy);
+            }
+
             float dt = gameTime.GetElapsedSeconds();
 
             // game inputs
@@ -200,11 +211,23 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
-            // enemy movement
+
+            // enemy movement + flocking
             foreach (var e in enemies)
             {
                 e.Move(player.Position, dt);
             }
+            
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            foreach (var e in enemies)
+            {
+                e.ApplyFlocking(SHGFlocking, dt);
+            }
+
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed.TotalSeconds);
 
             // updates
             foreach (var e in entities)
@@ -222,10 +245,6 @@ namespace TowerDefense
             }
             ).ToArray();
 
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
             foreach (var e in entitiesToCheck)
             {
                 var wallsToCheck = SHGWalls.QueryEntitiesCShape(e.CShape);
@@ -242,9 +261,6 @@ namespace TowerDefense
                     }
                 }
             }
-
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed.TotalSeconds);
 
             // camera
             if (state.IsKeyDown(Keys.OemPlus))

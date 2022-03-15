@@ -1,14 +1,15 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 
-
-using MonoGame.Extended;
-
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
+using TowerDefense.Hashing;
 
 
 namespace TowerDefense.Entities.Enemies
@@ -27,6 +28,9 @@ namespace TowerDefense.Entities.Enemies
         private const float MAX_SPEED = 100;
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
+
+        private const float FLOCKING_RADIUS = 60;
+        private const float SEPARATION_FACTOR = 10000;
 
         public static AnimationState<Enum> AnimationState;
 
@@ -61,6 +65,31 @@ namespace TowerDefense.Entities.Enemies
                 Velocity = Velocity.MoveTowards(direction * MAX_SPEED, ACCELERATION * dt);
             }
             DecideDirection(goal);
+        }
+
+        public override void ApplyFlocking(SpatialHashGrid SHG, float dt)
+        {
+            var entitiesToCheck = SHG.QueryEntitiesRange(Position, FLOCKING_RADIUS);
+            entitiesToCheck.Remove(this);
+            var entitiesInRange = entitiesToCheck.Where(e => (e.Position - Position).Length() < FLOCKING_RADIUS).ToArray();
+
+            var flockingVector = Vector2.Zero;
+            flockingVector += ComputeSeperation(entitiesInRange) * SEPARATION_FACTOR;
+            Velocity += flockingVector * dt;
+        }
+
+        private Vector2 ComputeSeperation(Entity[] inputList)
+        {
+            var outputVec = Vector2.Zero;
+            
+            foreach (var e in inputList)
+            {
+                var diff = Position - e.Position;
+                var dist = diff.Length();
+                outputVec += diff.Normalized() / dist;
+            }
+                
+            return outputVec;
         }
 
         public override void Update(float dt)
