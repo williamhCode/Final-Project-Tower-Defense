@@ -46,7 +46,8 @@ namespace TowerDefense.Entities.Enemies
 
         public Bandit(Vector2 position, int health) : base(position, health)
         {
-            CShape = new CCircle(position, 5);
+            // CShape = new CCircle(position, 5);
+            CShape = new CRectangle(position, 18, 7);
 
             animationState = AnimationState.Copy();
             animationState.SetState(BANDIT_STATE, BanditState.Idle);
@@ -76,6 +77,10 @@ namespace TowerDefense.Entities.Enemies
             var flockingVector = Vector2.Zero;
             flockingVector += ComputeSeperation(entitiesInRange) * SEPARATION_FACTOR;
             Velocity += flockingVector * dt;
+            if (Velocity.Length() > MAX_SPEED)
+            {
+                Velocity = Velocity.Normalized() * MAX_SPEED;
+            }
         }
 
         private Vector2 ComputeSeperation(Entity[] inputList)

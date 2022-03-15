@@ -212,7 +212,7 @@ namespace TowerDefense
             player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
 
-            // enemy movement + flocking
+            // enemy movement
             foreach (var e in enemies)
             {
                 e.Move(player.Position, dt);
@@ -221,6 +221,7 @@ namespace TowerDefense
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
+            // enemy flocking
             foreach (var e in enemies)
             {
                 e.ApplyFlocking(SHGFlocking, dt);
