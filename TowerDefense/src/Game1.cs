@@ -41,10 +41,10 @@ namespace TowerDefense
 
         private Player player;
         private List<Entity> entities;
-        private Wall[] walls;
+        private Building[] buildings;
         private Enemy[] enemies;
 
-        private SpatialHashGrid SHGWalls;
+        private SpatialHashGrid SHGBuildings;
         private SpatialHashGrid SHGFlocking;
 
         private const int TILE_SIZE = 32;
@@ -69,6 +69,7 @@ namespace TowerDefense
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
+                new BasicTower(new Vector2(208, 208))
             };
             for (int i = 0; i < 30; i++)
             {
@@ -83,7 +84,7 @@ namespace TowerDefense
                 }
             }
             entities.RemoveAt(10);
-            walls = entities.OfType<Wall>().ToArray();
+            buildings = entities.OfType<Building>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
 
             // tile map initialization
@@ -101,10 +102,10 @@ namespace TowerDefense
                 }
             }
 
-            SHGWalls = new SpatialHashGrid(32);
-            foreach (var wall in walls)
+            SHGBuildings = new SpatialHashGrid(32);
+            foreach (var building in buildings)
             {
-                SHGWalls.AddEntityPosition(wall);
+                SHGBuildings.AddEntityPosition(building);
             }
 
             SHGFlocking = new SpatialHashGrid(90);
@@ -195,7 +196,7 @@ namespace TowerDefense
         {
             base.DoUpdate(gameTime);
             
-            walls = entities.OfType<Wall>().ToArray();
+            buildings = entities.OfType<Building>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
 
             SHGFlocking.Clear();
@@ -261,14 +262,14 @@ namespace TowerDefense
 
             foreach (var e in entitiesToCheck)
             {
-                var wallsToCheck = SHGWalls.QueryEntitiesCShape(e.CShape);
-                wallsToCheck = wallsToCheck.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
+                var buildings = SHGBuildings.QueryEntitiesCShape(e.CShape);
+                buildings = buildings.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
 
-                // var wallsToCheck = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
+                // var buildings = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
 
-                foreach (var wall in wallsToCheck)
+                foreach (var building in buildings)
                 {
-                    if (IsColliding(wall.CShape, e.CShape, out Vector2 mtv))
+                    if (IsColliding(building.CShape, e.CShape, out Vector2 mtv))
                     {
                         e.Position += mtv;
                         e.CShape.Update();
