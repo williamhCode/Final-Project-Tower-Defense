@@ -56,7 +56,7 @@ namespace TowerDefense.Entities.Buildings
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(24, 32));
+            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(24, 38));
         }
 
         public override void Update(float dt)

@@ -221,7 +221,12 @@ namespace TowerDefense
             if (keyboardState.WasKeyJustUp(Keys.D1))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
-                entities.Add(new Wall(position));
+                var building = new Wall(position);
+                if (!entities.Contains(building))
+                {
+                    entities.Add(building);
+                    SHGBuildings.AddEntityPosition(building);
+                }
             }
             if (keyboardState.WasKeyJustUp(Keys.D2))
             {

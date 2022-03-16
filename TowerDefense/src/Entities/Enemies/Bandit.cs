@@ -25,7 +25,7 @@ namespace TowerDefense.Entities.Enemies
             Dead
         }
 
-        private const float MAX_SPEED = 100;
+        private const float MAX_SPEED = 200;
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
@@ -45,7 +45,7 @@ namespace TowerDefense.Entities.Enemies
         public Bandit(Vector2 position, int health) : base(position, health)
         {
             // CShape = new CCircle(position, 5);
-            CShape = new CRectangle(position, 18, 7);
+            CShape = new CRectangle(position, 16, 6);
 
             animationState = AnimationState.Copy();
             animationState.SetState(BANDIT_STATE, BanditState.Idle);
@@ -117,7 +117,7 @@ namespace TowerDefense.Entities.Enemies
             cohesion * COHESION_FACTOR +
             alignment * ALIGNMENT_FACTOR +
             separation * SEPARATION_FACTOR +
-            direction * 0.15f;
+            direction * 0.2f;
 
             Velocity += force * 1000 * dt;
 

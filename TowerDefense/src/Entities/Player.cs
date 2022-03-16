@@ -54,7 +54,8 @@ namespace TowerDefense.Entities
         {
             Position = position;
             Velocity = new Vector2(0, 0);
-            CShape = new CCircle(position, 5);
+            // CShape = new CCircle(position, 5);
+            CShape = new CRectangle(position, 16, 6);
 
             animationState = AnimationState.Copy();
             animationState.SetState(PLAYER_STATE, PlayerState.Idle);
