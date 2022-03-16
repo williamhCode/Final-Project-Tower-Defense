@@ -32,8 +32,8 @@ namespace TowerDefense.Entities
         }
 
         private const float MAX_SPEED = 200;
-        private const float FRICTION = 1200;
-        private const float ACCELERATION = 1200;
+        private const float FRICTION = 2000;
+        private const float ACCELERATION = 2000;
 
         public static AnimationState<Enum> AnimationState;
         private AnimationState<Enum> animationState;
@@ -42,10 +42,12 @@ namespace TowerDefense.Entities
         {
             content.RootDirectory = "Content/Sprites/Player";
 
-            float frameTime = 0.05f;
+            float frameTime = 0.07f;
             AnimationState = new AnimationState<Enum>(PLAYER_STATE, DIRECTION);
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player_idle"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player_idle"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player_walk"), 32, 32, frameTime, offset: 1), PlayerState.Walking, Direction.Right);
+            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player_walk"), 32, 32, frameTime, offset: 1, flipped: true), PlayerState.Walking, Direction.Left);
         }
 
         public Player(Vector2 position)
@@ -64,10 +66,12 @@ namespace TowerDefense.Entities
             direction = direction.Normalized();
             if (direction == Vector2.Zero)
             {
+                animationState.SetState(PLAYER_STATE, PlayerState.Idle);
                 Velocity = Velocity.MoveTowards(Vector2.Zero, FRICTION * dt);
             }
             else
             {
+                animationState.SetState(PLAYER_STATE, PlayerState.Walking);
                 Velocity = Velocity.MoveTowards(direction * MAX_SPEED, ACCELERATION * dt);
             }
         }
