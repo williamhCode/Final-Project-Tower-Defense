@@ -15,6 +15,7 @@ using MLEM.Startup;
 using MLEM.Font;
 using MonoGame.Framework.Utilities;
 using MonoGame.Extended;
+using MonoGame.Extended.Input;
 
 using System.Reflection;
 
@@ -49,6 +50,9 @@ namespace TowerDefense
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
 
+        private MouseStateExtended mouseState;
+        private KeyboardStateExtended keyboardState;
+
         public Game1()
         {
             Instance = this;
@@ -70,18 +74,11 @@ namespace TowerDefense
                 entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
                 entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
             }
-            for (int i = 0; i < 3; i++)
+            for (int i = 0; i < 10; i++)
             {
-                for (int j = 0; j < 3; j++)
+                for (int j = 0; j < 13; j++)
                 {
                     entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 10));
-                }
-            }
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    entities.Add(new Bandit(new Vector2(i * 32 + 100, j * 32 + 100), 10));
                 }
             }
             entities.RemoveAt(10);
@@ -193,6 +190,9 @@ namespace TowerDefense
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
+            
+            walls = entities.OfType<Wall>().ToArray();
+            enemies = entities.OfType<Enemy>().ToArray();
 
             SHGFlocking.Clear();
             foreach (var enemy in enemies)
@@ -206,24 +206,26 @@ namespace TowerDefense
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            KeyboardState state = Keyboard.GetState();
+            keyboardState = KeyboardExtended.GetState();
+            mouseState = MouseExtended.GetState();
+
+            var mousePosition = mouseState.Position.ToVector2();
+            var worldPosition = camera.ScreenToWorld(mousePosition);
+
+            // place entities
+            if (mouseState.WasButtonJustUp(MouseButton.Left))
+            {
+                entities.Add(new Bandit(worldPosition, 10));
+            }
 
             // player movement
             var direction = new Vector2(
-                Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
-                Convert.ToSingle(state.IsKeyDown(Keys.S)) - Convert.ToSingle(state.IsKeyDown(Keys.W))
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.D)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.A)),
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.S)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.W))
             );
+
             player.Move(direction, dt);
-            var mouseState = Mouse.GetState();
-            var mousePosition = new Vector2(mouseState.X, mouseState.Y);
-            player.DecideDirection(camera.ScreenToWorld(mousePosition));
-
-
-            // enemy movement
-            foreach (var e in enemies)
-            {
-                // e.Move(player.Position, dt);
-            }
+            player.DecideDirection(worldPosition);
             
             Stopwatch sw = new Stopwatch();
             sw.Start();
@@ -271,11 +273,11 @@ namespace TowerDefense
             }
 
             // camera
-            if (state.IsKeyDown(Keys.OemPlus))
+            if (keyboardState.IsKeyDown(Keys.OemPlus))
             {
                 camera.Zoom *= 1.1f;
             }
-            if (state.IsKeyDown(Keys.OemMinus))
+            if (keyboardState.IsKeyDown(Keys.OemMinus))
             {
                 camera.Zoom /= 1.1f;
             }

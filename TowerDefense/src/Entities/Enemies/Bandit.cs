@@ -71,7 +71,7 @@ namespace TowerDefense.Entities.Enemies
         private const float COHESION_SENSTIVITY = 0.01f;
 
         private const float ALIGNMENT_DIST = 60;
-        private const float ALIGNMENT_FACTOR = 0.1f;
+        private const float ALIGNMENT_FACTOR = 0.2f;
         private const float ALIGNMENT_SENSTIVITY = 0.3f;
 
         private const float SEPARATION_DIST = 60;
@@ -117,7 +117,7 @@ namespace TowerDefense.Entities.Enemies
             cohesion * COHESION_FACTOR +
             alignment * ALIGNMENT_FACTOR +
             separation * SEPARATION_FACTOR +
-            direction * 0.1f;
+            direction * 0.15f;
 
             Velocity += force * 1000 * dt;
 
