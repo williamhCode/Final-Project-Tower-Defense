@@ -219,7 +219,12 @@ namespace TowerDefense
             var worldPosition = camera.ScreenToWorld(mousePosition);
 
             // place entities
-            if (mouseState.WasButtonJustUp(MouseButton.Left))
+            if (keyboardState.WasKeyJustUp(Keys.D1))
+            {
+                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
+                entities.Add(new Wall(position));
+            }
+            if (keyboardState.WasKeyJustUp(Keys.D2))
             {
                 entities.Add(new Bandit(worldPosition, 10));
             }
@@ -315,7 +320,7 @@ namespace TowerDefense
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
-                entity.DrawDebug(SpriteBatch);
+                // entity.DrawDebug(SpriteBatch);
                 entity.Draw(SpriteBatch);
             }
 
