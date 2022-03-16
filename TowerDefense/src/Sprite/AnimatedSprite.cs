@@ -9,6 +9,7 @@ namespace TowerDefense.Sprite
         public int Width { get; set; }
         public int Height { get; set; }
         public float FrameTime { get; set; }
+        public int Offset { get; set; }
         public bool Flipped { get; set; }
 
         private int rows;
@@ -23,12 +24,13 @@ namespace TowerDefense.Sprite
         /// <param name="height">The height of each frame</param>
         /// <param name="frameTime">The amount of time to display each frame</param>
         /// <param name="flipped">Whether or not to flip the sprite horizontally</param>
-        public AnimatedSprite(Texture2D texture, int width, int height, float frameTime, bool flipped = false)
+        public AnimatedSprite(Texture2D texture, int width, int height, float frameTime, int offset = 0, bool flipped = false)
         {
             Texture = texture;
             Width = width;
             Height = height;
             FrameTime = frameTime;
+            Offset = offset;
             Flipped = flipped;
 
             rows = Texture.Height / height;
@@ -39,9 +41,9 @@ namespace TowerDefense.Sprite
             time = 0;
         }
 
-        public void Reset(int offset=0)
+        public void Reset()
         {
-            CurrentFrame = offset;
+            CurrentFrame = Offset;
             time = CurrentFrame * FrameTime;
         }
 
