@@ -5,7 +5,7 @@ namespace TowerDefense.Collision
 {
     public static class CollisionFuncs
     {
-        private delegate bool ShapeVsShape(Shape shape1, Shape shape2, ref Vector2 mtv);
+        private delegate bool ShapeVsShape(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv);
 
         private static ShapeVsShape[,] collisionFunctions = new ShapeVsShape[,]
         {
@@ -16,25 +16,25 @@ namespace TowerDefense.Collision
         /// <summary>
         /// Checks if two shapes are colliding.
         /// </summary>
-        public static bool IsColliding(Shape shape1, Shape shape2)
+        public static bool IsColliding(CShape shape1, CShape shape2)
         {
             Vector2 mtv = Vector2.Zero;
-            return collisionFunctions[(int)shape1.GetShapeType(), (int)shape2.GetShapeType()](shape1, shape2, ref mtv);
+            return collisionFunctions[(int)shape1.GetShapeType(), (int)shape2.GetShapeType()](shape1, shape2, ref mtv, false);
         }
 
         /// <summary>
         /// Checks if two shapes are colliding, with mtv as the minimum translation vector (from shape1 -> shape2).
         /// </summary>
-        public static bool IsColliding(Shape shape1, Shape shape2, out Vector2 mtv)
+        public static bool IsColliding(CShape shape1, CShape shape2, out Vector2 mtv)
         {
             mtv = Vector2.Zero;
-            return collisionFunctions[(int)shape1.GetShapeType(), (int)shape2.GetShapeType()](shape1, shape2, ref mtv);
+            return collisionFunctions[(int)shape1.GetShapeType(), (int)shape2.GetShapeType()](shape1, shape2, ref mtv, true);
         }
 
-        private static bool CircleVsCircle(Shape shape1, Shape shape2, ref Vector2 mtv)
+        private static bool CircleVsCircle(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv)
         {
-            Circle circle1 = (Circle)shape1;
-            Circle circle2 = (Circle)shape2;
+            CCircle circle1 = (CCircle)shape1;
+            CCircle circle2 = (CCircle)shape2;
 
             float r1 = circle1.Radius;
             float r2 = circle2.Radius;
@@ -46,21 +46,24 @@ namespace TowerDefense.Collision
             if (overlap <= 0)
                 return false;
 
-            Vector2 normal;
-            if (dist == 0)
-                normal = new Vector2(1, 0);
-            else
-                normal = diff / dist;
-            // minimum translation vector
-            mtv = normal * overlap;
+            if (computeMtv)
+            {
+                Vector2 normal;
+                if (dist == 0)
+                    normal = new Vector2(1, 0);
+                else
+                    normal = diff / dist;
+
+                    mtv = normal * overlap;
+            }
 
             return true;
         }
 
-        private static bool CircleVsPolygon(Shape shape1, Shape shape2, ref Vector2 mtv)
+        private static bool CircleVsPolygon(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv)
         {
-            Circle circle = (Circle)shape1;
-            Polygon polygon = (Polygon)shape2;
+            CCircle circle = (CCircle)shape1;
+            CPolygon polygon = (CPolygon)shape2;
             
             float min_dist = float.PositiveInfinity;
             Vector2 closest_vertex = Vector2.Zero;
@@ -107,23 +110,24 @@ namespace TowerDefense.Collision
                 }
             }
             
-            mtv = min_axis * min_overlap;
+            if (computeMtv)
+                mtv = min_axis * min_overlap;
 
             return true;
         }
 
-        private static bool PolygonVsCircle(Shape shape1, Shape shape2, ref Vector2 mtv)
+        private static bool PolygonVsCircle(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv)
         {
-            bool collided = CircleVsPolygon(shape2, shape1, ref mtv);
+            bool collided = CircleVsPolygon(shape2, shape1, ref mtv, computeMtv);
             mtv = -mtv;
 
             return collided;
         }
 
-        private static bool PolygonVsPolygon(Shape shape1, Shape shape2, ref Vector2 mtv)
+        private static bool PolygonVsPolygon(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv)
         {
-            Polygon polygon1 = (Polygon)shape1;
-            Polygon polygon2 = (Polygon)shape2;
+            CPolygon polygon1 = (CPolygon)shape1;
+            CPolygon polygon2 = (CPolygon)shape2;
 
             var p1 = polygon1;
             var p2 = polygon2;
@@ -162,18 +166,34 @@ namespace TowerDefense.Collision
                 } 
             }
 
-            (float poly1_min, float poly1_max) = ProjVertsOnAxis(polygon1.Vertices, min_axis);
-            (float poly2_min, float poly2_max) = ProjVertsOnAxis(polygon2.Vertices, min_axis);
+            if (computeMtv)
+            {
+                float poly1_min = MinProjVertsOnAxis(polygon1.Vertices, min_axis);
+                float poly2_min = MinProjVertsOnAxis(polygon2.Vertices, min_axis);
 
-            if (poly1_min > poly2_min)
-                min_overlap = -min_overlap;
-            
-            mtv = min_axis * min_overlap;
+                if (poly1_min > poly2_min)
+                    min_overlap = -min_overlap;
+                
+                mtv = min_axis * min_overlap;
+            }
 
             return true;
         }
 
-        private static (float min_proj, float max_proj) ProjVertsOnAxis(Vector2[] vertices, Vector2 axis)
+        private static float MinProjVertsOnAxis(Vector2[] vertices, Vector2 axis)
+        {
+            float min_proj = float.PositiveInfinity;
+
+            foreach (Vector2 vertex in vertices)
+            {
+                float proj = Vector2.Dot(vertex, axis);
+                min_proj = Math.Min(min_proj, proj);
+            }
+
+            return min_proj;
+        }
+
+        private static (float, float) ProjVertsOnAxis(Vector2[] vertices, Vector2 axis)
         {
             float min_proj = float.PositiveInfinity;
             float max_proj = float.NegativeInfinity;

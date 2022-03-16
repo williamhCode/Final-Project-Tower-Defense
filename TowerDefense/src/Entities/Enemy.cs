@@ -9,65 +9,59 @@ using TowerDefense.Maths;
 
 namespace TowerDefense.Entities
 {
-    public class Enemy : Entity
+    public abstract class Enemy : Entity
     {
-        private const float MAX_SPEED = 300;
-        private const float FRICTION = 0;
-        private int spd;
-        private int health;
-        private Boolean isDead;
-        public Enemy(Vector2 position,int speed,int size)
+        protected const string DIRECTION = "Direction";
+        protected enum Direction
         {
+            Left,
+            Right
+        }
 
-            
+        protected AnimationState<Enum> animationState;
+
+        public int Health { get; private set; }
+        public Boolean IsDead { get; private set; }
+
+        public Enemy(Vector2 position, int health)
+        {   
             Position = position;
             Velocity = new Vector2(0, 0);
-            spd = speed;
-            Shape = new Circle(position, size);
-            isDead = false;
-
+            IsDead = false;
         }
-        public void Move(float dt)
+
+        public abstract void Move(Vector2 goal, float dt);
+
+        public void DecideDirection(Vector2 goal)
         {
-            Vector2 goal = new Vector2(0, 0);
-            if (Position == Vector2.Zero)
+            Vector2 direction = goal - Position;
+            if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                Velocity = Velocity.MoveTowards(Vector2.Zero, FRICTION * dt);
+                animationState.SetState(DIRECTION, Direction.Right);
             }
             else
             {
-                double xdis = 0 - Position.X;
-                double ydis = 0 - Position.Y;
-                xdis = (xdis / Math.Sqrt(((xdis)*(xdis))+((ydis)*(ydis))));
-                ydis = (ydis / Math.Sqrt(((xdis) * (xdis)) + ((ydis) * (ydis))));
-                Vector2 direction = new Vector2((float)xdis, ((float)ydis));
-                Velocity = Velocity.MoveTowards(direction * MAX_SPEED, spd * dt);
+                animationState.SetState(DIRECTION, Direction.Left);
             }
-            
-            
-            //Console.WriteLine(Position);
-
         }
+
         public override void Update(float dt)
         {
             Position += Velocity * dt;
+            CShape.Update();
+            animationState.Update(dt);
         }
-
-        public override void Draw(SpriteBatch spriteBatch)
-        {
-            Shape.Draw(spriteBatch, new Color(0, 0, 0), 2);
-        }
+        
         public void Damage()
         {
-            health--;
+            Health--;
 
-            if (health <= 0)
+            if (Health <= 0)
             {
-                isDead = true;
+                IsDead = true;
 
             }
         }
-
 
     }
 }

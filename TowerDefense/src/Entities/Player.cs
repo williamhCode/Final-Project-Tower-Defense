@@ -15,8 +15,8 @@ namespace TowerDefense.Entities
 {
     public class Player : Entity
     {
-        private const string PLAYERSTATE = "PlayerState";
-        enum PlayerState
+        private const string PLAYER_STATE = "PlayerState";
+        private enum PlayerState
         {
             Idle,
             Walking,
@@ -25,7 +25,7 @@ namespace TowerDefense.Entities
         }
 
         private const string DIRECTION = "Direction";
-        enum Direction
+        private enum Direction
         {
             Left,
             Right
@@ -43,20 +43,20 @@ namespace TowerDefense.Entities
             content.RootDirectory = "Content/Sprites/Player";
 
             float frameTime = 0.05f;
-            AnimationState = new AnimationState<Enum>(PLAYERSTATE, DIRECTION);
+            AnimationState = new AnimationState<Enum>(PLAYER_STATE, DIRECTION);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
-            AnimationState.SetState(PLAYERSTATE, PlayerState.Idle);
-            AnimationState.SetState(DIRECTION, Direction.Right);
         }
 
         public Player(Vector2 position)
         {
             Position = position;
             Velocity = new Vector2(0, 0);
-            Shape = new Circle(position, 5);
+            CShape = new CCircle(position, 5);
 
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
+            animationState.SetState(PLAYER_STATE, PlayerState.Idle);
+            animationState.SetState(DIRECTION, Direction.Right);
         }
 
         public void Move(Vector2 direction, float dt)
@@ -77,18 +77,18 @@ namespace TowerDefense.Entities
             Vector2 direction = coords - Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                AnimationState.SetState(DIRECTION, Direction.Right);
+                animationState.SetState(DIRECTION, Direction.Right);
             }
             else
             {
-                AnimationState.SetState(DIRECTION, Direction.Left);
+                animationState.SetState(DIRECTION, Direction.Left);
             }
         }
 
         public override void Update(float dt)
         {
             Position += Velocity * dt;
-            Shape.Update();
+            CShape.Update();
             animationState.Update(dt);
         }
 

@@ -12,25 +12,24 @@ using System;
 
 namespace TowerDefense.Entities.Buildings
 {
-    public class Wall : Building
+    public class Rock : Building
     {
-        
         public static AnimationState<string> AnimationState;
         private AnimationState<string> animationState;
 
         public static void LoadContent(ContentManager content)
         {
-            content.RootDirectory = "Content/Sprites/Walls";
+            content.RootDirectory = "Content/Sprites/Rocks";
 
             float frameTime = 0f;
             AnimationState = new AnimationState<string>("state");
-            AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("wall_2"), 16, 24, frameTime), "full");
+            // AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>(""), 16, 24, frameTime), "full");
             AnimationState.SetState("state", "full");
         }
 
-        public Wall(Vector2 position) : base(position)
+        public Rock(Vector2 position) : base(position)
         {
-            CShape = new Collision.CRectangle(position, 16f, 16f);
+            CShape = new Collision.CRectangle(position, 16, 16);
             animationState = AnimationState;
             animationState.Update(0);
         }

@@ -5,11 +5,14 @@ using MonoGame.Extended;
 
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TowerDefense.Collision
 {
-    public abstract class Shape
+    public abstract class CShape
     {
+        // public List<string> Keys { get; set; }
+
         public enum ShapeType
         {
             Circle,
@@ -25,11 +28,11 @@ namespace TowerDefense.Collision
         public abstract void Update();
     }
 
-    public class Circle : Shape
+    public class CCircle : CShape
     {
         public float Radius { get; }
 
-        public Circle(Vector2 position, float radius)
+        public CCircle(Vector2 position, float radius)
         {
             Position = position;
             Radius = radius;
@@ -40,9 +43,9 @@ namespace TowerDefense.Collision
             spriteBatch.DrawCircle(Position, Radius, 20, color, thickness);
         }
 
-        public override Shape.ShapeType GetShapeType()
+        public override CShape.ShapeType GetShapeType()
         {
-            return Shape.ShapeType.Circle;
+            return CShape.ShapeType.Circle;
         }
 
         public override void Update()
@@ -51,7 +54,7 @@ namespace TowerDefense.Collision
         }
     }
 
-    public class Polygon : Shape
+    public class CPolygon : CShape
     {
         public float Rotation { get; set; }
         private Vector2[] _orgVertices;
@@ -60,7 +63,7 @@ namespace TowerDefense.Collision
         /// <summary>
         /// Note: Vertices must be in counter-clockwise order.
         /// </summary>
-        public Polygon(Vector2 position, Vector2[] vertices, float rotation = 0)
+        public CPolygon(Vector2 position, Vector2[] vertices, float rotation = 0)
         {
             Position = position;
             Rotation = rotation;
@@ -81,9 +84,9 @@ namespace TowerDefense.Collision
             spriteBatch.DrawPolygon(Vector2.Zero, Vertices, color, thickness);
         }
 
-        public override Shape.ShapeType GetShapeType()
+        public override CShape.ShapeType GetShapeType()
         {
-            return Shape.ShapeType.Polygon;
+            return CShape.ShapeType.Polygon;
         }
 
         /// <summary>
@@ -97,9 +100,9 @@ namespace TowerDefense.Collision
         }
     }
 
-    public class Rectangle : Polygon
+    public class CRectangle : CPolygon
     {
-        public Rectangle(Vector2 position, float width, float height, float rotation = 0)
+        public CRectangle(Vector2 position, float width, float height, float rotation = 0)
             : base(position, new Vector2[]
             {
                 new Vector2(-width / 2, -height / 2),

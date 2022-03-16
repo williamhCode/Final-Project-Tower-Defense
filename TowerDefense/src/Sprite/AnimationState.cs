@@ -9,7 +9,7 @@ namespace TowerDefense.Sprite
 {
     public class AnimationState<T>
     {
-        Dictionary<string, AnimatedSprite> stateSprites;
+        private Dictionary<string, AnimatedSprite> stateSprites;
 
         public AnimatedSprite Sprite
         {
@@ -63,6 +63,15 @@ namespace TowerDefense.Sprite
             currSprite.Update(dt);
 
             lastSprite = currSprite;
+        }
+
+        public AnimationState<T> Copy()
+        {
+            AnimationState<T> copy = new AnimationState<T>(states.Keys.ToArray());
+
+            copy.stateSprites = stateSprites;
+
+            return copy;
         }
     }
 }
