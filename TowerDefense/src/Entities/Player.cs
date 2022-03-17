@@ -46,8 +46,6 @@ namespace TowerDefense.Entities
             AnimationState = new AnimationState<Enum>(PLAYER_STATE, DIRECTION);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime), PlayerState.Idle, Direction.Right);
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("player"), 32, 32, frameTime, flipped: true), PlayerState.Idle, Direction.Left);
-            AnimationState.SetState(PLAYER_STATE, PlayerState.Idle);
-            AnimationState.SetState(DIRECTION, Direction.Right);
         }
 
         public Player(Vector2 position)
@@ -56,7 +54,9 @@ namespace TowerDefense.Entities
             Velocity = new Vector2(0, 0);
             CShape = new CCircle(position, 5);
 
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
+            animationState.SetState(PLAYER_STATE, PlayerState.Idle);
+            animationState.SetState(DIRECTION, Direction.Right);
         }
 
         public void Move(Vector2 direction, float dt)

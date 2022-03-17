@@ -6,6 +6,7 @@ using System;
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
+using TowerDefense.Hashing;
 
 namespace TowerDefense.Entities
 {
@@ -44,6 +45,8 @@ namespace TowerDefense.Entities
                 animationState.SetState(DIRECTION, Direction.Left);
             }
         }
+
+        public abstract void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt);
 
         public override void Update(float dt)
         {

@@ -5,11 +5,14 @@ using MonoGame.Extended;
 
 using System;
 using System.Linq;
+using System.Collections.Generic;
 
 namespace TowerDefense.Collision
 {
     public abstract class CShape
     {
+        // public List<string> Keys { get; set; }
+
         public enum ShapeType
         {
             Circle,
