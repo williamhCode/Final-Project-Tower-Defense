@@ -1,74 +1,86 @@
- 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Content;
- 
 
- 
+
 namespace TowerDefense.Entities.Buildings
 {
-    
+
     public class Importer : Game
     {
         GraphicsDeviceManager graphics;
         
-        
-        private Model model;
-        private Matrix world = Matrix.CreateTranslation(new Vector3(0, 0, 0));
-        BasicEffect be;
-        private Matrix point=Matrix.CreateTranslation(new Vector3(0,0,0));
-        public Importer (string towerChoice,int x,int y)
-        {
-                        
-              
-        }          
- 
-        void LoadContent (ContentManager Content)
-        {            
-            Content = new ContentManager (this.Services, "Content/Models/BuffingTower");
- 
-             
-            model = Content.Load<Model> ("BuffingTower");
 
-        }
- 
-        /// <summary>
-        /// Allows the game to run logic such as updating the world,
-        /// checking for collisions, gathering input, and playing audio.
-        /// </summary>
-        /// <param name="gameTime">Provides a snapshot of timing values.</param>
-         void Update (GameTime gameTime)
+        //Camera
+       
+        Matrix projectionMatrix;
+        
+        Matrix worldMatrix;
+
+        //Geometric info
+        Model model;
+
+        //Orbit
+        bool orbit = false;
+
+        public Importer()
         {
-             
-            world = Matrix.CreateRotationY ((float)gameTime.TotalGameTime.TotalSeconds);
- 
-            base.Update (gameTime);
+            graphics = new GraphicsDeviceManager(this);
+            Content.RootDirectory = "Content/Models";
         }
- 
-      
-        protected override void Draw (GameTime gameTime)
+
+        protected override void Initialize()
         {
-            graphics.GraphicsDevice.Clear (Color.CornflowerBlue);
- 
-            DrawModel(model, world, point, point);
- 
-            base.Draw (gameTime);
+            base.Initialize();
+
+            //Setup Camera
+           
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                               MathHelper.ToRadians(45f), graphics.
+                               GraphicsDevice.Viewport.AspectRatio,
+                1f, 1000f);
+            Vector3 mid =new Vector3(0,0,0);
+            worldMatrix = Matrix.CreateWorld(mid, Vector3.
+                          Forward, Vector3.Up);
+
+            model = Content.Load<Model>("BuffingTower");
         }
- 
-        private void DrawModel(Model model, Matrix world, Matrix view, Matrix projection)
+
+        protected override void LoadContent()
         {
-            foreach (ModelMesh mesh in model.Meshes)
+            
+        }
+
+        protected override void UnloadContent()
+        {
+        }
+
+        protected override void Update(GameTime gameTime)
+        {
+           
+
+            
+            
+            base.Update(gameTime);
+        }
+
+        protected override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            foreach(ModelMesh mesh in model.Meshes)
             {
-                foreach (BasicEffect effect in mesh.Effects)
+                foreach(BasicEffect effect in mesh.Effects)
                 {
-                    effect.World = world;
-                    effect.View = view;
-                    effect.Projection = projection;
+                    //effect.EnableDefaultLighting();
+                    effect.AmbientLightColor = new Vector3(1f, 0, 0);
+                    effect.View = worldMatrix;
+                    effect.World = worldMatrix;
+                    effect.Projection = projectionMatrix;
                 }
- 
                 mesh.Draw();
             }
+            base.Draw(gameTime);
         }
     }
 }
