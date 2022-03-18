@@ -44,15 +44,18 @@ namespace TowerDefense.Entities.Buildings
             AnimationState.Update(0);
         }
 
-        public override void Shoot(float dt, List<Enemy> enemies)
+        public override void DetectEnemy(float dt, SpatialHashGrid SHG)
         {
-            //throw new NotImplementedException();
+            var entitiesToCheck = SHG.QueryEntitiesRange(Position, Range);
+            Shoot(dt, entitiesToCheck);
         }
 
-        public override void DetectEnemy(float dt, List<Enemy> enemies)
+        public override void Shoot(float dt, List<Entity> enemies)
         {
-            //throw new NotImplementedException();
-            //eventually return all enemies in range
+            foreach (var enemy in enemies)
+            {
+                
+            }
         }
 
         public override void Draw(SpriteBatch spriteBatch)

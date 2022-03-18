@@ -8,6 +8,7 @@ using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Entities;
+using TowerDefense.Hashing;
 
 using System;
 using System.Collections.Generic;
@@ -26,8 +27,8 @@ namespace TowerDefense.Entities.Buildings
             Velocity = new Vector2(0, 0);
         }
 
-        public abstract void Shoot(float dt, List<Enemy> enemies);
+        public abstract void DetectEnemy(float dt, SpatialHashGrid SHG);
 
-        public abstract void DetectEnemy(float dt, List<Enemy> enemies);
+        public abstract void Shoot(float dt, List<Entity> enemies);
     }
 }

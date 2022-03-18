@@ -31,7 +31,7 @@ namespace TowerDefense.Entities.Buildings
         public Wall(Vector2 position) : base(position)
         {
             CShape = new Collision.CRectangle(position, 16f, 16f);
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
             animationState.Update(0);
         }
 
