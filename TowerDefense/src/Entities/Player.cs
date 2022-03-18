@@ -7,7 +7,7 @@ using MonoGame.Extended;
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
-using TowerDefense.Components;
+using Towerdefense.Entities.Components;
 
 using System;
 using System.Linq;

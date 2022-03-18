@@ -28,8 +28,6 @@ namespace TowerDefense.Entities.Buildings
             float frameTime = 0f;
             AnimationState = new AnimationState<string>("state");
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("BasicTower"), 48, 48, frameTime), "base");
-            AnimationState.SetState("state", "base");
-            
         }
 
         public BasicTower(Vector2 position) : base(position)
@@ -40,7 +38,8 @@ namespace TowerDefense.Entities.Buildings
             Damage = 2;
             CShape = new CRectangle(position, 32, 32);
 
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
+            animationState.SetState("state", "base");
             AnimationState.Update(0);
         }
 

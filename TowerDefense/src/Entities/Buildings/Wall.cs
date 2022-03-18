@@ -25,13 +25,13 @@ namespace TowerDefense.Entities.Buildings
             float frameTime = 0f;
             AnimationState = new AnimationState<string>("state");
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("wall_2"), 16, 24, frameTime), "full");
-            AnimationState.SetState("state", "full");
         }
 
         public Wall(Vector2 position) : base(position)
         {
             CShape = new Collision.CRectangle(position, 16f, 16f);
             animationState = AnimationState.Copy();
+            animationState.SetState("state", "full");
             animationState.Update(0);
         }
 
