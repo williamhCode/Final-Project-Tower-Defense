@@ -30,7 +30,7 @@ namespace TowerDefense.Entities.Buildings
         public Tree(Vector2 position) : base(position)
         {
             CShape = new Collision.CRectangle(position, 16, 16);
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
             animationState.Update(0);
         }
 
