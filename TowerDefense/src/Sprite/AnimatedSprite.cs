@@ -1,5 +1,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
+using System;
 
 namespace TowerDefense.Sprite
 {
@@ -53,7 +54,7 @@ namespace TowerDefense.Sprite
             CurrentFrame = (int)(time / FrameTime);
             if (CurrentFrame == totalFrames)
             {
-                time = 0;
+                time = time % FrameTime;
                 CurrentFrame = 0;
             }
         }

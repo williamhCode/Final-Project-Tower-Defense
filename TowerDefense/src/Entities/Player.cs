@@ -7,14 +7,17 @@ using MonoGame.Extended;
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
+using TowerDefense.Components;
 
 using System;
 using System.Linq;
 
 namespace TowerDefense.Entities
 {
-    public class Player : Entity
+    public class Player : Entity, IFaceable
     {
+        public Entity Obj => this;
+
         private const string PLAYER_STATE = "PlayerState";
         private enum PlayerState
         {
@@ -24,7 +27,7 @@ namespace TowerDefense.Entities
             Dead
         }
 
-        private const string DIRECTION = "Direction";
+        private const string DIRECTION = IFaceable.DIRECTION;
         private enum Direction
         {
             Left,
@@ -36,7 +39,7 @@ namespace TowerDefense.Entities
         private const float ACCELERATION = 2000;
 
         public static AnimationState<Enum> AnimationState;
-        private AnimationState<Enum> animationState;
+        public AnimationState<Enum> animationState { get; set; }
 
         public static void LoadContent(ContentManager content)
         {
@@ -77,18 +80,7 @@ namespace TowerDefense.Entities
             }
         }
 
-        public void DecideDirection(Vector2 coords)
-        {
-            Vector2 direction = coords - Position;
-            if (Vector2.Dot(direction, Vector2.UnitX) > 0)
-            {
-                animationState.SetState(DIRECTION, Direction.Right);
-            }
-            else
-            {
-                animationState.SetState(DIRECTION, Direction.Left);
-            }
-        }
+        public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
 
         public override void Update(float dt)
         {

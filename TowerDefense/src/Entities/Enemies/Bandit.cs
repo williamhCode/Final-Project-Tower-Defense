@@ -25,7 +25,7 @@ namespace TowerDefense.Entities.Enemies
             Dead
         }
 
-        private const float MAX_SPEED = 200;
+        private const float MAX_SPEED = 100;
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 

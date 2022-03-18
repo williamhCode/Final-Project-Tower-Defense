@@ -41,6 +41,7 @@ namespace TowerDefense.Entities.Buildings
             CShape = new CRectangle(position, 32, 32);
 
             animationState = AnimationState;
+            AnimationState.Update(0);
         }
 
         public override void Shoot(float dt, List<Enemy> enemies)
@@ -62,7 +63,6 @@ namespace TowerDefense.Entities.Buildings
         public override void Update(float dt)
         {
             CShape.Update();
-            AnimationState.Update(dt);
         }
     }
 }

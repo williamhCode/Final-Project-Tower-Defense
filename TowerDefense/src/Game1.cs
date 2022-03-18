@@ -25,6 +25,7 @@ using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
+using TowerDefense.Components;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
@@ -252,7 +253,7 @@ namespace TowerDefense
             }
 
             sw.Stop();
-            Console.WriteLine(sw.Elapsed.TotalSeconds);
+            // Console.WriteLine(sw.Elapsed.TotalSeconds);
 
             // updates
             foreach (var e in entities)
