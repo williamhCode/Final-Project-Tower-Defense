@@ -18,12 +18,14 @@ using MLEM.Startup;
 using MLEM.Font;
 using MonoGame.Framework.Utilities;
 using MonoGame.Extended;
+using MonoGame.Extended.Input;
 
 using TowerDefense.Camera;
 using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
+using TowerDefense.Components;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
@@ -40,14 +42,18 @@ namespace TowerDefense
 
         private Player player;
         private List<Entity> entities;
-        private Wall[] walls;
+        private Building[] buildings;
         private Enemy[] enemies;
 
-        private SpatialHashGrid SHGWalls;
+        private SpatialHashGrid SHGBuildings;
+        private SpatialHashGrid SHGFlocking;
 
         private const int TILE_SIZE = 32;
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
+
+        private MouseStateExtended mouseState;
+        private KeyboardStateExtended keyboardState;
 
         public Game1()
         {
@@ -64,19 +70,22 @@ namespace TowerDefense
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
+                new BasicTower(new Vector2(208, 208))
             };
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 30; i++)
             {
                 entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
                 entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
             }
-            for (int i = 0; i < 100; i++)
+            for (int i = 0; i < 3; i++)
             {
-                entities.Add(new Bandit(new Vector2(i * 16 + 200, 200), 10));
-                entities.Add(new Bandit(new Vector2(200, (i + 1) * 16 + 200), 10));
+                for (int j = 0; j < 3; j++)
+                {
+                    entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 10));
+                }
             }
             entities.RemoveAt(10);
-            walls = entities.OfType<Wall>().ToArray();
+            buildings = entities.OfType<Building>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
 
             // tile map initialization
@@ -94,11 +103,13 @@ namespace TowerDefense
                 }
             }
 
-            SHGWalls = new SpatialHashGrid(32);
-            foreach (var wall in walls)
+            SHGBuildings = new SpatialHashGrid(32);
+            foreach (var building in buildings)
             {
-                SHGWalls.AddEntityPosition(wall);
+                SHGBuildings.AddEntityPosition(building);
             }
+
+            SHGFlocking = new SpatialHashGrid(90);
         }
 
         /// <summary>
@@ -185,6 +196,15 @@ namespace TowerDefense
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
+            
+            buildings = entities.OfType<Building>().ToArray();
+            enemies = entities.OfType<Enemy>().ToArray();
+
+            SHGFlocking.Clear();
+            foreach (var enemy in enemies)
+            {
+                SHGFlocking.AddEntityPosition(enemy);
+            }
 
             float dt = gameTime.GetElapsedSeconds();
 
@@ -192,23 +212,48 @@ namespace TowerDefense
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            KeyboardState state = Keyboard.GetState();
+            keyboardState = KeyboardExtended.GetState();
+            mouseState = MouseExtended.GetState();
+
+            var mousePosition = mouseState.Position.ToVector2();
+            var worldPosition = camera.ScreenToWorld(mousePosition);
+
+            // place entities
+            if (keyboardState.WasKeyJustUp(Keys.D1))
+            {
+                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
+                var building = new Wall(position);
+                if (!entities.Contains(building))
+                {
+                    entities.Add(building);
+                    SHGBuildings.AddEntityPosition(building);
+                }
+            }
+            if (keyboardState.WasKeyJustUp(Keys.D2))
+            {
+                entities.Add(new Bandit(worldPosition, 10));
+            }
 
             // player movement
             var direction = new Vector2(
-                Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
-                Convert.ToSingle(state.IsKeyDown(Keys.S)) - Convert.ToSingle(state.IsKeyDown(Keys.W))
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.D)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.A)),
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.S)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.W))
             );
-            player.Move(direction, dt);
-            var mouseState = Mouse.GetState();
-            var mousePosition = new Vector2(mouseState.X, mouseState.Y);
-            player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
-            // enemy movement
+            player.Move(direction, dt);
+            player.DecideDirection(worldPosition);
+            
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            // enemy flocking
             foreach (var e in enemies)
             {
-                e.Move(player.Position, dt);
+                e.ApplyFlocking(SHGFlocking, player.Position, dt);
             }
+
+            sw.Stop();
+            // Console.WriteLine(sw.Elapsed.TotalSeconds);
 
             // updates
             foreach (var e in entities)
@@ -226,20 +271,16 @@ namespace TowerDefense
             }
             ).ToArray();
 
-
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
             foreach (var e in entitiesToCheck)
             {
-                var wallsToCheck = SHGWalls.QueryEntitiesCShape(e.CShape);
-                wallsToCheck = wallsToCheck.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
+                var buildings = SHGBuildings.QueryEntitiesCShape(e.CShape);
+                buildings = buildings.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
 
-                // var wallsToCheck = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
+                // var buildings = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
 
-                foreach (var wall in wallsToCheck)
+                foreach (var building in buildings)
                 {
-                    if (IsColliding(wall.CShape, e.CShape, out Vector2 mtv))
+                    if (IsColliding(building.CShape, e.CShape, out Vector2 mtv))
                     {
                         e.Position += mtv;
                         e.CShape.Update();
@@ -247,15 +288,12 @@ namespace TowerDefense
                 }
             }
 
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed.TotalSeconds);
-
             // camera
-            if (state.IsKeyDown(Keys.OemPlus))
+            if (keyboardState.IsKeyDown(Keys.OemPlus))
             {
                 camera.Zoom *= 1.1f;
             }
-            if (state.IsKeyDown(Keys.OemMinus))
+            if (keyboardState.IsKeyDown(Keys.OemMinus))
             {
                 camera.Zoom /= 1.1f;
             }
@@ -287,7 +325,7 @@ namespace TowerDefense
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
-                entity.DrawDebug(SpriteBatch);
+                // entity.DrawDebug(SpriteBatch);
                 entity.Draw(SpriteBatch);
             }
 

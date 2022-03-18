@@ -41,6 +41,7 @@ namespace TowerDefense.Entities.Buildings
             CShape = new CRectangle(position, 32, 32);
 
             animationState = AnimationState;
+            AnimationState.Update(0);
         }
 
         public override void Shoot(float dt, List<Enemy> enemies)
@@ -56,13 +57,12 @@ namespace TowerDefense.Entities.Buildings
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(24, 32));
+            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(24, 38));
         }
 
         public override void Update(float dt)
         {
             CShape.Update();
-            AnimationState.Update(dt);
         }
     }
 }

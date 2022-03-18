@@ -6,19 +6,24 @@ using System;
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
+using TowerDefense.Hashing;
+using TowerDefense.Components;
+
 
 namespace TowerDefense.Entities
 {
-    public abstract class Enemy : Entity
+    public abstract class Enemy : Entity, IFaceable
     {
-        protected const string DIRECTION = "Direction";
+        public Entity Obj => this;
+
+        protected const string DIRECTION = IFaceable.DIRECTION;
         protected enum Direction
         {
             Left,
             Right
         }
 
-        protected AnimationState<Enum> animationState;
+        public AnimationState<Enum> animationState { get; set; }
 
         public int Health { get; private set; }
         public Boolean IsDead { get; private set; }
@@ -32,18 +37,9 @@ namespace TowerDefense.Entities
 
         public abstract void Move(Vector2 goal, float dt);
 
-        public void DecideDirection(Vector2 goal)
-        {
-            Vector2 direction = goal - Position;
-            if (Vector2.Dot(direction, Vector2.UnitX) > 0)
-            {
-                animationState.SetState(DIRECTION, Direction.Right);
-            }
-            else
-            {
-                animationState.SetState(DIRECTION, Direction.Left);
-            }
-        }
+        public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
+
+        public abstract void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt);
 
         public override void Update(float dt)
         {

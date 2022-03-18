@@ -11,10 +11,7 @@ namespace TowerDefense.Sprite
     {
         private Dictionary<string, AnimatedSprite> stateSprites;
 
-        public AnimatedSprite Sprite
-        {
-            get { return currSprite; }
-        }
+        public AnimatedSprite Sprite => currSprite;
 
         private AnimatedSprite currSprite;
         private AnimatedSprite lastSprite;

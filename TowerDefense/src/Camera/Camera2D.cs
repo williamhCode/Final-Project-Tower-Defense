@@ -19,7 +19,7 @@ namespace TowerDefense.Camera
         public float Zoom 
         { 
             get { return _zoom; }
-            set { _zoom = Math.Max(2, value); }
+            set { _zoom = Math.Max(1, value); }
         }
 
         public Camera2D(float width, float height)
@@ -27,7 +27,7 @@ namespace TowerDefense.Camera
             Width = width;
             Height = height;
             Pan = Vector2.Zero;
-            Zoom = 2;
+            Zoom = 1;
         }
         
         public RectangleF GetViewport()
