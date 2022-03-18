@@ -40,7 +40,7 @@ namespace TowerDefense.Entities.Buildings
 
             animationState = AnimationState.Copy();
             animationState.SetState("state", "base");
-            AnimationState.Update(0);
+            animationState.Update(0);
         }
 
         public override void DetectEnemy(float dt, SpatialHashGrid SHG)
