@@ -25,6 +25,7 @@ using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
+using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
 using static TowerDefense.Collision.CollisionFuncs;
 
@@ -43,10 +44,13 @@ namespace TowerDefense
         private Player player;
         private List<Entity> entities;
         private Building[] buildings;
+        private Tower[] towers;
         private Enemy[] enemies;
+        private List<Projectile> projectiles;
 
         private SpatialHashGrid SHGBuildings;
         private SpatialHashGrid SHGFlocking;
+        private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
         private Dictionary<string, Texture2D> tileTextures;
@@ -81,12 +85,14 @@ namespace TowerDefense
             {
                 for (int j = 0; j < 3; j++)
                 {
-                    entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 10));
+                    // entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 10));
                 }
             }
             entities.RemoveAt(10);
             buildings = entities.OfType<Building>().ToArray();
+            towers = buildings.OfType<Tower>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
+            projectiles = new List<Projectile>();
 
             // tile map initialization
             tileMap = new string[20][];
@@ -110,6 +116,8 @@ namespace TowerDefense
             }
 
             SHGFlocking = new SpatialHashGrid(90);
+
+            SHGEnemies = new SpatialHashGrid(30);
         }
 
         /// <summary>
@@ -197,13 +205,22 @@ namespace TowerDefense
         {
             base.DoUpdate(gameTime);
             
+            // update type arrays
             buildings = entities.OfType<Building>().ToArray();
+            towers = buildings.OfType<Tower>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
 
+            // update spatial hash grids
             SHGFlocking.Clear();
             foreach (var enemy in enemies)
             {
                 SHGFlocking.AddEntityPosition(enemy);
+            }
+
+            SHGEnemies.Clear();
+            foreach (var enemy in enemies)
+            {
+                SHGEnemies.AddEntityPosition(enemy);
             }
 
             float dt = gameTime.GetElapsedSeconds();
@@ -222,9 +239,10 @@ namespace TowerDefense
             if (keyboardState.WasKeyJustUp(Keys.D1))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
-                var building = new Wall(position);
-                if (!entities.Contains(building))
+                // check if entites has building with same position
+                if (!entities.Any(e => e.Position == position))
                 {
+                    var building = new Wall(position);
                     entities.Add(building);
                     SHGBuildings.AddEntityPosition(building);
                 }
@@ -233,6 +251,16 @@ namespace TowerDefense
             {
                 entities.Add(new Bandit(worldPosition, 10));
             }
+            if (keyboardState.WasKeyJustUp(Keys.D3))
+            {
+                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
+                if (!entities.Any(e => e.Position == position))
+                {
+                    var tower = new BasicTower(position);
+                    entities.Add(tower);
+                    SHGBuildings.AddEntityPosition(tower);
+                }
+            }
 
             // player movement
             var direction = new Vector2(
@@ -240,7 +268,7 @@ namespace TowerDefense
                 Convert.ToSingle(keyboardState.IsKeyDown(Keys.S)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.W))
             );
 
-            player.Move(direction, dt);
+            player.Move(dt, direction);
             player.DecideDirection(worldPosition);
             
             Stopwatch sw = new Stopwatch();
@@ -249,11 +277,33 @@ namespace TowerDefense
             // enemy flocking
             foreach (var e in enemies)
             {
-                e.ApplyFlocking(SHGFlocking, player.Position, dt);
+                e.ApplyFlocking(dt, SHGFlocking, player.Position);
             }
 
             sw.Stop();
             // Console.WriteLine(sw.Elapsed.TotalSeconds);
+
+            // projectile
+            var projectilesTemp = new List<Projectile>(projectiles);
+            foreach (var projectile in projectilesTemp)
+            {
+                projectile.Update(dt);
+                if (projectile.HasEnded)
+                {
+                    projectiles.Remove(projectile);
+                }
+            }
+                
+            // tower shooting
+            foreach (var tower in towers)
+            {
+                var projectile = tower.Shoot(dt, SHGEnemies);
+                if (projectile != null)
+                {
+                    projectiles.Add(projectile);
+                }
+            }
+
 
             // updates
             foreach (var e in entities)
@@ -325,8 +375,14 @@ namespace TowerDefense
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
-                // entity.DrawDebug(SpriteBatch);
+                entity.DrawDebug(SpriteBatch);
                 entity.Draw(SpriteBatch);
+            }
+
+            // draw projectiles
+            foreach (var projectile in projectiles)
+            {
+                projectile.Draw(SpriteBatch);
             }
 
             SpriteBatch.End();

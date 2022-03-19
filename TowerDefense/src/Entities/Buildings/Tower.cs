@@ -6,9 +6,8 @@ using MonoGame.Extended;
 
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
-using TowerDefense.Maths;
-using TowerDefense.Entities;
 using TowerDefense.Hashing;
+using TowerDefense.Projectiles;
 
 using System;
 using System.Collections.Generic;
@@ -21,14 +20,26 @@ namespace TowerDefense.Entities.Buildings
         public int Range { get; set; }
         public int Damage { get; set; }
 
+        protected float fireRate;
+        protected float fireTime;
+
         public Tower(Vector2 position) : base(position)
         {
             Position = position;
             Velocity = new Vector2(0, 0);
         }
 
-        public abstract void DetectEnemy(float dt, SpatialHashGrid SHG);
+        public bool CanFire(float dt)
+        {
+            fireTime += dt;
+            if (fireTime >= 1 / fireRate)
+            {
+                fireTime = 0;
+                return true;
+            }
+            return false;
+        }
 
-        public abstract void Shoot(float dt, List<Entity> enemies);
+        public abstract Projectile Shoot(float dt, SpatialHashGrid SHG);
     }
 }

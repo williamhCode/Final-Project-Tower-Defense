@@ -65,7 +65,7 @@ namespace TowerDefense.Entities
             animationState.SetState(DIRECTION, Direction.Right);
         }
 
-        public void Move(Vector2 direction, float dt)
+        public void Move(float dt, Vector2 direction)
         {
             direction = direction.Normalized();
             if (direction == Vector2.Zero)
@@ -91,7 +91,7 @@ namespace TowerDefense.Entities
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(16, 32));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 32));
         }
     }
 }

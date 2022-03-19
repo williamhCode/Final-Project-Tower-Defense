@@ -25,7 +25,7 @@ namespace TowerDefense.Entities
 
         public AnimationState<Enum> animationState { get; set; }
 
-        public int Health { get; private set; }
+        public int Health { get; set; }
         public Boolean IsDead { get; private set; }
 
         public Enemy(Vector2 position, int health)
@@ -39,7 +39,7 @@ namespace TowerDefense.Entities
 
         public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
 
-        public abstract void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt);
+        public abstract void ApplyFlocking(float dt, SpatialHashGrid SHG, Vector2 goal);
 
         public override void Update(float dt)
         {
@@ -58,6 +58,5 @@ namespace TowerDefense.Entities
 
             }
         }
-
     }
 }

@@ -79,7 +79,7 @@ namespace TowerDefense.Entities.Enemies
         private const float SEPARATION_SENSTIVITY = 100;
 
 
-        public override void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt)
+        public override void ApplyFlocking(float dt, SpatialHashGrid SHG, Vector2 goal)
         {
             var entitiesToCheck = SHG.QueryEntitiesRange(Position, SEPARATION_DIST);
             entitiesToCheck.Remove(this);
@@ -134,7 +134,7 @@ namespace TowerDefense.Entities.Enemies
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(16, 32));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 32));
         }
     }
 }

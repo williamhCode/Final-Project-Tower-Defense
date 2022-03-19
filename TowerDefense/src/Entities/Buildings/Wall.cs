@@ -42,7 +42,7 @@ namespace TowerDefense.Entities.Buildings
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(8, 16));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(8, 16));
         }
     }
 }
