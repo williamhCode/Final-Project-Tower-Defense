@@ -31,10 +31,7 @@ namespace TowerDefense.Projectiles
             return this;
         }
 
-        public virtual void Initialize()
-        {
-
-        }
+        public virtual void Initialize() { }
     }
 
     public abstract class Path : ProjectileComponent
@@ -131,13 +128,13 @@ namespace TowerDefense.Projectiles
 
         // private AnimatedSprite projectileSprite;
         // private AnimatedSprite hitSprite;
-        private bool hasHit;
+        public bool HasHit { get; set; }
         private float hitTime;
         private float hitTimeElasped;
 
         // public Projectile(Vector2 startPosition, Vector2 targetPosition, float speed, int damage, 
         // Path pathIn, DamageType damageTypeIn, AnimatedSprite projectileSprite, AnimatedSprite hitSprite)
-        public Projectile(Vector2 startPosition, Vector2 targetPosition, float speed, int damage, 
+        public Projectile(Vector2 startPosition, Vector2 targetPosition, float speed, int damage,
         Path pathIn, DamageType damageTypeIn, float hitTime)
         {
             StartPosition = startPosition;
@@ -154,7 +151,7 @@ namespace TowerDefense.Projectiles
 
             // this.projectileSprite = projectileSprite;
             // this.hitSprite = hitSprite;
-            hasHit = false;
+            HasHit = false;
             this.hitTime = hitTime;
             hitTimeElasped = 0;
         }
@@ -166,7 +163,7 @@ namespace TowerDefense.Projectiles
 
         public void Update(float dt)
         {
-            if (hasHit)
+            if (HasHit)
             {
                 hitTimeElasped += dt;
                 if (hitTimeElasped >= hitTime)
@@ -180,7 +177,7 @@ namespace TowerDefense.Projectiles
                 {
                     Position = TargetPosition;
                     damageType.ApplyDamage(dt);
-                    hasHit = true;
+                    HasHit = true;
                 }
                 TimeElapsed += dt;
                 (Position, Angle) = path.GetCurrentState();
@@ -198,7 +195,7 @@ namespace TowerDefense.Projectiles
             // {
             //     projectileSprite.Draw(spriteBatch, Position, offset, Angle);
             // }
-            if (hasHit)
+            if (HasHit)
             {
                 spriteBatch.DrawCircle(Position, 15, 20, Color.Red, 1);
             }

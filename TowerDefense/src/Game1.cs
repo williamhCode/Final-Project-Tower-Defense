@@ -249,16 +249,28 @@ namespace TowerDefense
             }
             if (keyboardState.WasKeyJustUp(Keys.D2))
             {
-                entities.Add(new Bandit(worldPosition, 3));
+                entities.Add(new Bandit(worldPosition, 5));
             }
             if (keyboardState.WasKeyJustUp(Keys.D3))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
+                // check if entites has building with same position
                 if (!entities.Any(e => e.Position == position))
                 {
                     var tower = new BasicTower(position);
                     entities.Add(tower);
                     SHGBuildings.AddEntityPosition(tower);
+                }
+            }
+            if (keyboardState.WasKeyJustUp(Keys.D4))
+            {
+                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
+                // check if entites has building with same position
+                var entity = entities.Find(e => e.Position == position);
+                if (entity != null)
+                {
+                    entities.Remove(entity);
+                    SHGBuildings.RemoveEntityPosition(entity);
                 }
             }
 
@@ -365,6 +377,8 @@ namespace TowerDefense
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
+            var projectilesLookup = projectiles.ToLookup(p => p.HasHit);
+
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
             // draw tilemap
@@ -380,6 +394,12 @@ namespace TowerDefense
                 }
             }
 
+            // projectiles have hit get drawn below
+            foreach (var projectile in projectilesLookup[true])
+            {
+                projectile.Draw(SpriteBatch);
+            }
+
             // draw entities
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
@@ -388,8 +408,8 @@ namespace TowerDefense
                 entity.Draw(SpriteBatch);
             }
 
-            // draw projectiles
-            foreach (var projectile in projectiles)
+            // projectiles have not hit get drawn above
+            foreach (var projectile in projectilesLookup[false])
             {
                 projectile.Draw(SpriteBatch);
             }

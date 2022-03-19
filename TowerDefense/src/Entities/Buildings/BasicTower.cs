@@ -35,7 +35,7 @@ namespace TowerDefense.Entities.Buildings
         {
             Range = 200;
             Damage = 2;
-            fireRate = 1f;
+            fireRate = 5f;
             fireTime = fireRate;
             CShape = new CRectangle(position, 32, 32);
 
@@ -58,7 +58,7 @@ namespace TowerDefense.Entities.Buildings
                 {
                     var path = new StraightPath();
                     var damageType = new DirectDamage(enemy);
-                    projectile = new Projectile(Position, enemy.Position, speed: 300, damage: 1, path, damageType, 2);
+                    projectile = new Projectile(Position, enemy.Position, speed: 600, damage: 1, path, damageType, 2);
                     break;
                 }
             }
