@@ -25,7 +25,7 @@ namespace TowerDefense.Entities.Buildings
         public static void LoadContent(ContentManager content)
         {
             content.RootDirectory = "Content/Sprites/Towers";
-            
+
             float frameTime = 0f;
             AnimationState = new AnimationState<string>("state");
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("BasicTower"), 48, 48, frameTime), "base");
@@ -58,7 +58,7 @@ namespace TowerDefense.Entities.Buildings
                 {
                     var path = new StraightPath();
                     var damageType = new DirectDamage(enemy);
-                    projectile = new Projectile(Position, enemy.Position, 200, 1, path, damageType, 2);
+                    projectile = new Projectile(Position, enemy.Position, speed: 300, damage: 1, path, damageType, 2);
                     break;
                 }
             }
