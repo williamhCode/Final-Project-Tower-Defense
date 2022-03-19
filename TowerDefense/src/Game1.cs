@@ -81,14 +81,14 @@ namespace TowerDefense
                 entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
                 entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
             }
-            for (int i = 0; i < 3; i++)
-            {
-                for (int j = 0; j < 3; j++)
-                {
-                    // entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 10));
-                }
-            }
-            entities.RemoveAt(10);
+            // for (int i = 0; i < 3; i++)
+            // {
+            //     for (int j = 0; j < 3; j++)
+            //     {
+            //         entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 3));
+            //     }
+            // }
+            // entities.RemoveAt(10);
             buildings = entities.OfType<Building>().ToArray();
             towers = buildings.OfType<Tower>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
@@ -249,7 +249,7 @@ namespace TowerDefense
             }
             if (keyboardState.WasKeyJustUp(Keys.D2))
             {
-                entities.Add(new Bandit(worldPosition, 10));
+                entities.Add(new Bandit(worldPosition, 3));
             }
             if (keyboardState.WasKeyJustUp(Keys.D3))
             {
@@ -304,6 +304,15 @@ namespace TowerDefense
                 }
             }
 
+            // enemy death
+            var enemiesTemp = new List<Enemy>(enemies);
+            foreach (var enemy in enemiesTemp)
+            {
+                if (enemy.IsDead)
+                {
+                    entities.Remove(enemy);
+                }
+            }
 
             // updates
             foreach (var e in entities)

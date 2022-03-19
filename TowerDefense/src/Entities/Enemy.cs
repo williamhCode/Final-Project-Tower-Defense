@@ -26,13 +26,13 @@ namespace TowerDefense.Entities
         public AnimationState<Enum> animationState { get; set; }
 
         public int Health { get; set; }
-        public Boolean IsDead { get; private set; }
+        public Boolean IsDead => Health <= 0;
 
         public Enemy(Vector2 position, int health)
         {   
             Position = position;
             Velocity = new Vector2(0, 0);
-            IsDead = false;
+            Health = health;
         }
 
         public abstract void Move(Vector2 goal, float dt);
@@ -46,17 +46,6 @@ namespace TowerDefense.Entities
             Position += Velocity * dt;
             CShape.Update();
             animationState.Update(dt);
-        }
-        
-        public void Damage()
-        {
-            Health--;
-
-            if (Health <= 0)
-            {
-                IsDead = true;
-
-            }
         }
     }
 }
