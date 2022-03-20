@@ -21,7 +21,7 @@ namespace TowerDefense.Entities.Buildings
         Model model;
 
         //Orbit
-        bool orbit = false;
+       
 
         public Importer()
         {
@@ -29,7 +29,7 @@ namespace TowerDefense.Entities.Buildings
             Content.RootDirectory = "Content/Models";
         }
 
-        protected override void Initialize()
+        public void Initialize()
         {
             base.Initialize();
 
@@ -43,19 +43,12 @@ namespace TowerDefense.Entities.Buildings
             worldMatrix = Matrix.CreateWorld(mid, Vector3.
                           Forward, Vector3.Up);
 
-            model = Content.Load<Model>("BuffingTower");
+            model = Content.Load<Model>("test");
         }
 
-        protected override void LoadContent()
-        {
-            
-        }
 
-        protected override void UnloadContent()
-        {
-        }
-
-        protected override void Update(GameTime gameTime)
+        
+        public void Update(GameTime gameTime)
         {
            
 
@@ -64,7 +57,7 @@ namespace TowerDefense.Entities.Buildings
             base.Update(gameTime);
         }
 
-        protected override void Draw(GameTime gameTime)
+        public void Draw(GameTime gameTime)
         {
             GraphicsDevice.Clear(Color.CornflowerBlue);
 

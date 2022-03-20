@@ -60,7 +60,7 @@ namespace TowerDefense
             this.IsMouseVisible = true;
 
             
-            Content.RootDirectory = "Content/Models";
+          
         }
 
         protected override void Initialize()
@@ -71,12 +71,13 @@ namespace TowerDefense
             //Setup Camera
            
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                               MathHelper.ToRadians(45f), this.
-                               GraphicsDevice.Viewport.AspectRatio,
-                1f, 1000f);
-            Vector3 mid =new Vector3(0,0,0);
-            worldMatrix = Matrix.CreateWorld(mid, Vector3.
-                          Forward, Vector3.Up);
+                MathHelper.ToRadians(90),
+                this.GraphicsDevice.Viewport.AspectRatio,
+                1, 10);
+            Vector3 back =new Vector3(0,-1,0);
+            Vector3 foward =new Vector3(0,1,0);
+            Vector3 scale =new Vector3(1,1,1);
+            worldMatrix = Matrix.CreateWorld(back,foward,scale);
             Content.RootDirectory="content/Models";
             model = Content.Load<Model>("BuffingTower");
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
