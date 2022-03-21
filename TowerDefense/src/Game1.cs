@@ -59,6 +59,8 @@ namespace TowerDefense
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
 
+        private bool debug = false;
+
         public Game1()
         {
             Instance = this;
@@ -236,7 +238,7 @@ namespace TowerDefense
             var worldPosition = camera.ScreenToWorld(mousePosition);
 
             // place entities
-            if (keyboardState.WasKeyJustUp(Keys.D1))
+            if (keyboardState.IsKeyDown(Keys.D1))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
                 // check if entites has building with same position
@@ -249,9 +251,13 @@ namespace TowerDefense
             }
             if (keyboardState.WasKeyJustUp(Keys.D2))
             {
-                entities.Add(new Bandit(worldPosition, 5));
+                for (int i = 0; i < 5; i++)
+                {
+                    for (int j = 0; j < 5; j++)
+                        entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
+                }
             }
-            if (keyboardState.WasKeyJustUp(Keys.D3))
+            if (keyboardState.IsKeyDown(Keys.D3))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
                 // check if entites has building with same position
@@ -262,7 +268,7 @@ namespace TowerDefense
                     SHGBuildings.AddEntityPosition(tower);
                 }
             }
-            if (keyboardState.WasKeyJustUp(Keys.D4))
+            if (keyboardState.IsKeyDown(Keys.D4))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
                 // check if entites has building with same position
@@ -272,6 +278,10 @@ namespace TowerDefense
                     entities.Remove(entity);
                     SHGBuildings.RemoveEntityPosition(entity);
                 }
+            }
+            if (keyboardState.WasKeyJustUp(Keys.E))
+            {
+                debug = !debug;
             }
 
             // player movement
@@ -404,7 +414,8 @@ namespace TowerDefense
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
-                entity.DrawDebug(SpriteBatch);
+                if (debug)
+                    entity.DrawDebug(SpriteBatch);
                 entity.Draw(SpriteBatch);
             }
 

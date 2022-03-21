@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -25,7 +24,7 @@ namespace TowerDefense.Entities.Enemies
             Dead
         }
 
-        private const float MAX_SPEED = 100;
+        private const float MAX_SPEED = 50;
         private const float FRICTION = 1200;
         private const float ACCELERATION = 1200;
 
@@ -124,6 +123,13 @@ namespace TowerDefense.Entities.Enemies
             if (Velocity.Length() > MAX_SPEED)
             {
                 Velocity = Velocity.Normalized() * MAX_SPEED;
+            }
+            if (!float.IsFinite(Velocity.X))
+            {
+                var rand = new Random();
+                // make velocity random vector2
+                var angle = (float)rand.NextDouble() * MathF.PI * 2;
+                Velocity = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * MAX_SPEED;
             }
         }
 
