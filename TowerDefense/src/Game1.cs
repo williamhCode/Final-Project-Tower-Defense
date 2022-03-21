@@ -16,6 +16,7 @@ using MLEM.Font;
 using MonoGame.Framework.Utilities;
 using MonoGame.Extended;
 
+
 using System.Reflection;
 
 using TowerDefense.Camera;
@@ -40,6 +41,11 @@ namespace TowerDefense
          Matrix projectionMatrix;
         
         Matrix worldMatrix;
+        Vector3 camTarget;
+        Vector3 camPosition;
+        
+        Matrix viewMatrix;
+        
 
         Model model;
 
@@ -53,14 +59,26 @@ namespace TowerDefense
         public const int TILE_SIZE = 32;
         public Dictionary<string, Texture2D> tileTextures;
         public string[][] tileMap;
+        public static GraphicsDeviceManager graphics;
+        
 
         public Game1()
         {
             Instance = this;
             this.IsMouseVisible = true;
-
             
-          
+            
+
+            camTarget = new Vector3(0f, 0f, 0f);
+            camPosition = new Vector3(0f, 0f, -5);
+            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
+                               MathHelper.ToRadians(45f), 180,
+                1f, 1000f);
+                viewMatrix = Matrix.CreateLookAt(camPosition, camTarget, 
+                         new Vector3(0f, 1f, 0f));// Y up
+            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
+                          Forward, Vector3.Up);
+                          
         }
 
         protected override void Initialize()
@@ -68,16 +86,16 @@ namespace TowerDefense
             base.Initialize();
             
 
-            //Setup Camera
+            
            
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                 MathHelper.ToRadians(90),
                 this.GraphicsDevice.Viewport.AspectRatio,
                 1, 10);
-            Vector3 back =new Vector3(0,-1,0);
-            Vector3 foward =new Vector3(0,1,0);
-            Vector3 scale =new Vector3(1,1,1);
-            worldMatrix = Matrix.CreateWorld(back,foward,scale);
+            Vector3 translation =new Vector3(1,-1,-1);
+            Vector3 rotation =new Vector3(0,1,0);
+            Vector3 scale =new Vector3(2,2,2);
+            worldMatrix = Matrix.CreateWorld(translation,rotation,scale);
             Content.RootDirectory="content/Models";
             model = Content.Load<Model>("BuffingTower");
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);

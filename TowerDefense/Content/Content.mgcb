@@ -32,9 +32,9 @@
 /processorParam:PremultiplyVertexColors=True
 /processorParam:ResizeTexturesToPowerOfTwo=False
 /processorParam:RotationX=0
-/processorParam:RotationY=90
-/processorParam:RotationZ=0
-/processorParam:Scale=0.5
+/processorParam:RotationY=180
+/processorParam:RotationZ=90
+/processorParam:Scale=0.4
 /processorParam:SwapWindingOrder=False
 /processorParam:TextureFormat=Compressed
 /build:Models/BuffingTower.obj
