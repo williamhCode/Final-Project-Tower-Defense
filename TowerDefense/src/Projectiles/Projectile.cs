@@ -173,14 +173,15 @@ namespace TowerDefense.Projectiles
             }
             else
             {
+                TimeElapsed += dt;
+                (Position, Angle) = path.GetCurrentState();
+
                 if (ReachedTarget())
                 {
                     Position = TargetPosition;
                     damageType.ApplyDamage(dt);
                     HasHit = true;
                 }
-                TimeElapsed += dt;
-                (Position, Angle) = path.GetCurrentState();
             }
         }
 

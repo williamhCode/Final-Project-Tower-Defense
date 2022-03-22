@@ -33,8 +33,8 @@ namespace TowerDefense.Entities.Buildings
 
         public BasicTower(Vector2 position) : base(position)
         {
-            Range = 200;
-            Damage = 2;
+            Range = 500;
+            Damage = 1;
             fireRate = 10f;
             fireTime = fireRate;
             CShape = new CRectangle(position, 32, 32);
@@ -58,7 +58,7 @@ namespace TowerDefense.Entities.Buildings
                 {
                     var path = new StraightPath();
                     var damageType = new DirectDamage(enemy);
-                    projectile = new Projectile(Position, enemy.Position, speed: 800, damage: 1, path, damageType, 0.25f);
+                    projectile = new Projectile(Position, enemy.Position, speed: 8000, damage: Damage, path, damageType, 0.25f);
                     break;
                 }
             }

@@ -43,6 +43,7 @@ namespace TowerDefense
 
         private Player player;
         private List<Entity> entities;
+        private Building[][] buildingTiles;
         private Building[] buildings;
         private Tower[] towers;
         private Enemy[] enemies;
@@ -59,7 +60,7 @@ namespace TowerDefense
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
 
-        private bool debug = false;
+        private bool debug;
 
         public Game1()
         {
@@ -76,21 +77,8 @@ namespace TowerDefense
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
-                new BasicTower(new Vector2(208, 208))
             };
-            for (int i = 0; i < 30; i++)
-            {
-                entities.Add(new Wall(new Vector2(i * 16 + 8, 8)));
-                entities.Add(new Wall(new Vector2(8, (i + 1) * 16 + 8)));
-            }
-            // for (int i = 0; i < 3; i++)
-            // {
-            //     for (int j = 0; j < 3; j++)
-            //     {
-            //         entities.Add(new Bandit(new Vector2(i * 32 + 200, j * 32 + 200), 3));
-            //     }
-            // }
-            // entities.RemoveAt(10);
+
             buildings = entities.OfType<Building>().ToArray();
             towers = buildings.OfType<Tower>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
@@ -111,6 +99,12 @@ namespace TowerDefense
                 }
             }
 
+            buildingTiles = new Building[tileMap.Length][];
+            for (int i = 0; i < buildingTiles.Length; i++)
+            {
+                buildingTiles[i] = new Building[tileMap[i].Length];
+            }
+
             SHGBuildings = new SpatialHashGrid(32);
             foreach (var building in buildings)
             {
@@ -119,7 +113,9 @@ namespace TowerDefense
 
             SHGFlocking = new SpatialHashGrid(90);
 
-            SHGEnemies = new SpatialHashGrid(30);
+            SHGEnemies = new SpatialHashGrid(90);
+
+            debug = false;
         }
 
         /// <summary>
@@ -129,8 +125,12 @@ namespace TowerDefense
         {
             return
             assembly.GetTypes()
-                    .Where(t => t.Namespace.Contains(nameSpace, StringComparison.Ordinal))
-                    .ToArray();
+            .Where(t =>
+            {
+                var ns = t.Namespace;
+                return ns == null ? false : ns.Contains(nameSpace, StringComparison.Ordinal);
+            })
+            .ToArray();
         }
 
         protected override void LoadContent()
@@ -203,10 +203,35 @@ namespace TowerDefense
             */
         }
 
+        private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
+        {
+            var nearbyWalls = new List<Wall>();
+
+            var posXs = new int[] { -1, 1, 0, 0 };
+            var posYs = new int[] { 0, 0, -1, 1 };
+
+            for (int i = 0; i < 4; i++)
+            {
+                var x = xTilePos + posXs[i];
+                var y = yTilePos + posYs[i];
+                if (x >= 0 && x < buildingTiles.Length && y >= 0 && y < buildingTiles[x].Length)
+                {
+                    var tempWall = buildingTiles[x][y];
+                    var nearbyWall = tempWall as Wall;
+                    if (nearbyWall != null)
+                    {
+                        nearbyWalls.Add(nearbyWall);
+                    }
+                }
+            }
+
+            return nearbyWalls;
+        }
+
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
-            
+
             // update type arrays
             buildings = entities.OfType<Building>().ToArray();
             towers = buildings.OfType<Tower>().ToArray();
@@ -237,46 +262,85 @@ namespace TowerDefense
             var mousePosition = mouseState.Position.ToVector2();
             var worldPosition = camera.ScreenToWorld(mousePosition);
 
-            // place entities
-            if (keyboardState.IsKeyDown(Keys.D1))
+            var tileKeys = new Keys[] { Keys.D1, Keys.D2, Keys.D3 };
+            if (keyboardState.GetPressedKeys().Intersect(tileKeys).Any())
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
-                // check if entites has building with same position
-                if (!entities.Any(e => e.Position == position))
+
+                int xTilePos = (int)MathF.Floor(worldPosition.X / TILE_SIZE);
+                int yTilePos = (int)MathF.Floor(worldPosition.Y / TILE_SIZE);
+                
+                if (xTilePos < 0 || xTilePos >= buildingTiles.Length || yTilePos < 0 || yTilePos >= buildingTiles[xTilePos].Length)
                 {
-                    var building = new Wall(position);
-                    entities.Add(building);
-                    SHGBuildings.AddEntityPosition(building);
+                    goto End;
+                }
+                Console.WriteLine("Tile position: " + xTilePos + ", " + yTilePos);
+                Building currBuilding = buildingTiles[xTilePos][yTilePos];
+
+                if (keyboardState.IsKeyDown(Keys.D1))
+                {
+                    // check if entites has building with same position
+                    if (currBuilding == null)
+                    {
+                        var wall = new Wall(position);
+                        entities.Add(wall);
+                        buildingTiles[xTilePos][yTilePos] = wall;
+                        SHGBuildings.AddEntityPosition(wall);
+
+                        var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
+                        foreach (var nearbyWall in nearbyWalls)
+                        {
+                            var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
+                            entities.Add(inBetweenWall);
+                            SHGBuildings.AddEntityCShape(inBetweenWall);
+                        }
+                    }
+                }
+                if (keyboardState.IsKeyDown(Keys.D2))
+                {
+                    if (currBuilding == null)
+                    {
+                        var tower = new BasicTower(position);
+                        entities.Add(tower);
+                        buildingTiles[xTilePos][yTilePos] = tower;
+                        SHGBuildings.AddEntityPosition(tower);
+                    }
+                }
+                if (keyboardState.IsKeyDown(Keys.D3))
+                {
+                    if (currBuilding != null)
+                    {
+                        entities.Remove(currBuilding);
+                        buildingTiles[xTilePos][yTilePos] = null;
+                        SHGBuildings.RemoveEntityPosition(currBuilding);
+
+                        if (currBuilding is Wall)
+                        {
+                            var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
+                            foreach (var nearbyWall in nearbyWalls)
+                            {
+                                var tempPos = (nearbyWall.Position + currBuilding.Position) / 2;
+                                var inBetweenWall = entities.Find(e => e.Position == tempPos);
+                                if (inBetweenWall != null)
+                                {
+                                    entities.Remove(inBetweenWall);
+                                    SHGBuildings.RemoveEntityCShape(inBetweenWall);
+                                }
+                            }
+                        }
+                    }
                 }
             }
-            if (keyboardState.WasKeyJustUp(Keys.D2))
+            End:;
+
+            if (keyboardState.WasKeyJustUp(Keys.D4))
             {
                 for (int i = 0; i < 5; i++)
                 {
                     for (int j = 0; j < 5; j++)
+                    {
                         entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
-                }
-            }
-            if (keyboardState.IsKeyDown(Keys.D3))
-            {
-                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
-                // check if entites has building with same position
-                if (!entities.Any(e => e.Position == position))
-                {
-                    var tower = new BasicTower(position);
-                    entities.Add(tower);
-                    SHGBuildings.AddEntityPosition(tower);
-                }
-            }
-            if (keyboardState.IsKeyDown(Keys.D4))
-            {
-                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
-                // check if entites has building with same position
-                var entity = entities.Find(e => e.Position == position);
-                if (entity != null)
-                {
-                    entities.Remove(entity);
-                    SHGBuildings.RemoveEntityPosition(entity);
+                    }
                 }
             }
             if (keyboardState.WasKeyJustUp(Keys.E))
@@ -292,7 +356,7 @@ namespace TowerDefense
 
             player.Move(dt, direction);
             player.DecideDirection(worldPosition);
-            
+
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
@@ -315,7 +379,7 @@ namespace TowerDefense
                     projectiles.Remove(projectile);
                 }
             }
-                
+
             // tower shooting
             foreach (var tower in towers)
             {
@@ -443,7 +507,7 @@ namespace TowerDefense
         private static IEnumerator<Wait> WobbleButton(Element button)
         {
             var counter = 0f;
-            while(counter < 4 * Math.PI && button.Root != null)
+            while (counter < 4 * Math.PI && button.Root != null)
             {
                 button.Transform = Matrix.CreateTranslation((float)Math.Sin(counter / 2) * 2 * button.Scale, 0, 0);
                 counter += 0.1f;
@@ -455,18 +519,18 @@ namespace TowerDefense
         private static IEnumerator<Wait> WobbleProgressBar(ProgressBar bar)
         {
             var reducing = false;
-            while(bar.Root != null)
+            while (bar.Root != null)
             {
-                if(reducing)
+                if (reducing)
                 {
                     bar.CurrentValue -= 0.1f;
-                    if(bar.CurrentValue <= 0)
+                    if (bar.CurrentValue <= 0)
                         reducing = false;
                 }
                 else
                 {
                     bar.CurrentValue += 0.1f;
-                    if(bar.CurrentValue >= bar.MaxValue)
+                    if (bar.CurrentValue >= bar.MaxValue)
                         reducing = true;
                 }
                 yield return new Wait(0.01f);
