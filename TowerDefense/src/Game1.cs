@@ -92,12 +92,15 @@ namespace TowerDefense
                 MathHelper.ToRadians(90),
                 this.GraphicsDevice.Viewport.AspectRatio,
                 1, 10);
-            Vector3 translation =new Vector3(1,-1,-1);
+            Vector3 translation =new Vector3(1,0,-1);
             Vector3 rotation =new Vector3(0,1,0);
-            Vector3 scale =new Vector3(2,2,2);
+            Vector3 scale =new Vector3(1,1,1);
             worldMatrix = Matrix.CreateWorld(translation,rotation,scale);
             Content.RootDirectory="content/Models";
-            model = Content.Load<Model>("BuffingTower");
+            Matrix RotationMatrix=Matrix.CreateFromAxisAngle(translation, 20);
+            //worldMatrix.Rotate=new Vector3(1,-2,0);
+            model = Content.Load<Model>("cannon");
+            
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // entities initialization
