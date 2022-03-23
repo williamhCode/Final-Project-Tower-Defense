@@ -206,6 +206,7 @@ namespace TowerDefense
         private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
         {
             var nearbyWalls = new List<Wall>();
+            
 
             var posXs = new int[] { -1, 1, 0, 0 };
             var posYs = new int[] { 0, 0, -1, 1 };
@@ -274,7 +275,7 @@ namespace TowerDefense
                 {
                     goto End;
                 }
-                Console.WriteLine("Tile position: " + xTilePos + ", " + yTilePos);
+
                 Building currBuilding = buildingTiles[xTilePos][yTilePos];
 
                 if (keyboardState.IsKeyDown(Keys.D1))
@@ -335,9 +336,9 @@ namespace TowerDefense
 
             if (keyboardState.WasKeyJustUp(Keys.D4))
             {
-                for (int i = 0; i < 5; i++)
+                for (int i = 0; i < 3; i++)
                 {
-                    for (int j = 0; j < 5; j++)
+                    for (int j = 0; j < 3; j++)
                     {
                         entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
                     }

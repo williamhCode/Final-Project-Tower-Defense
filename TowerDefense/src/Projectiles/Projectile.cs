@@ -198,7 +198,7 @@ namespace TowerDefense.Projectiles
             // }
             if (HasHit)
             {
-                spriteBatch.DrawCircle(Position, 15, 20, Color.Red, 1);
+                spriteBatch.DrawCircle(Position, 50, 20, Color.Red, 1);
             }
             else
             {

@@ -25,8 +25,8 @@ namespace TowerDefense.Entities.Enemies
         }
 
         private const float MAX_SPEED = 50;
-        private const float FRICTION = 1200;
-        private const float ACCELERATION = 1200;
+        private const float FRICTION = 1000;
+        private const float ACCELERATION = 500;
 
 
         public static AnimationState<Enum> AnimationState;
@@ -118,16 +118,18 @@ namespace TowerDefense.Entities.Enemies
             separation * SEPARATION_FACTOR +
             direction * 0.2f;
 
-            Velocity += force * 1000 * dt;
+            Velocity = Velocity.MoveTowards(MAX_SPEED * force.Normalized(), ACCELERATION * dt);
 
-            if (Velocity.Length() > MAX_SPEED)
-            {
-                Velocity = Velocity.Normalized() * MAX_SPEED;
-            }
+            // Velocity += force * 1000 * dt;
+
+            // if (Velocity.Length() > MAX_SPEED)
+            // {
+            //     Velocity = Velocity.Normalized() * MAX_SPEED;
+            // }
+            // randomize velocity if its undefined
             if (!float.IsFinite(Velocity.X))
             {
                 var rand = new Random();
-                // make velocity random vector2
                 var angle = (float)rand.NextDouble() * MathF.PI * 2;
                 Velocity = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * MAX_SPEED;
             }

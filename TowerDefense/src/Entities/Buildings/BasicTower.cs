@@ -35,7 +35,7 @@ namespace TowerDefense.Entities.Buildings
         {
             Range = 500;
             Damage = 1;
-            fireRate = 10f;
+            fireRate = 1f;
             fireTime = fireRate;
             CShape = new CRectangle(position, 32, 32);
 
@@ -50,18 +50,36 @@ namespace TowerDefense.Entities.Buildings
                 return null;
 
             var entities = SHG.QueryEntitiesRange(Position, Range);
-            Projectile projectile = null;
+
+            var enemiesInRange = new List<Enemy>();
 
             foreach (Enemy enemy in entities)
             {
                 if (Vector2.Distance(Position, enemy.Position) < Range)
                 {
-                    var path = new StraightPath();
-                    var damageType = new DirectDamage(enemy);
-                    projectile = new Projectile(Position, enemy.Position, speed: 8000, damage: Damage, path, damageType, 0.25f);
-                    break;
+                    enemiesInRange.Add(enemy);
                 }
             }
+
+            if (enemiesInRange.Count == 0)
+                return null;
+
+            // find closest position in enemies in range
+            Vector2 closestPosition = Vector2.Zero;
+            float closestDistance = float.MaxValue;
+            foreach (Enemy enemy in enemiesInRange)
+            {
+                float distance = Vector2.DistanceSquared(Position, enemy.Position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestPosition = enemy.Position;
+                }
+            }
+
+            var path = new StraightPath();
+            var damageType = new AreaDamage(SHG, 50, 10000);
+            var projectile = new Projectile(startPosition: Position, targetPosition: closestPosition, speed: 1000, damage: Damage, path, damageType, 0.25f);
 
             return projectile;
         }
