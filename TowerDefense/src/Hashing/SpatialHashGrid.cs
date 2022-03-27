@@ -62,21 +62,19 @@ namespace TowerDefense.Hashing
         }
 
         /// <summary>
-        /// Adds an entity to the grid using its position.
+        /// Adds an entity to the grid using a position.
         /// </summary>
-        public void AddEntityPosition(Entity entity)
+        public void AddEntity(Entity entity, Vector2 position)
         {
-            var key = PositionToKey(entity.Position);
+            var key = PositionToKey(position);
             SafeAdd(entity, key);
         }
 
         /// <summary>
-        /// Adds an entity to the grid using its collision shape.
+        /// Adds an entity to the grid using a collision shape.
         /// </summary>
-        public void AddEntityCShape(Entity entity)
+        public void AddEntity(Entity entity, CShape cShape)
         {
-            CShape cShape = entity.CShape;
-
             var (minX, maxX, minY, maxY) = GetCShapeRanges(cShape);
 
             // var keys = new List<string>();
@@ -96,7 +94,7 @@ namespace TowerDefense.Hashing
         /// <summary>
         /// Queries entities in the grid using a position.
         /// </summary>
-        public List<Entity> QueryEntitiesPosition(Vector2 position)
+        public List<Entity> QueryEntities(Vector2 position)
         {
             var key = PositionToKey(position);
             if (HashTable.ContainsKey(key))
@@ -108,7 +106,7 @@ namespace TowerDefense.Hashing
         /// <summary>
         /// Queries entities in the grid using a position and range.
         /// </summary>
-        public List<Entity> QueryEntitiesRange(Vector2 position, float range)
+        public List<Entity> QueryEntities(Vector2 position, float range)
         {
             var entities = new List<Entity>();
             var (minX, maxX, minY, maxY) = GetRanges(position, range, range);
@@ -129,7 +127,7 @@ namespace TowerDefense.Hashing
         /// <summary>
         /// Queries entities in the grid using a collision shape.
         /// </summary>
-        public List<Entity> QueryEntitiesCShape(CShape cShape)
+        public List<Entity> QueryEntities(CShape cShape)
         {
             var entities = new List<Entity>();
             var (minX, maxX, minY, maxY) = GetCShapeRanges(cShape);

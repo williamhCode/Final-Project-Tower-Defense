@@ -16,7 +16,23 @@ namespace Towerdefense.Entities.Components
         CShape CShape => Obj.CShape;
     }
 
-    public interface IFaceable : IEntityComponent
+    public interface IHitboxComponent : IEntityComponent
+    {
+        CShape HitboxShape { get; set; }
+        float YHitboxOffset { get; set; }
+        void UpdateHitbox();
+    }
+
+    public static class IHitboxComponentExtensions
+    {
+        public static void _UpdateHitbox(this IHitboxComponent obj)
+        {
+            obj.HitboxShape.Position = obj.Position - new Vector2(0, obj.YHitboxOffset);
+            obj.HitboxShape.Update();
+        }
+    }
+
+    public interface IFaceableComponent : IEntityComponent
     {
         AnimationState<Enum> animationState { get; set; }
         const string DIRECTION = "Direction";
@@ -29,18 +45,18 @@ namespace Towerdefense.Entities.Components
         void DecideDirection(Vector2 coords);
     }
 
-    public static class IFaceableExtensions
+    public static class IFaceableComponentExtensions
     {
-        public static void _DecideDirection(this IFaceable obj, Vector2 coords)
+        public static void _DecideDirection(this IFaceableComponent obj, Vector2 coords)
         {
             Vector2 direction = coords - obj.Position;
             if (Vector2.Dot(direction, Vector2.UnitX) > 0)
             {
-                obj.animationState.SetState("Direction", IFaceable.Direction.Right);
+                obj.animationState.SetState("Direction", IFaceableComponent.Direction.Right);
             }
             else
             {
-                obj.animationState.SetState("Direction", IFaceable.Direction.Left);
+                obj.animationState.SetState("Direction", IFaceableComponent.Direction.Left);
             }
         }
     }
