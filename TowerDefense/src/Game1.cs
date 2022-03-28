@@ -326,7 +326,7 @@ namespace TowerDefense
 
                 if (xTilePos < 0 || xTilePos >= buildingTiles.Length || yTilePos < 0 || yTilePos >= buildingTiles[xTilePos].Length)
                 {
-                    goto EndMouse;
+                    goto EndBuilding;
                 }
 
                 Building currBuilding = buildingTiles[xTilePos][yTilePos];
@@ -386,6 +386,7 @@ namespace TowerDefense
                         break;
                 }
             }
+            EndBuilding:;
 
             if (mouseState.WasButtonJustDown(MouseButton.Left))
             {
@@ -402,6 +403,7 @@ namespace TowerDefense
             }
 
             EndMouse:;
+
 
             if (keyboardState.WasKeyJustDown(Keys.E))
             {
