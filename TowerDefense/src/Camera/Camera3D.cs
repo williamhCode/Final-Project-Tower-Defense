@@ -12,11 +12,11 @@ namespace TowerDefense.Camera
         public Vector3 orientation;
         public Matrix projectionMatrix;
 
-        public Camera3D(Vector3 position)
+        public Camera3D(Vector3 position, float aspectRatio)
         {
             this.position = position;
             this.orientation = new Vector3(0, 0, 0);
-            this.projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, 1, 1, 100);
+            this.projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, 1, 100);
         }
 
         public void Rotate(float pitch, float yaw, float roll)
@@ -49,7 +49,7 @@ namespace TowerDefense.Camera
 
     public class FPS_Camera : Camera3D
     {
-        public FPS_Camera(Vector3 position) : base(position)
+        public FPS_Camera(Vector3 position, float aspectRatio) : base(position, aspectRatio)
         {
         }
 

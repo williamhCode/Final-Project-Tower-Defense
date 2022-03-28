@@ -76,7 +76,7 @@ namespace TowerDefense
 
 
             // create camera
-            fpsCamera = new FPS_Camera(new Vector3(0, 0, 2));
+            fpsCamera = new FPS_Camera(new Vector3(0, 0, 2), 1280/720f);
 
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
