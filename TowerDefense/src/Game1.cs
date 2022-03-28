@@ -61,7 +61,17 @@ namespace TowerDefense
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
 
+<<<<<<< Updated upstream
         private bool debug;
+=======
+        public enum DebugSelector
+        {
+            Bandit,
+            BasicTower,
+            Wall,
+            None
+        }
+>>>>>>> Stashed changes
 
         public Game1()
         {
@@ -176,19 +186,22 @@ namespace TowerDefense
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
                 //TextScale = 0.1f,
             };
+
             this.UiSystem.Style = style;
             this.UiSystem.AutoScaleReferenceSize = new Point(1280, 720);
-            this.UiSystem.AutoScaleWithScreen = true;
-            this.UiSystem.GlobalScale = 5;
+            this.UiSystem.AutoScaleWithScreen = false;
+            this.UiSystem.GlobalScale = 1;
 
-            /*
-            this.root = new Panel(Anchor.TopLeft, new Vector2(100,100), Vector2.Zero, false, true);
+            
+            this.root = new Panel(Anchor.Center, new Vector2(1200,100), new Vector2(0,300), false, true);
             this.root.ScrollBar.SmoothScrolling = true;
             this.UiSystem.Add("TestUi", this.root);
+            
             float timesPressed = 0f;
+            /*
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
-            var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
-            CoroutineHandler.Start(WobbleProgressBar(bar1));
+            //var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
+            //CoroutineHandler.Start(WobbleProgressBar(bar1));
             var button1 = box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
             {
                 OnPressed = element => 
@@ -196,12 +209,22 @@ namespace TowerDefense
                     //this.UiSystem.Remove("TestUi");
                     //this.UiSystem.Remove("InfoBox");
                     timesPressed += 1f;
-                    CoroutineHandler.Start(WobbleButton(element));
+                    //CoroutineHandler.Start(WobbleButton(element));
                 }, 
                 PositionOffset = new Vector2(0, 1)
             });
             this.UiSystem.Add("InfoBox", box);
             */
+            var box = root.AddChild(new Panel(Anchor.AutoCenter, new Vector2(100,100), Vector2.Zero, setHeightBasedOnChildren: false));
+            var button1 = box.AddChild(new Button(Anchor.AutoCenter, new Vector2(20, 20), "Okay")
+            {
+                OnPressed = element =>
+                {
+                    timesPressed += 1f;
+                },
+                PositionOffset = new Vector2(0, 1)
+            });
+            
         }
 
         private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
