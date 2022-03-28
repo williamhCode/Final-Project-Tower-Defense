@@ -61,9 +61,7 @@ namespace TowerDefense
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
 
-<<<<<<< Updated upstream
         private bool debug;
-=======
         public enum DebugSelector
         {
             Bandit,
@@ -71,7 +69,6 @@ namespace TowerDefense
             Wall,
             None
         }
->>>>>>> Stashed changes
 
         public Game1()
         {
