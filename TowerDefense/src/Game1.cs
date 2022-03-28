@@ -40,16 +40,12 @@ namespace TowerDefense
 
         Matrix projectionMatrix;
 
-        Matrix worldMatrix;
-        Vector3 camTarget;
-        Vector3 camPosition;
-
         Matrix viewMatrix;
 
 
         Model model;
 
-
+        FPS_Camera fpsCamera;
 
         private Player player;
         private List<Entity> entities;
@@ -69,15 +65,6 @@ namespace TowerDefense
             this.IsMouseVisible = true;
 
 
-
-            camTarget = new Vector3(0f, 0f, 0f);
-            camPosition = new Vector3(0f, 0f, 1f);
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                               MathHelper.ToRadians(45f), 180,
-                1f, 1000f);
-            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
-                     new Vector3(0f, 1f, 0f));// Y up
-
         }
 
         protected override void Initialize()
@@ -86,21 +73,19 @@ namespace TowerDefense
 
 
 
+            // create camera
+            fpsCamera = new FPS_Camera(new Vector3(0, 0, 2));
 
-            projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-            MathHelper.ToRadians(90),
-            this.GraphicsDevice.Viewport.AspectRatio,
-            1, 10);
             // Vector3 translation = new Vector3(0, 0, -1);
             // Vector3 rotation = new Vector3(0, 0, 0);
             // Vector3 scale = new Vector3(1, 1, 1);
             // worldMatrix = Matrix.CreateWorld(translation, rotation, scale);
-            worldMatrix = Matrix.Identity;
 
             Content.RootDirectory = "content/Models";
             // Matrix RotationMatrix = Matrix.CreateFromAxisAngle(translation, 20);
             //worldMatrix.Rotate=new Vector3(1,-2,0);
-            model = Content.Load<Model>("cannon");
+            // model = Content.Load<Model>("cannon");
+            model = Content.Load<Model>("buffingtower");
 
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
@@ -235,6 +220,23 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
+            fpsCamera.Move(direction.Y * dt * 5, direction.X * dt * 5, 0);
+
+            Vector2 mouseDifference;
+            const float MAXDELTA = 1; // Set to the appropriate value.
+            var mouseNow = Mouse.GetState();
+            var mouseDefaultPos = new Vector2(620, 360);
+            if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
+            {
+                mouseDifference.X = Math.Min(MAXDELTA, mouseDefaultPos.X - mouseNow.X);
+                mouseDifference.Y = Math.Min(MAXDELTA, mouseDefaultPos.Y - mouseNow.Y);
+
+                // fpsCamera.Rotate(mouseDifference.X * 0.01f, mouseDifference.Y * 0.01f, 0);
+
+                Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
+            }
+
+
             // enemy movement
             foreach (var e in enemies)
             {
@@ -325,11 +327,11 @@ namespace TowerDefense
             {
                 foreach (BasicEffect effect in mesh.Effects)
                 {
-                    //effect.EnableDefaultLighting();
-                    effect.AmbientLightColor = new Vector3(1f, 0, 0);
-                    effect.View = viewMatrix;
-                    effect.World = worldMatrix;
-                    effect.Projection = projectionMatrix;
+                    effect.EnableDefaultLighting();
+                    effect.AmbientLightColor = new Vector3(0.5f, 0.5f, 0.5f);
+                    effect.View = fpsCamera.GetViewMatrix();
+                    effect.World = Matrix.Identity;
+                    effect.Projection = fpsCamera.GetProjectionMatrix();
                 }
                 mesh.Draw();
             }

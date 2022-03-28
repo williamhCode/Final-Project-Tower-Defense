@@ -35,6 +35,9 @@ namespace TowerDefense.Camera
 
         public Matrix GetViewMatrix()
         {
+            var rotationMatrix = Matrix.CreateFromYawPitchRoll(orientation.Y, orientation.X, orientation.Z);
+            forward = Vector3.Transform(forward, rotationMatrix);
+            up = Vector3.Transform(up, rotationMatrix);
             return Matrix.CreateLookAt(position, position + forward, up);
         }
 
@@ -59,7 +62,7 @@ namespace TowerDefense.Camera
         public void Move(float forwards, float sideways, float vertical)
         {
             var rotation = Matrix.CreateRotationY(orientation.Y);
-            var translationVector = new Vector3(sideways, vertical, -forwards);
+            var translationVector = new Vector3(sideways, vertical, forwards);
             var moveDirection = Vector3.Transform(translationVector, rotation);
             Translate(moveDirection.X, moveDirection.Y, moveDirection.Z);
         }
