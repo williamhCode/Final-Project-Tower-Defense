@@ -231,7 +231,7 @@ namespace TowerDefense
                 mouseDifference.X = Math.Min(MAXDELTA, mouseDefaultPos.X - mouseNow.X);
                 mouseDifference.Y = Math.Min(MAXDELTA, mouseDefaultPos.Y - mouseNow.Y);
 
-                // fpsCamera.Rotate(mouseDifference.X * 0.01f, mouseDifference.Y * 0.01f, 0);
+                fpsCamera.Rotate(mouseDifference.Y / 10000, mouseDifference.X / 10000);
 
                 Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             }
