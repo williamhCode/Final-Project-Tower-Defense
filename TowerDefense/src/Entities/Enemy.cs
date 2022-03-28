@@ -12,11 +12,11 @@ using Towerdefense.Entities.Components;
 
 namespace TowerDefense.Entities
 {
-    public abstract class Enemy : Entity, IFaceable
+    public abstract class Enemy : Entity, IFaceableComponent, IHitboxComponent
     {
         public Entity Obj => this;
 
-        protected const string DIRECTION = IFaceable.DIRECTION;
+        protected const string DIRECTION = IFaceableComponent.DIRECTION;
         protected enum Direction
         {
             Left,
@@ -28,6 +28,9 @@ namespace TowerDefense.Entities
         public int Health { get; set; }
         public Boolean IsDead => Health <= 0;
 
+        public CShape HitboxShape { get; set; }
+        public float YHitboxOffset { get; set; }
+
         public Enemy(Vector2 position, int health)
         {   
             Position = position;
@@ -37,6 +40,8 @@ namespace TowerDefense.Entities
 
         public abstract void Move(Vector2 goal, float dt);
 
+        public void UpdateHitbox() => this._UpdateHitbox();
+
         public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
 
         public abstract void ApplyFlocking(float dt, SpatialHashGrid SHG, Vector2 goal);
@@ -45,7 +50,14 @@ namespace TowerDefense.Entities
         {
             Position += Velocity * dt;
             CShape.Update();
+            UpdateHitbox();
             animationState.Update(dt);
+        }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+            HitboxShape.Draw(spriteBatch, Color.Blue, 1);
         }
     }
 }

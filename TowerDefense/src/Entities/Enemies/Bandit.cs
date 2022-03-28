@@ -9,6 +9,7 @@ using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Hashing;
+using System.Threading.Tasks;
 
 
 namespace TowerDefense.Entities.Enemies
@@ -24,9 +25,9 @@ namespace TowerDefense.Entities.Enemies
             Dead
         }
 
-        private const float MAX_SPEED = 50;
-        private const float FRICTION = 1200;
-        private const float ACCELERATION = 1200;
+        private const float MAX_SPEED = 30;
+        private const float FRICTION = 1000;
+        private const float ACCELERATION = 300;
 
 
         public static AnimationState<Enum> AnimationState;
@@ -49,6 +50,9 @@ namespace TowerDefense.Entities.Enemies
             animationState = AnimationState.Copy();
             animationState.SetState(BANDIT_STATE, BanditState.Idle);
             animationState.SetState(DIRECTION, Direction.Right);
+
+            HitboxShape = new CRectangle(position, 20, 32);
+            YHitboxOffset = 14;
         }
 
         public override void Move(Vector2 goal, float dt)
@@ -80,14 +84,14 @@ namespace TowerDefense.Entities.Enemies
 
         public override void ApplyFlocking(float dt, SpatialHashGrid SHG, Vector2 goal)
         {
-            var entitiesToCheck = SHG.QueryEntitiesRange(Position, SEPARATION_DIST);
+            var entitiesToCheck = SHG.QueryEntities(Position, SEPARATION_DIST);
             entitiesToCheck.Remove(this);
 
             var cohesion = Vector2.Zero;
             var alignment = Vector2.Zero;
             var separation = Vector2.Zero;
 
-            foreach (var e in entitiesToCheck)
+            Parallel.ForEach(entitiesToCheck, e =>
             {
                 var sqdist = Vector2.DistanceSquared(Position, e.Position);
                 var dist = MathF.Sqrt(sqdist);
@@ -107,7 +111,7 @@ namespace TowerDefense.Entities.Enemies
                     separation += (Position - e.Position) / 
                     (dist / SEPARATION_SENSTIVITY + sqdist);
                 }
-            }
+            });
             
             Vector2 direction = (goal - Position).Normalized();
             DecideDirection(goal);
@@ -118,16 +122,12 @@ namespace TowerDefense.Entities.Enemies
             separation * SEPARATION_FACTOR +
             direction * 0.2f;
 
-            Velocity += force * 1000 * dt;
+            Velocity = Velocity.MoveTowards(MAX_SPEED * force.Normalized(), ACCELERATION * dt);
 
-            if (Velocity.Length() > MAX_SPEED)
-            {
-                Velocity = Velocity.Normalized() * MAX_SPEED;
-            }
+            // randomize velocity if its undefined
             if (!float.IsFinite(Velocity.X))
             {
                 var rand = new Random();
-                // make velocity random vector2
                 var angle = (float)rand.NextDouble() * MathF.PI * 2;
                 Velocity = new Vector2(MathF.Cos(angle), MathF.Sin(angle)) * MAX_SPEED;
             }

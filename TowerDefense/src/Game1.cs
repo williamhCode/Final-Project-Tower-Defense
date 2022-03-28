@@ -30,6 +30,7 @@ using Towerdefense.Entities.Components;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace TowerDefense
 {
@@ -115,7 +116,7 @@ namespace TowerDefense
             SHGBuildings = new SpatialHashGrid(32);
             foreach (var building in buildings)
             {
-                SHGBuildings.AddEntityPosition(building);
+                SHGBuildings.AddEntity(building, building.Position);
             }
 
             SHGFlocking = new SpatialHashGrid(90);
@@ -226,6 +227,7 @@ namespace TowerDefense
         private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
         {
             var nearbyWalls = new List<Wall>();
+            
 
             var posXs = new int[] { -1, 1, 0, 0 };
             var posYs = new int[] { 0, 0, -1, 1 };
@@ -261,13 +263,13 @@ namespace TowerDefense
             SHGFlocking.Clear();
             foreach (var enemy in enemies)
             {
-                SHGFlocking.AddEntityPosition(enemy);
+                SHGFlocking.AddEntity(enemy, enemy.Position);
             }
 
             SHGEnemies.Clear();
             foreach (var enemy in enemies)
             {
-                SHGEnemies.AddEntityPosition(enemy);
+                SHGEnemies.AddEntity(enemy, enemy.HitboxShape);
             }
 
             float dt = gameTime.GetElapsedSeconds();
@@ -294,7 +296,7 @@ namespace TowerDefense
                 {
                     goto End;
                 }
-                Console.WriteLine("Tile position: " + xTilePos + ", " + yTilePos);
+
                 Building currBuilding = buildingTiles[xTilePos][yTilePos];
 
                 if (keyboardState.IsKeyDown(Keys.D1))
@@ -305,14 +307,14 @@ namespace TowerDefense
                         var wall = new Wall(position);
                         entities.Add(wall);
                         buildingTiles[xTilePos][yTilePos] = wall;
-                        SHGBuildings.AddEntityPosition(wall);
+                        SHGBuildings.AddEntity(wall, wall.Position);
 
                         var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
                         foreach (var nearbyWall in nearbyWalls)
                         {
                             var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
                             entities.Add(inBetweenWall);
-                            SHGBuildings.AddEntityCShape(inBetweenWall);
+                            SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
                         }
                     }
                 }
@@ -323,7 +325,7 @@ namespace TowerDefense
                         var tower = new BasicTower(position);
                         entities.Add(tower);
                         buildingTiles[xTilePos][yTilePos] = tower;
-                        SHGBuildings.AddEntityPosition(tower);
+                        SHGBuildings.AddEntity(tower, tower.Position);
                     }
                 }
                 if (keyboardState.IsKeyDown(Keys.D3))
@@ -377,17 +379,11 @@ namespace TowerDefense
             player.Move(dt, direction);
             player.DecideDirection(worldPosition);
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
             // enemy flocking
-            foreach (var e in enemies)
+            Parallel.ForEach(enemies, e =>
             {
                 e.ApplyFlocking(dt, SHGFlocking, player.Position);
-            }
-
-            sw.Stop();
-            // Console.WriteLine(sw.Elapsed.TotalSeconds);
+            });
 
             // projectile
             var projectilesTemp = new List<Projectile>(projectiles);
@@ -400,15 +396,21 @@ namespace TowerDefense
                 }
             }
 
-            // tower shooting
-            foreach (var tower in towers)
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            Parallel.ForEach(towers, tower =>
             {
-                var projectile = tower.Shoot(dt, SHGEnemies);
+                var projectile = tower.Shoot(SHGEnemies);
                 if (projectile != null)
                 {
                     projectiles.Add(projectile);
                 }
-            }
+            });
+
+            sw.Stop();
+            Console.WriteLine(sw.Elapsed.TotalSeconds);
+            Console.WriteLine(enemies.Length);
 
             // enemy death
             var enemiesTemp = new List<Enemy>(enemies);
@@ -438,10 +440,8 @@ namespace TowerDefense
 
             foreach (var e in entitiesToCheck)
             {
-                var buildings = SHGBuildings.QueryEntitiesCShape(e.CShape);
+                var buildings = SHGBuildings.QueryEntities(e.CShape);
                 buildings = buildings.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
-
-                // var buildings = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
 
                 foreach (var building in buildings)
                 {

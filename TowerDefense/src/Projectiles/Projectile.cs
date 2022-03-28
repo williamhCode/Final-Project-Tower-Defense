@@ -7,6 +7,7 @@ using MonoGame.Extended;
 using TowerDefense.Maths;
 using TowerDefense.Entities;
 using TowerDefense.Hashing;
+using TowerDefense.Collision;
 using TowerDefense.Sprite;
 
 namespace TowerDefense.Projectiles
@@ -88,25 +89,34 @@ namespace TowerDefense.Projectiles
         private float radiusSq;
         private float knockback;
 
-        public AreaDamage(SpatialHashGrid SHG, float splashRadius, float knockbackForce)
+        public AreaDamage(SpatialHashGrid SHG, float splashRadius, float knockbackImpulse)
         {
             this.SHG = SHG;
             radius = splashRadius;
             radiusSq = radius * radius;
-            knockback = knockbackForce;
+            knockback = knockbackImpulse;
         }
 
         public override void ApplyDamage(float dt)
         {
-            foreach (Enemy enemy in SHG.QueryEntitiesRange(Position, radius))
+            CShape damageShape = new CCircle(Position, radius);
+
+            foreach (Enemy enemy in SHG.QueryEntities(Position, radius))
             {
-                var diff = enemy.Position - Position;
-                if (diff.LengthSquared() <= radiusSq)
+                if (CollisionFuncs.IsColliding(damageShape, enemy.HitboxShape))
                 {
                     enemy.Health -= Damage;
-                    var direction = diff.Normalized();
-                    enemy.Velocity += direction * knockback * dt;
+                    var direction = (enemy.Position - Position).Normalized();
+                    enemy.Velocity += direction * knockback;
                 }
+
+                // var diff = enemy.Position - Position;
+                // if (diff.LengthSquared() <= radiusSq)
+                // {
+                //     enemy.Health -= Damage;
+                //     var direction = diff.Normalized();
+                //     enemy.Velocity += direction * knockback * dt;
+                // }
             }
         }
     }

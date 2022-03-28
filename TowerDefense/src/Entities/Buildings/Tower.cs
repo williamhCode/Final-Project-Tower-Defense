@@ -1,11 +1,5 @@
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Content;
 
-using MonoGame.Extended;
-
-using TowerDefense.Collision;
-using TowerDefense.Sprite;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
 
@@ -29,9 +23,8 @@ namespace TowerDefense.Entities.Buildings
             Velocity = new Vector2(0, 0);
         }
 
-        public bool CanFire(float dt)
+        public bool CanFire()
         {
-            fireTime += dt;
             if (fireTime >= 1 / fireRate)
             {
                 fireTime = 0;
@@ -40,6 +33,43 @@ namespace TowerDefense.Entities.Buildings
             return false;
         }
 
-        public abstract Projectile Shoot(float dt, SpatialHashGrid SHG);
+        public List<Enemy> GetEnemiesInRange(SpatialHashGrid SHG)
+        {
+            var entities = SHG.QueryEntities(Position, Range);
+
+            var enemiesInRange = new List<Enemy>();
+            foreach (Enemy enemy in entities)
+            {
+                if (Vector2.Distance(Position, enemy.Position) < Range)
+                {
+                    enemiesInRange.Add(enemy);
+                }
+            }
+
+            return enemiesInRange;
+        }
+
+        public Enemy GetClosestEnemy(List<Enemy> enemiesInRange)
+        {
+            Enemy closestEnemy = null;
+            float closestDistance = float.MaxValue;
+            foreach (Enemy enemy in enemiesInRange)
+            {
+                float distance = Vector2.Distance(Position, enemy.Position);
+                if (distance < closestDistance)
+                {
+                    closestDistance = distance;
+                    closestEnemy = enemy;
+                }
+            }
+            return closestEnemy;
+        }
+
+        public abstract Projectile Shoot(SpatialHashGrid SHG);
+
+        public override void Update(float dt)
+        {
+            fireTime += dt;
+        }
     }
 }

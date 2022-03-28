@@ -14,7 +14,7 @@ using System.Linq;
 
 namespace TowerDefense.Entities
 {
-    public class Player : Entity, IFaceable
+    public class Player : Entity, IFaceableComponent, IHitboxComponent
     {
         public Entity Obj => this;
 
@@ -27,7 +27,7 @@ namespace TowerDefense.Entities
             Dead
         }
 
-        private const string DIRECTION = IFaceable.DIRECTION;
+        private const string DIRECTION = IFaceableComponent.DIRECTION;
         private enum Direction
         {
             Left,
@@ -40,6 +40,9 @@ namespace TowerDefense.Entities
 
         public static AnimationState<Enum> AnimationState;
         public AnimationState<Enum> animationState { get; set; }
+
+        public CShape HitboxShape { get; set; }
+        public float YHitboxOffset { get; set; }
 
         public static void LoadContent(ContentManager content)
         {
@@ -63,6 +66,9 @@ namespace TowerDefense.Entities
             animationState = AnimationState.Copy();
             animationState.SetState(PLAYER_STATE, PlayerState.Idle);
             animationState.SetState(DIRECTION, Direction.Right);
+
+            HitboxShape = new CRectangle(position, 20, 32);
+            YHitboxOffset = 14;
         }
 
         public void Move(float dt, Vector2 direction)
@@ -80,18 +86,27 @@ namespace TowerDefense.Entities
             }
         }
 
+        public void UpdateHitbox() => this._UpdateHitbox();
+
         public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
 
         public override void Update(float dt)
         {
             Position += Velocity * dt;
             CShape.Update();
+            UpdateHitbox();
             animationState.Update(dt);
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
             animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 32));
+        }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+            HitboxShape.Draw(spriteBatch, Color.Blue, 1);
         }
     }
 }

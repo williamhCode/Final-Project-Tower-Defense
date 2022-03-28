@@ -44,24 +44,23 @@ namespace TowerDefense.Entities.Buildings
             animationState.Update(0);
         }
 
-        public override Projectile Shoot(float dt, SpatialHashGrid SHG)
+        public override Projectile Shoot(SpatialHashGrid SHG)
         {
-            if (!CanFire(dt))
+            if (!CanFire())
                 return null;
 
-            var entities = SHG.QueryEntitiesRange(Position, Range);
-            Projectile projectile = null;
+            var enemiesInRange = GetEnemiesInRange(SHG);
 
-            foreach (Enemy enemy in entities)
-            {
-                if (Vector2.Distance(Position, enemy.Position) < Range)
-                {
-                    var path = new StraightPath();
-                    var damageType = new DirectDamage(enemy);
-                    projectile = new Projectile(Position, enemy.Position, speed: 8000, damage: Damage, path, damageType, 0.25f);
-                    break;
-                }
-            }
+            if (enemiesInRange.Count == 0)
+                return null;
+
+            // find closest position in enemies in range
+            var closestEnemy = GetClosestEnemy(enemiesInRange);
+
+            var path = new StraightPath();
+            // var damageType = new AreaDamage(SHG, 50, 150);
+            var damageType = new DirectDamage(closestEnemy);
+            var projectile = new Projectile(startPosition: Position, targetPosition: closestEnemy.HitboxShape.Position, speed: 2000, damage: Damage, path, damageType, 0.25f);
 
             return projectile;
         }
@@ -75,11 +74,6 @@ namespace TowerDefense.Entities.Buildings
         {
             base.DrawDebug(spriteBatch);
             spriteBatch.DrawCircle(Position, Range, 20, Color.Black);
-        }
-
-        public override void Update(float dt)
-        {
-            CShape.Update();
         }
     }
 }
