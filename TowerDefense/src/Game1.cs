@@ -32,25 +32,25 @@ namespace TowerDefense
     public class Game1 : MlemGame
     {
         // variables
-        
+
         public static Game1 Instance { get; private set; }
         public SpriteFont font;
         private Camera2D camera;
         private Panel root;
-        
-         Matrix projectionMatrix;
-        
+
+        Matrix projectionMatrix;
+
         Matrix worldMatrix;
         Vector3 camTarget;
         Vector3 camPosition;
-        
+
         Matrix viewMatrix;
-        
+
 
         Model model;
 
 
-        
+
         private Player player;
         private List<Entity> entities;
         private Wall[] walls;
@@ -60,47 +60,48 @@ namespace TowerDefense
         public Dictionary<string, Texture2D> tileTextures;
         public string[][] tileMap;
         public static GraphicsDeviceManager graphics;
-        
+
+        float angle;
 
         public Game1()
         {
             Instance = this;
             this.IsMouseVisible = true;
-            
-            
+
+
 
             camTarget = new Vector3(0f, 0f, 0f);
-            camPosition = new Vector3(0f, 0f, -5);
+            camPosition = new Vector3(0f, 0f, 1f);
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
                                MathHelper.ToRadians(45f), 180,
                 1f, 1000f);
-                viewMatrix = Matrix.CreateLookAt(camPosition, camTarget, 
-                         new Vector3(0f, 1f, 0f));// Y up
-            worldMatrix = Matrix.CreateWorld(camTarget, Vector3.
-                          Forward, Vector3.Up);
-                          
+            viewMatrix = Matrix.CreateLookAt(camPosition, camTarget,
+                     new Vector3(0f, 1f, 0f));// Y up
+
         }
 
         protected override void Initialize()
         {
             base.Initialize();
-            
 
-            
-           
+
+
+
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
             MathHelper.ToRadians(90),
             this.GraphicsDevice.Viewport.AspectRatio,
             1, 10);
-            Vector3 translation =new Vector3(1,0,-1);
-            Vector3 rotation =new Vector3(0,1,0);
-            Vector3 scale =new Vector3(1,1,1);
-            worldMatrix = Matrix.CreateWorld(translation,rotation,scale);
-            Content.RootDirectory="content/Models";
-            Matrix RotationMatrix=Matrix.CreateFromAxisAngle(translation, 20);
+            // Vector3 translation = new Vector3(0, 0, -1);
+            // Vector3 rotation = new Vector3(0, 0, 0);
+            // Vector3 scale = new Vector3(1, 1, 1);
+            // worldMatrix = Matrix.CreateWorld(translation, rotation, scale);
+            worldMatrix = Matrix.Identity;
+
+            Content.RootDirectory = "content/Models";
+            // Matrix RotationMatrix = Matrix.CreateFromAxisAngle(translation, 20);
             //worldMatrix.Rotate=new Vector3(1,-2,0);
             model = Content.Load<Model>("cannon");
-            
+
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // entities initialization
@@ -116,7 +117,7 @@ namespace TowerDefense
             }
             walls = entities.OfType<Wall>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
-            
+
 
             // tile map initialization
             tileMap = new string[20][];
@@ -320,19 +321,18 @@ namespace TowerDefense
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            foreach(ModelMesh mesh in model.Meshes)
+            foreach (ModelMesh mesh in model.Meshes)
             {
-                foreach(BasicEffect effect in mesh.Effects)
+                foreach (BasicEffect effect in mesh.Effects)
                 {
                     //effect.EnableDefaultLighting();
                     effect.AmbientLightColor = new Vector3(1f, 0, 0);
-                    effect.View = worldMatrix;
+                    effect.View = viewMatrix;
                     effect.World = worldMatrix;
                     effect.Projection = projectionMatrix;
                 }
                 mesh.Draw();
             }
-            
 
             base.DoDraw(gameTime);
         }
