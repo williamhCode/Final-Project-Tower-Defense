@@ -79,17 +79,8 @@ namespace TowerDefense
             fpsCamera = new FPS_Camera(new Vector3(0, 0, 2));
 
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
-
-            // Vector3 translation = new Vector3(0, 0, -1);
-            // Vector3 rotation = new Vector3(0, 0, 0);
-            // Vector3 scale = new Vector3(1, 1, 1);
-            // worldMatrix = Matrix.CreateWorld(translation, rotation, scale);
-
-            Content.RootDirectory = "content/Models";
-            // Matrix RotationMatrix = Matrix.CreateFromAxisAngle(translation, 20);
-            //worldMatrix.Rotate=new Vector3(1,-2,0);
-            // model = Content.Load<Model>("cannon");
-            model = Content.Load<Model>("buffingtower");
+            Content.RootDirectory = "Content/Models";
+            model = Content.Load<Model>("BuffingTower");
 
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
@@ -302,6 +293,7 @@ namespace TowerDefense
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
 
+            /*
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
@@ -333,6 +325,7 @@ namespace TowerDefense
             SpriteBatch.Begin();
             SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
             SpriteBatch.End();
+            */
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
@@ -341,7 +334,8 @@ namespace TowerDefense
                 foreach (BasicEffect effect in mesh.Effects)
                 {
                     effect.EnableDefaultLighting();
-                    effect.AmbientLightColor = new Vector3(0.5f, 0.5f, 0.5f);
+                    // effect.AmbientLightColor = new Vector3(0.5f, 0.5f, 0.5f);
+
                     effect.View = fpsCamera.GetViewMatrix();
                     effect.World = Matrix.Identity;
                     effect.Projection = fpsCamera.GetProjectionMatrix();
