@@ -57,6 +57,8 @@ namespace TowerDefense
         public string[][] tileMap;
         public static GraphicsDeviceManager graphics;
 
+        MouseState orgMouseState;
+
         float angle;
 
         public Game1()
@@ -71,7 +73,7 @@ namespace TowerDefense
         {
             base.Initialize();
 
-
+            orgMouseState = Mouse.GetState();
 
             // create camera
             fpsCamera = new FPS_Camera(new Vector3(0, 0, 2));
@@ -222,19 +224,16 @@ namespace TowerDefense
 
             fpsCamera.Move(direction.Y * dt * 5, direction.X * dt * 5, 0);
 
-            Vector2 mouseDifference;
-            const float MAXDELTA = 1; // Set to the appropriate value.
-            var mouseNow = Mouse.GetState();
-            var mouseDefaultPos = new Vector2(620, 360);
-            if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
-            {
-                mouseDifference.X = Math.Min(MAXDELTA, mouseDefaultPos.X - mouseNow.X);
-                mouseDifference.Y = Math.Min(MAXDELTA, mouseDefaultPos.Y - mouseNow.Y);
-
-                fpsCamera.Rotate(mouseDifference.Y / 10000, mouseDifference.X / 10000);
-
-                Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
-            }
+            var currMouseState = Mouse.GetState();
+            // if (currMouseState != orgMouseState)
+            // {
+            //     var x = currMouseState.X - orgMouseState.X;
+            //     var y = currMouseState.Y - orgMouseState.Y;
+            //     fpsCamera.Rotate(0.001f, 0);
+            //     Mouse.SetPosition(orgMouseState.X, orgMouseState.Y);
+            // }
+            fpsCamera.Rotate(0.001f, 0);
+            
 
 
             // enemy movement
