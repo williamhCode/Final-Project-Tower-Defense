@@ -42,6 +42,8 @@ namespace TowerDefense
 
         Matrix viewMatrix;
 
+        Vector2 mouseDefaultPos = new Vector2(620, 360);
+
 
         Model model;
 
@@ -57,8 +59,6 @@ namespace TowerDefense
         public string[][] tileMap;
         public static GraphicsDeviceManager graphics;
 
-        MouseState orgMouseState;
-
         float angle;
 
         public Game1()
@@ -73,10 +73,12 @@ namespace TowerDefense
         {
             base.Initialize();
 
-            orgMouseState = Mouse.GetState();
+
 
             // create camera
             fpsCamera = new FPS_Camera(new Vector3(0, 0, 2));
+
+            Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
 
             // Vector3 translation = new Vector3(0, 0, -1);
             // Vector3 rotation = new Vector3(0, 0, 0);
@@ -222,18 +224,30 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
-            fpsCamera.Move(direction.Y * dt * 5, direction.X * dt * 5, 0);
+            float up = 0;
+            if (state.IsKeyDown(Keys.Space))
+            {
+                up += 1;
+            }
+            if (state.IsKeyDown(Keys.LeftShift))
+            {
+                up -= 1;
+            }
 
-            var currMouseState = Mouse.GetState();
-            // if (currMouseState != orgMouseState)
-            // {
-            //     var x = currMouseState.X - orgMouseState.X;
-            //     var y = currMouseState.Y - orgMouseState.Y;
-            //     fpsCamera.Rotate(0.001f, 0);
-            //     Mouse.SetPosition(orgMouseState.X, orgMouseState.Y);
-            // }
-            fpsCamera.Rotate(0.001f, 0);
+            fpsCamera.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
+
             
+            var mouseNow = Mouse.GetState();
+            if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
+            {
+                Vector2 mouseDifference;
+                mouseDifference.X = mouseDefaultPos.X - mouseNow.X;
+                mouseDifference.Y = mouseDefaultPos.Y - mouseNow.Y;
+
+                fpsCamera.Rotate(mouseDifference.X / 400, mouseDifference.Y / 400);
+
+                Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
+            }
 
 
             // enemy movement
