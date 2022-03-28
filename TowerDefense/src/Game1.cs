@@ -441,8 +441,8 @@ namespace TowerDefense
                 }
             }
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
+            // Stopwatch sw = new Stopwatch();
+            // sw.Start();
 
             Parallel.ForEach(towers, tower =>
             {
@@ -453,9 +453,9 @@ namespace TowerDefense
                 }
             });
 
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed.TotalSeconds);
-            Console.WriteLine(enemies.Length);
+            // sw.Stop();
+            // Console.WriteLine(sw.Elapsed.TotalSeconds);
+            Console.WriteLine($"Enemies Count: {enemies.Length}");
 
             // enemy death
             var enemiesTemp = new List<Enemy>(enemies);

@@ -78,7 +78,7 @@ namespace TowerDefense.Entities.Enemies
         private const float ALIGNMENT_SENSTIVITY = 0.3f;
 
         private const float SEPARATION_DIST = 60;
-        private const float SEPARATION_FACTOR = 3f;
+        private const float SEPARATION_FACTOR = 3.2f;
         private const float SEPARATION_SENSTIVITY = 100;
 
 
