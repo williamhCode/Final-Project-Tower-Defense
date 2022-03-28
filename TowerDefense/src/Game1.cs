@@ -89,9 +89,9 @@ namespace TowerDefense
             
            
             projectionMatrix = Matrix.CreatePerspectiveFieldOfView(
-                MathHelper.ToRadians(90),
-                this.GraphicsDevice.Viewport.AspectRatio,
-                1, 10);
+            MathHelper.ToRadians(90),
+            this.GraphicsDevice.Viewport.AspectRatio,
+            1, 10);
             Vector3 translation =new Vector3(1,0,-1);
             Vector3 rotation =new Vector3(0,1,0);
             Vector3 scale =new Vector3(1,1,1);
@@ -99,7 +99,7 @@ namespace TowerDefense
             Content.RootDirectory="content/Models";
             Matrix RotationMatrix=Matrix.CreateFromAxisAngle(translation, 20);
             //worldMatrix.Rotate=new Vector3(1,-2,0);
-            //model = Content.Load<Model>("cannon");
+            model = Content.Load<Model>("cannon");
             
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
@@ -320,7 +320,7 @@ namespace TowerDefense
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            /*foreach(ModelMesh mesh in model.Meshes)
+            foreach(ModelMesh mesh in model.Meshes)
             {
                 foreach(BasicEffect effect in mesh.Effects)
                 {
@@ -331,7 +331,7 @@ namespace TowerDefense
                     effect.Projection = projectionMatrix;
                 }
                 mesh.Draw();
-            }*/
+            }
             
 
             base.DoDraw(gameTime);
