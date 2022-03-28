@@ -62,13 +62,15 @@ namespace TowerDefense
         private KeyboardStateExtended keyboardState;
         private bool debug;
 
-        public enum DebugSelector
+        public enum Selector
         {
             Bandit,
             BasicTower,
             Wall,
-            None
+            Remove
         }
+
+        private Selector currentSelector;
 
         public Game1()
         {
@@ -181,6 +183,8 @@ namespace TowerDefense
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
+                // = Color.Black,
+                ButtonHoveredColor = Color.Red,
                 //TextScale = 0.1f,
             };
 
@@ -189,11 +193,12 @@ namespace TowerDefense
             this.UiSystem.AutoScaleWithScreen = false;
             this.UiSystem.GlobalScale = 1;
 
-            
-            this.root = new Panel(Anchor.Center, new Vector2(1200,100), new Vector2(0,300), false, true);
+
+            this.root = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
             this.root.ScrollBar.SmoothScrolling = true;
+            root.AddChild(new VerticalSpace(2));
             this.UiSystem.Add("TestUi", this.root);
-            
+
             float timesPressed = 0f;
             /*
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
@@ -212,22 +217,46 @@ namespace TowerDefense
             });
             this.UiSystem.Add("InfoBox", box);
             */
-            var box = root.AddChild(new Panel(Anchor.AutoCenter, new Vector2(100,100), Vector2.Zero, setHeightBasedOnChildren: false));
-            var button1 = box.AddChild(new Button(Anchor.AutoCenter, new Vector2(20, 20), "Okay")
+
+            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Wall")
             {
                 OnPressed = element =>
                 {
-                    timesPressed += 1f;
+                    currentSelector = Selector.Wall;
                 },
-                PositionOffset = new Vector2(0, 1)
+                PositionOffset = new Vector2(10, 0)
             });
-            
+            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Tower")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.BasicTower;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+            var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Remove Building")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Remove;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+            button3.AddTooltip(p => this.InputHandler.IsModifierKeyDown(MLEM.Input.ModifierKey.Control) ? "AAAAAA" : string.Empty);
+            var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Bandit;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
         }
 
         private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
         {
             var nearbyWalls = new List<Wall>();
-            
+
 
             var posXs = new int[] { -1, 1, 0, 0 };
             var posYs = new int[] { 0, 0, -1, 1 };
@@ -284,90 +313,104 @@ namespace TowerDefense
             var mousePosition = mouseState.Position.ToVector2();
             var worldPosition = camera.ScreenToWorld(mousePosition);
 
-            var tileKeys = new Keys[] { Keys.D1, Keys.D2, Keys.D3 };
-            if (keyboardState.GetPressedKeys().Intersect(tileKeys).Any())
+            var area = root.Area;
+            if (area.Contains(mousePosition.X, mousePosition.Y) && !root.IsHidden)
+                goto EndMouse;
+
+            if (mouseState.IsButtonDown(MouseButton.Left))
             {
                 var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
 
                 int xTilePos = (int)MathF.Floor(worldPosition.X / TILE_SIZE);
                 int yTilePos = (int)MathF.Floor(worldPosition.Y / TILE_SIZE);
-                
+
                 if (xTilePos < 0 || xTilePos >= buildingTiles.Length || yTilePos < 0 || yTilePos >= buildingTiles[xTilePos].Length)
                 {
-                    goto End;
+                    goto EndMouse;
                 }
 
                 Building currBuilding = buildingTiles[xTilePos][yTilePos];
 
-                if (keyboardState.IsKeyDown(Keys.D1))
+                switch (currentSelector)
                 {
-                    // check if entites has building with same position
-                    if (currBuilding == null)
-                    {
-                        var wall = new Wall(position);
-                        entities.Add(wall);
-                        buildingTiles[xTilePos][yTilePos] = wall;
-                        SHGBuildings.AddEntity(wall, wall.Position);
-
-                        var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
-                        foreach (var nearbyWall in nearbyWalls)
+                    case Selector.Wall:
+                        if (currBuilding == null)
                         {
-                            var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
-                            entities.Add(inBetweenWall);
-                            SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
-                        }
-                    }
-                }
-                if (keyboardState.IsKeyDown(Keys.D2))
-                {
-                    if (currBuilding == null)
-                    {
-                        var tower = new BasicTower(position);
-                        entities.Add(tower);
-                        buildingTiles[xTilePos][yTilePos] = tower;
-                        SHGBuildings.AddEntity(tower, tower.Position);
-                    }
-                }
-                if (keyboardState.IsKeyDown(Keys.D3))
-                {
-                    if (currBuilding != null)
-                    {
-                        entities.Remove(currBuilding);
-                        buildingTiles[xTilePos][yTilePos] = null;
-                        SHGBuildings.RemoveEntityPosition(currBuilding);
+                            var wall = new Wall(position);
+                            entities.Add(wall);
+                            buildingTiles[xTilePos][yTilePos] = wall;
+                            SHGBuildings.AddEntity(wall, wall.Position);
 
-                        if (currBuilding is Wall)
-                        {
                             var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
                             foreach (var nearbyWall in nearbyWalls)
                             {
-                                var tempPos = (nearbyWall.Position + currBuilding.Position) / 2;
-                                var inBetweenWall = entities.Find(e => e.Position == tempPos);
-                                if (inBetweenWall != null)
+                                var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
+                                entities.Add(inBetweenWall);
+                                SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
+                            }
+                        }
+                        break;
+
+                    case Selector.BasicTower:
+                        if (currBuilding == null)
+                        {
+                            var tower = new BasicTower(position);
+                            entities.Add(tower);
+                            buildingTiles[xTilePos][yTilePos] = tower;
+                            SHGBuildings.AddEntity(tower, tower.Position);
+                        }
+                        break;
+
+                    case Selector.Remove:
+                        if (currBuilding != null)
+                        {
+                            entities.Remove(currBuilding);
+                            buildingTiles[xTilePos][yTilePos] = null;
+                            SHGBuildings.RemoveEntityPosition(currBuilding);
+
+                            if (currBuilding is Wall)
+                            {
+                                var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
+                                foreach (var nearbyWall in nearbyWalls)
                                 {
-                                    entities.Remove(inBetweenWall);
-                                    SHGBuildings.RemoveEntityCShape(inBetweenWall);
+                                    var tempPos = (nearbyWall.Position + currBuilding.Position) / 2;
+                                    var inBetweenWall = entities.Find(e => e.Position == tempPos);
+                                    if (inBetweenWall != null)
+                                    {
+                                        entities.Remove(inBetweenWall);
+                                        SHGBuildings.RemoveEntityCShape(inBetweenWall);
+                                    }
                                 }
                             }
+                        }
+                        break;
+                }
+            }
+
+            if (mouseState.WasButtonJustDown(MouseButton.Left))
+            {
+                if (currentSelector == Selector.Bandit)
+                {
+                    for (int i = 0; i < 5; i++)
+                    {
+                        for (int j = 0; j < 5; j++)
+                        {
+                            entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
                         }
                     }
                 }
             }
-            End:;
 
-            if (keyboardState.WasKeyJustUp(Keys.D4))
-            {
-                for (int i = 0; i < 5; i++)
-                {
-                    for (int j = 0; j < 5; j++)
-                    {
-                        entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
-                    }
-                }
-            }
-            if (keyboardState.WasKeyJustUp(Keys.E))
+            EndMouse:;
+
+            if (keyboardState.WasKeyJustDown(Keys.E))
             {
                 debug = !debug;
+            }
+
+            if (keyboardState.WasKeyJustDown(Keys.Q))
+            {
+                root.IsHidden = !root.IsHidden;
             }
 
             // player movement
