@@ -12,11 +12,10 @@ namespace TowerDefense.Camera
         public Vector3 orientation;
         public Matrix projectionMatrix;
 
-        public Camera3D(Vector3 position, float aspectRatio)
+        public Camera3D(Vector3 position, float width, float height)
         {
             this.position = position;
             this.orientation = new Vector3(0, 0, 0);
-            this.projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, aspectRatio, 1, 100);
         }
 
         public void Rotate(float pitch, float yaw, float roll)
@@ -33,7 +32,7 @@ namespace TowerDefense.Camera
             position.Z += z;
         }
 
-        public Matrix GetViewMatrix()
+        public virtual Matrix GetViewMatrix()
         {
             var rotationMatrix = Matrix.CreateFromYawPitchRoll(orientation.Y, orientation.X, orientation.Z);
             var temp_forward = Vector3.Transform(forward, rotationMatrix);
@@ -47,10 +46,25 @@ namespace TowerDefense.Camera
         }
     }
 
+    public class Ortho_Camera : Camera3D
+    {
+        public Ortho_Camera(Vector3 position, float width, float height) : base(position, width, height)
+        {
+            this.projectionMatrix = Matrix.CreateOrthographic(width/20, height/20, -100, 100);
+        }
+
+        public override Matrix GetViewMatrix()
+        {
+            return Matrix.CreateRotationX(MathHelper.ToRadians(45));
+        }
+    }
+
+
     public class FPS_Camera : Camera3D
     {
-        public FPS_Camera(Vector3 position, float aspectRatio) : base(position, aspectRatio)
+        public FPS_Camera(Vector3 position, float width, float height) : base(position, width, height)
         {
+            this.projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, width/height, 1, 100);
         }
 
         public void Rotate(float horizontal, float vertical)
