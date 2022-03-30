@@ -80,7 +80,7 @@ namespace TowerDefense
 
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
-            model = Content.Load<Model>("BuffingTower");
+            model = Content.Load<Model>("Buffing");
 
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
