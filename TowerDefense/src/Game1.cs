@@ -47,7 +47,7 @@ namespace TowerDefense
 
         Model model;
 
-        FPS_Camera fpsCamera;
+        Ortho_Camera camera3D;
 
         private Player player;
         private List<Entity> entities;
@@ -76,7 +76,7 @@ namespace TowerDefense
 
 
             // create camera
-            fpsCamera = new FPS_Camera(new Vector3(0, 0, 2), 1280/720f);
+            camera3D = new Ortho_Camera(new Vector3(0, 0, 2), 1280, 720);
 
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
@@ -225,9 +225,19 @@ namespace TowerDefense
                 up -= 1;
             }
 
-            fpsCamera.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
+            // camera3D.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
 
-            
+            if (state.IsKeyDown(Keys.Left))
+            {
+                model_y_rotation -= 180f * dt;
+            }
+
+            if (state.IsKeyDown(Keys.Right))
+            {
+                model_y_rotation += 180f * dt;
+            }
+
+
             var mouseNow = Mouse.GetState();
             if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
             {
@@ -235,7 +245,7 @@ namespace TowerDefense
                 mouseDifference.X = mouseDefaultPos.X - mouseNow.X;
                 mouseDifference.Y = mouseDefaultPos.Y - mouseNow.Y;
 
-                fpsCamera.Rotate(mouseDifference.X / 400, mouseDifference.Y / 400);
+                // camera3D.Rotate(mouseDifference.X / 400, mouseDifference.Y / 400);
 
                 Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             }
@@ -289,62 +299,68 @@ namespace TowerDefense
             camera.LookAt(player.Position);
         }
 
-        protected override void DoDraw(GameTime gameTime)
+        protected override async void DoDraw(GameTime gameTime)
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
 
-            /*
+            // GraphicsDevice.Clear(Color.CornflowerBlue);
+
+            // SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
+
+            // // draw tilemap
+            // for (int row = 0; row < tileMap.Length; row++)
+            // {
+            //     for (int col = 0; col < tileMap[row].Length; col++)
+            //     {
+            //         var tile = tileMap[row][col];
+            //         if (tile != null)
+            //         {
+            //             SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
+            //         }
+            //     }
+            // }
+
+            // // draw entities
+            // var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
+            // foreach (var entity in entities_temp)
+            // {
+            //     entity.DrawDebug(SpriteBatch);
+            //     entity.Draw(SpriteBatch);
+            // }
+
+            // SpriteBatch.End();
+
+            // // Drawing the Text
+            // SpriteBatch.Begin();
+            // SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
+            // SpriteBatch.End();
+
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
-
-            // draw tilemap
-            for (int row = 0; row < tileMap.Length; row++)
+            for (int i = 0; i < 2; i++)
             {
-                for (int col = 0; col < tileMap[row].Length; col++)
+                foreach (ModelMesh mesh in model.Meshes)
                 {
-                    var tile = tileMap[row][col];
-                    if (tile != null)
+                    foreach (BasicEffect effect in mesh.Effects)
                     {
-                        SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
+                        effect.LightingEnabled = true;
+                        effect.AmbientLightColor = new Vector3(0.8f, 0.8f, 0.8f);
+                        effect.DirectionalLight0.DiffuseColor = new Vector3(0.3f, 0.3f, 0.3f);
+                        effect.DirectionalLight0.Direction = new Vector3(0.0f, -1.0f, 0.0f);
+                        effect.DirectionalLight0.SpecularColor = new Vector3(0.5f, 0.2f, 0.2f);
+
+                        effect.View = camera3D.GetViewMatrix();
+                        effect.World = Matrix.CreateRotationY(MathHelper.ToRadians(model_y_rotation)) * Matrix.CreateTranslation(0, 0, i * 4);
+                        effect.Projection = camera3D.GetProjectionMatrix();
                     }
+                    mesh.Draw();
                 }
-            }
-
-            // draw entities
-            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
-            foreach (var entity in entities_temp)
-            {
-                entity.DrawDebug(SpriteBatch);
-                entity.Draw(SpriteBatch);
-            }
-
-            SpriteBatch.End();
-
-            // Drawing the Text
-            SpriteBatch.Begin();
-            SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
-            SpriteBatch.End();
-            */
-
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-
-            foreach (ModelMesh mesh in model.Meshes)
-            {
-                foreach (BasicEffect effect in mesh.Effects)
-                {
-                    effect.EnableDefaultLighting();
-                    // effect.AmbientLightColor = new Vector3(0.5f, 0.5f, 0.5f);
-
-                    effect.View = fpsCamera.GetViewMatrix();
-                    effect.World = Matrix.Identity;
-                    effect.Projection = fpsCamera.GetProjectionMatrix();
-                }
-                mesh.Draw();
             }
 
             base.DoDraw(gameTime);
         }
+
+        float model_y_rotation = 0;
 
         protected override void UnloadContent()
         {
