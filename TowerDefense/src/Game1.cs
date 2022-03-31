@@ -198,8 +198,6 @@ namespace TowerDefense
             this.root.ScrollBar.SmoothScrolling = true;
             root.AddChild(new VerticalSpace(2));
             this.UiSystem.Add("TestUi", this.root);
-
-            float timesPressed = 0f;
             /*
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
             //var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
