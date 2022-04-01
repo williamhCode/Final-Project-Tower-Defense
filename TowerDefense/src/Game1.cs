@@ -46,6 +46,7 @@ namespace TowerDefense
 
 
         Model model;
+        Texture2D testtex;
 
         Ortho_Camera camera3D;
 
@@ -80,7 +81,8 @@ namespace TowerDefense
 
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
-            model = Content.Load<Model>("ballistacolor");
+            model = Content.Load<Model>("mortor");
+            testtex=Content.Load<Texture2D>("testtexture");
 
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
@@ -336,7 +338,7 @@ namespace TowerDefense
             // SpriteBatch.End();
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
-
+            
             for (int i = 0; i < 2; i++)
             {
                 foreach (ModelMesh mesh in model.Meshes)
@@ -348,10 +350,13 @@ namespace TowerDefense
                         effect.DirectionalLight0.DiffuseColor = new Vector3(0.3f, 0.3f, 0.3f);
                         effect.DirectionalLight0.Direction = new Vector3(0.0f, -1.0f, 0.0f);
                         effect.DirectionalLight0.SpecularColor = new Vector3(0.5f, 0.2f, 0.2f);
-
+                       
+                        
                         effect.View = camera3D.GetViewMatrix();
                         effect.World = Matrix.CreateRotationY(MathHelper.ToRadians(model_y_rotation)) * Matrix.CreateTranslation(0, 0, i * 4);
                         effect.Projection = camera3D.GetProjectionMatrix();
+                        effect.Texture=testtex;
+                        effect.TextureEnabled=true;
                     }
                     mesh.Draw();
                 }
