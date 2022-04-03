@@ -33,7 +33,7 @@ namespace TowerDefense.Entities.Buildings
 
         public BasicTower(Vector2 position) : base(position)
         {
-            Range = 500;
+            Range = 300;
             Damage = 1;
             fireRate = 10f;
             fireTime = fireRate;

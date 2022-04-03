@@ -1,10 +1,43 @@
 using Microsoft.Xna.Framework;
 using System;
+using TowerDefense.Maths;
 
 namespace TowerDefense.Collision
 {
     public static class CollisionFuncs
     {
+        // check if two lines are intersecting
+        public static bool IsIntersecting(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2 intersection)
+        {
+            intersection = Vector2.Zero;
+
+            float d = (p2.X - p1.X) * (p4.Y - p3.Y) - (p2.Y - p1.Y) * (p4.X - p3.X);
+            if (d == 0)
+                return false;
+
+            float u = ((p3.X - p1.X) * (p4.Y - p3.Y) - (p3.Y - p1.Y) * (p4.X - p3.X)) / d;
+            float v = ((p3.X - p1.X) * (p2.Y - p1.Y) - (p3.Y - p1.Y) * (p2.X - p1.X)) / d;
+
+            // get point of intersection
+            intersection = new Vector2(p1.X + u * (p2.X - p1.X), p1.Y + u * (p2.Y - p1.Y));
+
+            return u >= 0 && u <= 1 && v >= 0 && v <= 1;
+        }
+
+        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end)
+        {
+            for (int i = 0; i < poly.Vertices.Length; i++)
+            {
+                Vector2 p1 = poly.Vertices[i];
+                Vector2 p2 = poly.Vertices[(i + 1) % poly.Vertices.Length];
+                if (IsIntersecting(p1, p2, start, end, out Vector2 intersection))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
         private delegate bool ShapeVsShape(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv);
 
         private static ShapeVsShape[,] collisionFunctions = new ShapeVsShape[,]

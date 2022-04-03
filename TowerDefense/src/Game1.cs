@@ -28,6 +28,7 @@ using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
 using static TowerDefense.Collision.CollisionFuncs;
+using TowerDefense.Collision;
 
 using System.Diagnostics;
 using System.Threading.Tasks;
@@ -61,6 +62,9 @@ namespace TowerDefense
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
         private bool debug;
+
+        private Vector2 start;
+        private Vector2 end;
 
         public enum Selector
         {
@@ -392,18 +396,16 @@ namespace TowerDefense
             {
                 if (currentSelector == Selector.Bandit)
                 {
-                    for (int i = 0; i < 5; i++)
+                    for (int i = 0; i < 1; i++)
                     {
-                        for (int j = 0; j < 5; j++)
+                        for (int j = 0; j < 1; j++)
                         {
                             entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
                         }
                     }
                 }
             }
-
             EndMouse:;
-
 
             if (keyboardState.WasKeyJustDown(Keys.E))
             {
@@ -427,7 +429,7 @@ namespace TowerDefense
             // enemy flocking
             Parallel.ForEach(enemies, e =>
             {
-                e.ApplyFlocking(dt, SHGFlocking, player.Position);
+                e.ApplyFlocking(dt, SHGFlocking, SHGBuildings, player.Position);
             });
 
             // projectile
@@ -455,7 +457,7 @@ namespace TowerDefense
 
             // sw.Stop();
             // Console.WriteLine(sw.Elapsed.TotalSeconds);
-            Console.WriteLine($"Enemies Count: {enemies.Length}");
+            // Console.WriteLine($"Enemies Count: {enemies.Length}");
 
             // enemy death
             var enemiesTemp = new List<Enemy>(enemies);
@@ -471,6 +473,14 @@ namespace TowerDefense
             foreach (var e in entities)
             {
                 e.Update(dt);
+            }
+
+            start = player.Position;
+            end = worldPosition;
+            foreach (var building in buildings)
+            {
+                if (IsColliding((CPolygon)building.CShape, start, end))
+                    Console.WriteLine($"Collision {end}");
             }
 
             // collision detection and resolution
@@ -553,6 +563,8 @@ namespace TowerDefense
             {
                 projectile.Draw(SpriteBatch);
             }
+
+            SpriteBatch.DrawLine(start, end, Color.Red);
 
             SpriteBatch.End();
 

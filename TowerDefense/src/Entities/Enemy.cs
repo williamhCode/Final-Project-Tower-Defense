@@ -44,7 +44,7 @@ namespace TowerDefense.Entities
 
         public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
 
-        public abstract void ApplyFlocking(float dt, SpatialHashGrid SHG, Vector2 goal);
+        public abstract void ApplyFlocking(float dt, SpatialHashGrid SHGFlocking, SpatialHashGrid SHGBuildings, Vector2 goal);
 
         public override void Update(float dt)
         {

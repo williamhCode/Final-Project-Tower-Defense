@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Linq;
 
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -9,7 +11,8 @@ using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Hashing;
-using System.Threading.Tasks;
+
+using MonoGame.Extended;
 
 
 namespace TowerDefense.Entities.Enemies
@@ -25,10 +28,9 @@ namespace TowerDefense.Entities.Enemies
             Dead
         }
 
-        private const float MAX_SPEED = 30;
+        private const float MAX_SPEED = 50;
         private const float FRICTION = 1000;
-        private const float ACCELERATION = 300;
-
+        private const float ACCELERATION = 100;
 
         public static AnimationState<Enum> AnimationState;
 
@@ -74,24 +76,27 @@ namespace TowerDefense.Entities.Enemies
         private const float COHESION_SENSTIVITY = 0.01f;
 
         private const float ALIGNMENT_DIST = 60;
-        private const float ALIGNMENT_FACTOR = 0.2f;
+        private const float ALIGNMENT_FACTOR = 0.00f;
         private const float ALIGNMENT_SENSTIVITY = 0.3f;
 
         private const float SEPARATION_DIST = 60;
         private const float SEPARATION_FACTOR = 3.2f;
-        private const float SEPARATION_SENSTIVITY = 100;
+        private const float SEPARATION_SENSTIVITY = 100f;
 
+        private const float WALL_DIST = 60;
+        private const float WALL_FACTOR = 2f;
+        private const float WALL_SENSTIVITY = 100f;
 
-        public override void ApplyFlocking(float dt, SpatialHashGrid SHG, Vector2 goal)
+        public override void ApplyFlocking(float dt, SpatialHashGrid SHGFlocking, SpatialHashGrid SHGBuildings, Vector2 goal)
         {
-            var entitiesToCheck = SHG.QueryEntities(Position, SEPARATION_DIST);
-            entitiesToCheck.Remove(this);
+            var enemiesToCheck = SHGFlocking.QueryEntities(Position, SEPARATION_DIST);
+            enemiesToCheck.Remove(this);
 
             var cohesion = Vector2.Zero;
             var alignment = Vector2.Zero;
             var separation = Vector2.Zero;
 
-            Parallel.ForEach(entitiesToCheck, e =>
+            Parallel.ForEach(enemiesToCheck, e =>
             {
                 var sqdist = Vector2.DistanceSquared(Position, e.Position);
                 var dist = MathF.Sqrt(sqdist);
@@ -112,6 +117,23 @@ namespace TowerDefense.Entities.Enemies
                     (dist / SEPARATION_SENSTIVITY + sqdist);
                 }
             });
+
+            var buildingsToCheck = SHGBuildings.QueryEntities(Position, WALL_DIST);
+            buildingsToCheck = buildingsToCheck.OrderBy(w => (w.Position - Position).LengthSquared()).ToList();
+
+            bool collides = false;
+            foreach (var b in buildingsToCheck)
+            {
+                var sqdist = Vector2.DistanceSquared(Position, b.Position);
+
+                if (sqdist < MathF.Pow(WALL_DIST, 2))
+                {
+                    if (CollisionFuncs.IsColliding((CPolygon)b.CShape, Position, Velocity.Normalized() * WALL_DIST))
+                    {
+
+                    }
+                }
+            }
             
             Vector2 direction = (goal - Position).Normalized();
             DecideDirection(goal);
@@ -120,9 +142,17 @@ namespace TowerDefense.Entities.Enemies
             cohesion * COHESION_FACTOR +
             alignment * ALIGNMENT_FACTOR +
             separation * SEPARATION_FACTOR +
+            // wall_sep * WALL_FACTOR +
             direction * 0.2f;
 
             Velocity = Velocity.MoveTowards(MAX_SPEED * force.Normalized(), ACCELERATION * dt);
+
+            // Velocity += force * 1000 * dt;
+
+            // if (Velocity.Length() > MAX_SPEED)
+            // {
+            //     Velocity = Velocity.Normalized() * MAX_SPEED;
+            // }
 
             // randomize velocity if its undefined
             if (!float.IsFinite(Velocity.X))
@@ -141,6 +171,12 @@ namespace TowerDefense.Entities.Enemies
         public override void Draw(SpriteBatch spriteBatch)
         {
             animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 32));
+        }
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
+        {
+            base.DrawDebug(spriteBatch);
+            spriteBatch.DrawLine(Position, Position + Velocity.Normalized() * WALL_DIST, Color.Red);
         }
     }
 }
