@@ -1,41 +1,88 @@
 using Microsoft.Xna.Framework;
 using System;
-using TowerDefense.Maths;
+using static TowerDefense.Maths.MathFuncs;
 
 namespace TowerDefense.Collision
 {
     public static class CollisionFuncs
     {
-        // check if two lines are intersecting
-        public static bool IsIntersecting(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2 intersection)
+        /// <summary>
+        /// Check if two lines are intersecting + returns the intersection point.
+        /// </summary>
+        public static bool IsIntersecting(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2? intersection)
         {
-            intersection = Vector2.Zero;
+            intersection = null;
 
-            float d = (p2.X - p1.X) * (p4.Y - p3.Y) - (p2.Y - p1.Y) * (p4.X - p3.X);
-            if (d == 0)
-                return false;
+            var p12 = p2 - p1;
+            var p34 = p4 - p3;
+            var p13 = p3 - p1;
 
-            float u = ((p3.X - p1.X) * (p4.Y - p3.Y) - (p3.Y - p1.Y) * (p4.X - p3.X)) / d;
-            float v = ((p3.X - p1.X) * (p2.Y - p1.Y) - (p3.Y - p1.Y) * (p2.X - p1.X)) / d;
+            var d = Cross(p12, p34);
+            float u = Cross(p13, p34) / d;
+            float v = Cross(p13, p12) / d;
 
-            // get point of intersection
-            intersection = new Vector2(p1.X + u * (p2.X - p1.X), p1.Y + u * (p2.Y - p1.Y));
+            if (u >= 0 && u <= 1 && v >= 0 && v <= 1)
+            {
+                intersection = p1 + u * p12;
+                return true;
+            }
 
-            return u >= 0 && u <= 1 && v >= 0 && v <= 1;
+            return false;
         }
 
-        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end)
+        /// <summary>
+        /// Check if a polygon is intersecting with a line + return the closest intersection point.
+        /// </summary>
+        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end, out float minDist, out Vector2? normal)
         {
+            Vector2 direction = end - start;
+
+            minDist = float.MaxValue;
+            normal = null;
+
+            Vector2? minIntersection = null;
+
             for (int i = 0; i < poly.Vertices.Length; i++)
             {
                 Vector2 p1 = poly.Vertices[i];
                 Vector2 p2 = poly.Vertices[(i + 1) % poly.Vertices.Length];
-                if (IsIntersecting(p1, p2, start, end, out Vector2 intersection))
+                if (IsIntersecting(p1, p2, start, end, out Vector2? intersection))
                 {
-                    return true;
+                    float dist = Vector2.Dot(intersection.Value, direction);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        var p12 = p2 - p1;
+                        normal = Vector2.Normalize(new Vector2(p12.Y, -p12.X));
+                    }
                 }
             }
-            return false;
+
+            return minDist < float.MaxValue;
+        }
+
+        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end, out Vector2? minIntersection)
+        {
+            Vector2 direction = end - start;
+            float minDist = float.MaxValue;
+            minIntersection = null;
+
+            for (int i = 0; i < poly.Vertices.Length; i++)
+            {
+                Vector2 p1 = poly.Vertices[i];
+                Vector2 p2 = poly.Vertices[(i + 1) % poly.Vertices.Length];
+                if (IsIntersecting(p1, p2, start, end, out Vector2? intersection))
+                {
+                    float dist = Vector2.Dot(intersection.Value, direction);
+                    if (dist < minDist)
+                    {
+                        minDist = dist;
+                        minIntersection = intersection;
+                    }
+                }
+            }
+
+            return minDist < float.MaxValue;
         }
 
         private delegate bool ShapeVsShape(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv);

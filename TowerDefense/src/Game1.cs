@@ -65,6 +65,7 @@ namespace TowerDefense
 
         private Vector2 start;
         private Vector2 end;
+        private Vector2? intersection;
 
         public enum Selector
         {
@@ -479,8 +480,11 @@ namespace TowerDefense
             end = worldPosition;
             foreach (var building in buildings)
             {
-                if (IsColliding((CPolygon)building.CShape, start, end))
+                if (IsColliding((CPolygon)building.CShape, start, end, out intersection))
+                {
                     Console.WriteLine($"Collision {end}");
+
+                }
             }
 
             // collision detection and resolution
@@ -565,6 +569,8 @@ namespace TowerDefense
             }
 
             SpriteBatch.DrawLine(start, end, Color.Red);
+            if (intersection.HasValue)
+                SpriteBatch.DrawPoint(intersection.Value, Color.Blue, 5);
 
             SpriteBatch.End();
 

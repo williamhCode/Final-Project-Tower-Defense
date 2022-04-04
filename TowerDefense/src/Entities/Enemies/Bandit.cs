@@ -119,21 +119,20 @@ namespace TowerDefense.Entities.Enemies
             });
 
             var buildingsToCheck = SHGBuildings.QueryEntities(Position, WALL_DIST);
-            buildingsToCheck = buildingsToCheck.OrderBy(w => (w.Position - Position).LengthSquared()).ToList();
 
-            bool collides = false;
-            foreach (var b in buildingsToCheck)
-            {
-                var sqdist = Vector2.DistanceSquared(Position, b.Position);
+            // bool collides = false;
+            // foreach (var b in buildingsToCheck)
+            // {
+            //     var sqdist = Vector2.DistanceSquared(Position, b.Position);
 
-                if (sqdist < MathF.Pow(WALL_DIST, 2))
-                {
-                    if (CollisionFuncs.IsColliding((CPolygon)b.CShape, Position, Velocity.Normalized() * WALL_DIST))
-                    {
+            //     if (sqdist < MathF.Pow(WALL_DIST, 2))
+            //     {
+            //         if (CollisionFuncs.IsColliding((CPolygon)b.CShape, Position, Velocity.Normalized() * WALL_DIST))
+            //         {
 
-                    }
-                }
-            }
+            //         }
+            //     }
+            // }
             
             Vector2 direction = (goal - Position).Normalized();
             DecideDirection(goal);
