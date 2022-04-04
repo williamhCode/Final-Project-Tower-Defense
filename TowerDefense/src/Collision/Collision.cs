@@ -13,11 +13,13 @@ namespace TowerDefense.Collision
         {
             intersection = null;
 
-            var p12 = p2 - p1;
-            var p34 = p4 - p3;
-            var p13 = p3 - p1;
+            Vector2 p12 = p2 - p1;
+            Vector2 p34 = p4 - p3;
+            Vector2 p13 = p3 - p1;
 
-            var d = Cross(p12, p34);
+            float d = Cross(p12, p34);
+            if (d == 0)
+                return false;
             float u = Cross(p13, p34) / d;
             float v = Cross(p13, p12) / d;
 
@@ -32,40 +34,17 @@ namespace TowerDefense.Collision
 
         /// <summary>
         /// Check if a polygon is intersecting with a line + return the closest intersection point.
+        /// Note: dist is the dot product of the direction of the line and the intersection point.
         /// </summary>
-        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end, out float minDist, out Vector2? normal)
+        public static bool IsColliding(
+            CPolygon poly, Vector2 start, Vector2 end, out (float dist, Vector2 intersection, Vector2 normal)? collData)
         {
-            Vector2 direction = end - start;
+            Vector2 direction = (end - start).Normalized();
 
-            minDist = float.MaxValue;
-            normal = null;
-
-            Vector2? minIntersection = null;
-
-            for (int i = 0; i < poly.Vertices.Length; i++)
-            {
-                Vector2 p1 = poly.Vertices[i];
-                Vector2 p2 = poly.Vertices[(i + 1) % poly.Vertices.Length];
-                if (IsIntersecting(p1, p2, start, end, out Vector2? intersection))
-                {
-                    float dist = Vector2.Dot(intersection.Value, direction);
-                    if (dist < minDist)
-                    {
-                        minDist = dist;
-                        var p12 = p2 - p1;
-                        normal = Vector2.Normalize(new Vector2(p12.Y, -p12.X));
-                    }
-                }
-            }
-
-            return minDist < float.MaxValue;
-        }
-
-        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end, out Vector2? minIntersection)
-        {
-            Vector2 direction = end - start;
+            collData = null;
             float minDist = float.MaxValue;
-            minIntersection = null;
+            Vector2? minIntersection = null;
+            Vector2? normal = null;
 
             for (int i = 0; i < poly.Vertices.Length; i++)
             {
@@ -78,11 +57,19 @@ namespace TowerDefense.Collision
                     {
                         minDist = dist;
                         minIntersection = intersection;
+                        Vector2 p12 = p2 - p1;
+                        normal = Vector2.Normalize(new Vector2(p12.Y, -p12.X));
                     }
                 }
             }
 
-            return minDist < float.MaxValue;
+            if (minDist < float.MaxValue)
+            {
+                collData = (minDist, minIntersection.Value, normal.Value);
+                return true;
+            }
+
+            return false;
         }
 
         private delegate bool ShapeVsShape(CShape shape1, CShape shape2, ref Vector2 mtv, bool computeMtv);

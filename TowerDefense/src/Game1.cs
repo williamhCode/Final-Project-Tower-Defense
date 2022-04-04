@@ -478,12 +478,20 @@ namespace TowerDefense
 
             start = player.Position;
             end = worldPosition;
+
+            float minDist = float.MaxValue;
+            intersection = null;
             foreach (var building in buildings)
             {
-                if (IsColliding((CPolygon)building.CShape, start, end, out intersection))
+                if (IsColliding((CPolygon)building.CShape, start, end, out (float dist, Vector2 intersection, Vector2 normal)? collData))
                 {
+                    var data = collData.Value;
+                    if (data.dist < minDist)
+                    {
+                        minDist = data.dist;
+                        intersection = data.intersection;
+                    }
                     Console.WriteLine($"Collision {end}");
-
                 }
             }
 
