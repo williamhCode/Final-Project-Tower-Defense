@@ -7,13 +7,14 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Content;
 
+using static TowerDefense.Collision.CollisionFuncs;
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Hashing;
+using static TowerDefense.Maths.MathFuncs;
 
 using MonoGame.Extended;
-
 
 namespace TowerDefense.Entities.Enemies
 {
@@ -84,8 +85,11 @@ namespace TowerDefense.Entities.Enemies
         private const float SEPARATION_SENSTIVITY = 100f;
 
         private const float WALL_DIST = 60;
-        private const float WALL_FACTOR = 2f;
-        private const float WALL_SENSTIVITY = 100f;
+        private const float WALL_FACTOR = 200f;
+        private const float WALL_SENSITIVITY = 1f;
+        private readonly float WALL_FOV = MathHelper.ToRadians(80f);
+        private Vector2 wallSteeringDeubug;
+        private Vector2? intersect;
 
         public override void ApplyFlocking(float dt, SpatialHashGrid SHGFlocking, SpatialHashGrid SHGBuildings, Vector2 goal)
         {
@@ -103,7 +107,7 @@ namespace TowerDefense.Entities.Enemies
 
                 if (sqdist < MathF.Pow(COHESION_DIST, 2))
                 {
-                    cohesion += (e.Position - Position) / 
+                    cohesion += (e.Position - Position) /
                     (dist / COHESION_SENSTIVITY + sqdist);
                 }
                 if (sqdist < MathF.Pow(ALIGNMENT_DIST, 2))
@@ -113,36 +117,94 @@ namespace TowerDefense.Entities.Enemies
                 }
                 if (sqdist < MathF.Pow(SEPARATION_DIST, 2))
                 {
-                    separation += (Position - e.Position) / 
+                    separation += (Position - e.Position) /
                     (dist / SEPARATION_SENSTIVITY + sqdist);
                 }
             });
 
             var buildingsToCheck = SHGBuildings.QueryEntities(Position, WALL_DIST);
 
-            // bool collides = false;
-            // foreach (var b in buildingsToCheck)
-            // {
-            //     var sqdist = Vector2.DistanceSquared(Position, b.Position);
-
-            //     if (sqdist < MathF.Pow(WALL_DIST, 2))
-            //     {
-            //         if (CollisionFuncs.IsColliding((CPolygon)b.CShape, Position, Velocity.Normalized() * WALL_DIST))
-            //         {
-
-            //         }
-            //     }
-            // }
+            var velDirection = Velocity.Normalized();
+            float radius = 8f;
+            float ang = MathF.PI / 2 - WALL_FOV / 2;
+            var offset = -velDirection * MathF.Tan(ang) * radius;
             
-            Vector2 direction = (goal - Position).Normalized();
+            var starts = new[] {
+                Position + offset,
+                Position + offset
+            };
+            var ends = new[] {
+                Position + velDirection.Rotate(WALL_FOV / 2) * WALL_DIST,
+                Position + velDirection.Rotate(-WALL_FOV / 2) * WALL_DIST
+            };
+
+            (float sqdist, Vector2 intersection, Vector2 normal)? collData = null;
+            foreach (var b in buildingsToCheck)
+            {
+                var sqdist = Vector2.DistanceSquared(Position, b.Position);
+
+                if (sqdist < MathF.Pow(WALL_DIST, 2))
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        var start = starts[i];
+                        var end = ends[i];
+                        if (IsColliding((CPolygon)b.CShape, start, end, out var tempCollData))
+                        {
+                            if (collData == null || tempCollData.Value.sqdist < collData.Value.sqdist)
+                            {
+                                collData = tempCollData;
+                            }
+                        }
+                    }
+                }
+            }
+
+            // debug
+            intersect = null;
+
+            var wallSteering = Vector2.Zero;
+            if (collData.HasValue)
+            {
+                var data = collData.Value;
+                var normal = data.normal;
+                // dir will be positive if enemy is clockwise of normal
+                var dir = Cross(normal, Velocity);
+                // if enemy is clockwise (dir is positive) of normal, then turn enemy clockwise
+                // to turn enemy clockwise, steer enemy towards 90 degrees counterclockise of normal
+                Vector2 wallDir;
+                // if (dir > 0)
+                // {
+                //     wallDir = new Vector2(-normal.Y, normal.X);
+                // }
+                // else
+                // {
+                //     wallDir = new Vector2(normal.Y, -normal.X);
+                // }
+                wallDir = Vector2.Reflect(velDirection, normal);
+
+                var sqdist = data.sqdist;
+                var dist = MathF.Sqrt(sqdist);
+
+                wallSteering = wallDir /
+                (dist / WALL_SENSITIVITY + sqdist);
+
+                // debug
+                intersect = data.intersection;
+            }
+
+            wallSteeringDeubug = wallSteering;
+            // Console.WriteLine(wallSteering);
+
+            var targetDirection = (goal - Position).Normalized();
             DecideDirection(goal);
 
-            var force = 
+            var force =
             cohesion * COHESION_FACTOR +
             alignment * ALIGNMENT_FACTOR +
             separation * SEPARATION_FACTOR +
-            // wall_sep * WALL_FACTOR +
-            direction * 0.2f;
+            wallSteering * WALL_FACTOR +
+            targetDirection * 0.2f;
 
             Velocity = Velocity.MoveTowards(MAX_SPEED * force.Normalized(), ACCELERATION * dt);
 
@@ -175,7 +237,21 @@ namespace TowerDefense.Entities.Enemies
         public override void DrawDebug(SpriteBatch spriteBatch)
         {
             base.DrawDebug(spriteBatch);
-            spriteBatch.DrawLine(Position, Position + Velocity.Normalized() * WALL_DIST, Color.Red);
+
+            var direction = Velocity.Normalized();
+            float radius = 8f;
+            float ang = MathF.PI / 2 -  WALL_FOV / 2;
+            Vector2 offset = -direction * MathF.Tan(ang) * radius;
+            
+            var starts = new[] {
+                Position + offset,
+                Position + offset
+            };
+            spriteBatch.DrawLine(starts[0], Position + Velocity.Normalized().Rotate(WALL_FOV / 2) * WALL_DIST, Color.Red);
+            spriteBatch.DrawLine(starts[1], Position + Velocity.Normalized().Rotate(-WALL_FOV / 2) * WALL_DIST, Color.Red);
+            spriteBatch.DrawLine(Position, Position + wallSteeringDeubug.Normalized() * WALL_DIST, Color.Green);
+            if (intersect.HasValue)
+                spriteBatch.DrawPoint(intersect.Value, Color.Blue, 4);
         }
     }
 }

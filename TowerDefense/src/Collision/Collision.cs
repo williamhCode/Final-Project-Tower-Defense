@@ -33,16 +33,13 @@ namespace TowerDefense.Collision
         }
 
         /// <summary>
-        /// Check if a polygon is intersecting with a line + return the closest intersection point.<br/>
-        /// Note: dist is the dot product of the normalized direction of the line and the intersection point for simplicity.
+        /// Check if a polygon is intersecting with a line + return the closest intersection point.
         /// </summary>
         public static bool IsColliding(
-            CPolygon poly, Vector2 start, Vector2 end, out (float dist, Vector2 intersection, Vector2 normal)? collData)
+            CPolygon poly, Vector2 start, Vector2 end, out (float sqdist, Vector2 intersection, Vector2 normal)? collData)
         {
-            Vector2 direction = (end - start).Normalized();
-
             collData = null;
-            float minDist = float.MaxValue;
+            float minDistSq = float.MaxValue;
             Vector2? minIntersection = null;
             Vector2? normal = null;
 
@@ -53,10 +50,10 @@ namespace TowerDefense.Collision
                 
                 if (IsIntersecting(p1, p2, start, end, out Vector2? intersection))
                 {
-                    float dist = Vector2.Dot(intersection.Value, direction);
-                    if (dist < minDist)
+                    float sqdist = Vector2.DistanceSquared(start, intersection.Value);
+                    if (sqdist < minDistSq)
                     {
-                        minDist = dist;
+                        minDistSq = sqdist;
                         minIntersection = intersection;
                         Vector2 p12 = p2 - p1;
                         normal = Vector2.Normalize(new Vector2(p12.Y, -p12.X));
@@ -64,9 +61,9 @@ namespace TowerDefense.Collision
                 }
             }
 
-            if (minDist < float.MaxValue)
+            if (minDistSq < float.MaxValue)
             {
-                collData = (minDist, minIntersection.Value, normal.Value);
+                collData = (minDistSq, minIntersection.Value, normal.Value);
                 return true;
             }
 

@@ -493,20 +493,21 @@ namespace TowerDefense
                 e.Update(dt);
             }
 
-            start = player.Position;
-            end = worldPosition;
+            // raycast test
+            // start = player.Position;
+            // end = worldPosition;
 
-            collData = null;
-            foreach (var building in buildings)
-            {
-                if (IsColliding((CPolygon)building.CShape, start, end, out (float dist, Vector2 intersection, Vector2 normal)? tempCollData))
-                {
-                    if (collData == null || tempCollData.Value.dist < collData.Value.dist)
-                    {
-                        collData = tempCollData;
-                    }
-                }
-            }
+            // collData = null;
+            // foreach (var building in buildings)
+            // {
+            //     if (IsColliding((CPolygon)building.CShape, start, end, out var tempCollData))
+            //     {
+            //         if (collData == null || tempCollData.Value.dist < collData.Value.dist)
+            //         {
+            //             collData = tempCollData;
+            //         }
+            //     }
+            // }
 
             // collision detection and resolution
             // create new list from Player and Enemy entities
@@ -589,14 +590,15 @@ namespace TowerDefense
                 projectile.Draw(SpriteBatch);
             }
 
-            SpriteBatch.DrawLine(start, end, Color.Red);
-            if (collData.HasValue)
-            {
-                var data = collData.Value;
-                SpriteBatch.DrawLine(data.intersection, data.intersection + data.normal * 10, Color.Blue);
-                SpriteBatch.DrawPoint(data.intersection - new Vector2(0.5f, 0.5f), Color.Black, 2);
-                Console.WriteLine($"Intersection: {data.intersection}");
-            }
+            // raycast test
+            // SpriteBatch.DrawLine(start, end, Color.Red);
+            // if (collData.HasValue)
+            // {
+            //     var data = collData.Value;
+            //     SpriteBatch.DrawLine(data.intersection, data.intersection + data.normal * 10, Color.Blue);
+            //     SpriteBatch.DrawPoint(data.intersection - new Vector2(0.5f, 0.5f), Color.Black, 2);
+            //     Console.WriteLine($"Intersection: {data.intersection}");
+            // }
 
             SpriteBatch.End();
 
