@@ -65,14 +65,14 @@ namespace TowerDefense
 
         private Vector2 start;
         private Vector2 end;
-        private Vector2? intersection;
+        (float dist, Vector2 intersection, Vector2 normal)? collData;
 
         public enum Selector
         {
-            Bandit,
-            BasicTower,
             Wall,
-            Remove
+            BasicTower,
+            Remove,
+            Bandit,
         }
 
         private Selector currentSelector;
@@ -184,20 +184,24 @@ namespace TowerDefense
                 }
             }
 
+            // var tex = new Texture2D(GraphicsDevice, 10, 10, false, SurfaceFormat.Color);
+            // Color[] az = Enumerable.Range(0, 100).Select(i => Color.Red).ToArray();
+            // tex.SetData(az);
+
             // UI initialization
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
                 // = Color.Black,
-                ButtonHoveredColor = Color.Red,
+                // ButtonHoveredColor = Color.Red,
                 //TextScale = 0.1f,
+                // SelectionIndicator = new MLEM.Textures.NinePatch(new MLEM.Textures.TextureRegion(tex, new Rectangle(0, 0, 100, 100)), 4),
             };
 
             this.UiSystem.Style = style;
             this.UiSystem.AutoScaleReferenceSize = new Point(1280, 720);
             this.UiSystem.AutoScaleWithScreen = false;
             this.UiSystem.GlobalScale = 1;
-
 
             this.root = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
             this.root.ScrollBar.SmoothScrolling = true;
@@ -229,6 +233,11 @@ namespace TowerDefense
                 {
                     currentSelector = Selector.Wall;
                 },
+                OnSelected = element =>
+                {
+                    currentSelector = Selector.Wall;
+                    Console.WriteLine("Wall selected");
+                },
                 PositionOffset = new Vector2(10, 0)
             });
             var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Tower")
@@ -247,7 +256,7 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            button3.AddTooltip(p => this.InputHandler.IsModifierKeyDown(MLEM.Input.ModifierKey.Control) ? "AAAAAA" : string.Empty);
+            // button3.AddTooltip(p => this.InputHandler.IsModifierKeyDown(MLEM.Input.ModifierKey.Control) ? "AAAAAA" : string.Empty);
             var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
             {
                 OnPressed = element =>
@@ -408,6 +417,14 @@ namespace TowerDefense
             }
             EndMouse:;
 
+            foreach (Selector value in Enum.GetValues(typeof(Selector)))
+            {
+                if (keyboardState.WasKeyJustDown(Keys.D1 + (int)value))
+                {
+                    currentSelector = value;
+                }
+            }
+
             if (keyboardState.WasKeyJustDown(Keys.E))
             {
                 debug = !debug;
@@ -479,19 +496,15 @@ namespace TowerDefense
             start = player.Position;
             end = worldPosition;
 
-            float minDist = float.MaxValue;
-            intersection = null;
+            collData = null;
             foreach (var building in buildings)
             {
-                if (IsColliding((CPolygon)building.CShape, start, end, out (float dist, Vector2 intersection, Vector2 normal)? collData))
+                if (IsColliding((CPolygon)building.CShape, start, end, out (float dist, Vector2 intersection, Vector2 normal)? tempCollData))
                 {
-                    var data = collData.Value;
-                    if (data.dist < minDist)
+                    if (collData == null || tempCollData.Value.dist < collData.Value.dist)
                     {
-                        minDist = data.dist;
-                        intersection = data.intersection;
+                        collData = tempCollData;
                     }
-                    Console.WriteLine($"Collision {end}");
                 }
             }
 
@@ -577,8 +590,13 @@ namespace TowerDefense
             }
 
             SpriteBatch.DrawLine(start, end, Color.Red);
-            if (intersection.HasValue)
-                SpriteBatch.DrawPoint(intersection.Value, Color.Blue, 5);
+            if (collData.HasValue)
+            {
+                var data = collData.Value;
+                SpriteBatch.DrawLine(data.intersection, data.intersection + data.normal * 10, Color.Blue);
+                SpriteBatch.DrawPoint(data.intersection - new Vector2(0.5f, 0.5f), Color.Black, 2);
+                Console.WriteLine($"Intersection: {data.intersection}");
+            }
 
             SpriteBatch.End();
 

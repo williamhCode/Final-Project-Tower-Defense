@@ -33,8 +33,8 @@ namespace TowerDefense.Collision
         }
 
         /// <summary>
-        /// Check if a polygon is intersecting with a line + return the closest intersection point.
-        /// Note: dist is the dot product of the direction of the line and the intersection point.
+        /// Check if a polygon is intersecting with a line + return the closest intersection point.<br/>
+        /// Note: dist is the dot product of the normalized direction of the line and the intersection point for simplicity.
         /// </summary>
         public static bool IsColliding(
             CPolygon poly, Vector2 start, Vector2 end, out (float dist, Vector2 intersection, Vector2 normal)? collData)
@@ -50,6 +50,7 @@ namespace TowerDefense.Collision
             {
                 Vector2 p1 = poly.Vertices[i];
                 Vector2 p2 = poly.Vertices[(i + 1) % poly.Vertices.Length];
+                
                 if (IsIntersecting(p1, p2, start, end, out Vector2? intersection))
                 {
                     float dist = Vector2.Dot(intersection.Value, direction);
