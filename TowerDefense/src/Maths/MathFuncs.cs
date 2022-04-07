@@ -24,5 +24,10 @@ namespace TowerDefense.Maths
                 return Vector2.Zero;
             return Vector2.Normalize(curr);
         }
+
+        public static float InvLerp(this float min, float max, float value)
+        {
+            return (value - min) / (max - min);
+        }
     }
 }
