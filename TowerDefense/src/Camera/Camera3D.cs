@@ -64,7 +64,7 @@ namespace TowerDefense.Camera
     {
         public FPS_Camera(Vector3 position, float width, float height) : base(position, width, height)
         {
-            this.projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, width/height/2, 1, 100);
+            this.projectionMatrix = Matrix.CreatePerspectiveFieldOfView(MathHelper.PiOver4, width/height, 1, 100);
         }
 
         public void Rotate(float horizontal, float vertical)
