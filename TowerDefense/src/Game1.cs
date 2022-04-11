@@ -419,18 +419,18 @@ namespace TowerDefense
 
             foreach (Selector value in Enum.GetValues(typeof(Selector)))
             {
-                if (keyboardState.WasKeyJustDown(Keys.D1 + (int)value))
+                if (keyboardState.WasKeyJustUp(Keys.D1 + (int)value))
                 {
                     currentSelector = value;
                 }
             }
 
-            if (keyboardState.WasKeyJustDown(Keys.E))
+            if (keyboardState.WasKeyJustUp(Keys.E))
             {
                 debug = !debug;
             }
 
-            if (keyboardState.WasKeyJustDown(Keys.Q))
+            if (keyboardState.WasKeyJustUp(Keys.Q))
             {
                 root.IsHidden = !root.IsHidden;
             }
@@ -532,6 +532,11 @@ namespace TowerDefense
                         e.CShape.Update();
                     }
                 }
+            }
+
+            foreach (IHitboxComponent e in entitiesToCheck)
+            {
+                e.UpdateHitbox();
             }
 
             // camera

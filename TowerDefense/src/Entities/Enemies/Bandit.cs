@@ -87,7 +87,7 @@ namespace TowerDefense.Entities.Enemies
         private const float WALL_DIST = 60;
         private const float WALL_FACTOR = 200f;
         private const float WALL_SENSITIVITY = 1f;
-        private readonly float WALL_FOV = MathHelper.ToRadians(80f);
+        private readonly float WALL_FOV = MathHelper.ToRadians(60f);
         private Vector2 wallSteeringDeubug;
         private Vector2? intersect;
 
@@ -168,22 +168,30 @@ namespace TowerDefense.Entities.Enemies
             {
                 var data = collData.Value;
                 var normal = data.normal;
+
                 // dir will be positive if enemy is clockwise of normal
-                var dir = Cross(normal, Velocity);
                 // if enemy is clockwise (dir is positive) of normal, then turn enemy clockwise
                 // to turn enemy clockwise, steer enemy towards 90 degrees counterclockise of normal
                 Vector2 wallDir;
-                // if (dir > 0)
-                // {
-                //     wallDir = new Vector2(-normal.Y, normal.X);
-                // }
-                // else
-                // {
-                //     wallDir = new Vector2(normal.Y, -normal.X);
-                // }
-                wallDir = Vector2.Reflect(velDirection, normal);
+                if (Cross(normal, velDirection) > 0)
+                {
+                    wallDir = new Vector2(-normal.Y, normal.X);
+                    if (Cross(wallDir, velDirection) > 0)
+                    {
+                        wallDir = Vector2.Reflect(velDirection, normal);
+                    }
+                }
+                else
+                {
+                    wallDir = new Vector2(normal.Y, -normal.X);
+                    if (Cross(wallDir, velDirection) < 0)
+                    {
+                        wallDir = Vector2.Reflect(velDirection, normal);
+                    }
+                }
 
                 var sqdist = data.sqdist;
+                // var sqdist = Vector2.DistanceSquared(data.intersection, Position);
                 var dist = MathF.Sqrt(sqdist);
 
                 wallSteering = wallDir /
