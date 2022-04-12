@@ -126,21 +126,18 @@ namespace TowerDefense.Entities.Enemies
 
             // position setting for two FOV
             var velDirection = Velocity.Normalized();
-            // float radius = 8f;
-            // float ang = MathF.PI / 2 - WALL_FOV / 2;
-            // var offset = -velDirection * MathF.Tan(ang) * radius;
+            float radius = 8f;
+            float ang = MathF.PI / 2 - WALL_FOV / 2;
+            var offset = -velDirection * MathF.Tan(ang) * radius;
             
-            // var starts = new[] {
-            //     Position + offset,
-            //     Position + offset
-            // };
-            // var ends = new[] {
-            //     Position + velDirection.Rotate(WALL_FOV / 2) * WALL_DIST,
-            //     Position + velDirection.Rotate(-WALL_FOV / 2) * WALL_DIST
-            // };
-
-            var starts = new[] { Position };
-            var ends = new[] { Position + velDirection * WALL_DIST };
+            var starts = new[] {
+                Position + offset,
+                Position + offset
+            };
+            var ends = new[] {
+                Position + velDirection.Rotate(WALL_FOV / 2) * WALL_DIST,
+                Position + velDirection.Rotate(-WALL_FOV / 2) * WALL_DIST
+            };
 
             (float sqdist, Vector2 intersection, Vector2 normal)? collData = null;
             foreach (var b in buildingsToCheck)
@@ -251,12 +248,18 @@ namespace TowerDefense.Entities.Enemies
             base.DrawDebug(spriteBatch);
 
             var velDirection = Velocity.Normalized();
-            // float radius = 8f;
-            // float ang = MathF.PI / 2 -  WALL_FOV / 2;
-            // Vector2 offset = -velDirection * MathF.Tan(ang) * radius;
+            float radius = 8f;
+            float ang = MathF.PI / 2 -  WALL_FOV / 2;
+            Vector2 offset = -velDirection * MathF.Tan(ang) * radius;
 
-            var starts = new[] { Position };
-            var ends = new[] { Position + velDirection * WALL_DIST };
+            var starts = new[] {
+                Position + offset,
+                Position + offset
+            };
+            var ends = new[] {
+                Position + velDirection.Rotate(WALL_FOV / 2) * WALL_DIST,
+                Position + velDirection.Rotate(-WALL_FOV / 2) * WALL_DIST
+            };
 
             for (int i = 0; i < starts.Length; i++)
             {
