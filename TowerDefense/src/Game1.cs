@@ -27,6 +27,7 @@ using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
+using TowerDefense.NoiseTest;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
@@ -47,7 +48,7 @@ namespace TowerDefense
         private Building[][] buildingTiles;
         private Building[] buildings;
         private Tower[] towers;
-        private Enemy[] enemies;
+        private Enemy[] enemies; 
         private List<Projectile> projectiles;
 
         private SpatialHashGrid SHGBuildings;
@@ -55,6 +56,7 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
+        private const int MAP_SIZE = 1000;
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
 
@@ -69,6 +71,16 @@ namespace TowerDefense
             Wall,
             Remove
         }
+
+        // public enum TileTypes
+        // {
+        //     Water,
+        //     Beach,
+        //     Grass,
+        //     Stone,
+        //     Desert,
+        //     Snow
+        // }
 
         private Selector currentSelector;
 
@@ -95,17 +107,59 @@ namespace TowerDefense
             projectiles = new List<Projectile>();
 
             // tile map initialization
-            tileMap = new string[20][];
+            tileMap = new string[MAP_SIZE][];
             for (int i = 0; i < tileMap.Length; i++)
             {
-                tileMap[i] = new string[20];
+                tileMap[i] = new string[MAP_SIZE];
             }
-
+            // Implementing Perlin Noise and Biome generation into the tilemap 
+            // Generate Float[] for Perlin Noise
+            // Generate Biomes for specific ranges within the Noise values
+            // Create subsets within certain biomes to allow generation of specific resources
+            // Generate and display Tilemap depending on biomes created
+            // Generate resources within the subsets on the building level
+            Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
+            float[] noiseMap = NoiseMap.GenerateNoiseMap(MAP_SIZE, MAP_SIZE, 12345, 0.3f, 2, 1, 1, Vector2.Zero);
+            // for (int i = 0; i < tileMap.Length; i++)
+            // {
+            //     for (int j = 0; j < tileMap[i].Length; j++)
+            //     {
+            //         tileMap[i][j] = "grass";
+            //     }
+            // }
             for (int i = 0; i < tileMap.Length; i++)
             {
                 for (int j = 0; j < tileMap[i].Length; j++)
                 {
-                    tileMap[i][j] = "grass";
+                    float currNoise = noiseMap[i * MAP_SIZE + j];
+                    if (currNoise < 0.1f)
+                    {
+                        tileMap[i][j] = "water";
+                    }
+                    else if (currNoise < 0.2f)
+                    {
+                        tileMap[i][j] = "beach";
+                    }
+                    else if (currNoise < 0.3f)
+                    {
+                        tileMap[i][j] = "grass";
+                    }
+                    else if (currNoise < 0.4f)
+                    {
+                        tileMap[i][j] = "stone";
+                    }
+                    else if (currNoise < 0.5f)
+                    {
+                        tileMap[i][j] = "desert";
+                    }
+                    else if (currNoise < 0.6f)
+                    {
+                        tileMap[i][j] = "snow";
+                    }
+                    else
+                    {
+                        tileMap[i][j] = "grass";
+                    }
                 }
             }
 

@@ -6,8 +6,9 @@ using TowerDefense.Maths;
 namespace TowerDefense.NoiseTest
 {
     public class Noise
-    {
-        public static float[] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, int persistance, int lacunarity, Vector2 offset)
+    {   
+        
+        public float[] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, int persistance, int lacunarity, Vector2 offset)
         {
             float[] noiseMap = new float[mapWidth * mapHeight];
             var random = new System.Random(seed);
