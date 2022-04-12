@@ -124,19 +124,23 @@ namespace TowerDefense.Entities.Enemies
 
             var buildingsToCheck = SHGBuildings.QueryEntities(Position, WALL_DIST);
 
+            // position setting for two FOV
             var velDirection = Velocity.Normalized();
-            float radius = 8f;
-            float ang = MathF.PI / 2 - WALL_FOV / 2;
-            var offset = -velDirection * MathF.Tan(ang) * radius;
+            // float radius = 8f;
+            // float ang = MathF.PI / 2 - WALL_FOV / 2;
+            // var offset = -velDirection * MathF.Tan(ang) * radius;
             
-            var starts = new[] {
-                Position + offset,
-                Position + offset
-            };
-            var ends = new[] {
-                Position + velDirection.Rotate(WALL_FOV / 2) * WALL_DIST,
-                Position + velDirection.Rotate(-WALL_FOV / 2) * WALL_DIST
-            };
+            // var starts = new[] {
+            //     Position + offset,
+            //     Position + offset
+            // };
+            // var ends = new[] {
+            //     Position + velDirection.Rotate(WALL_FOV / 2) * WALL_DIST,
+            //     Position + velDirection.Rotate(-WALL_FOV / 2) * WALL_DIST
+            // };
+
+            var starts = new[] { Position };
+            var ends = new[] { Position + velDirection * WALL_DIST };
 
             (float sqdist, Vector2 intersection, Vector2 normal)? collData = null;
             foreach (var b in buildingsToCheck)
@@ -145,7 +149,7 @@ namespace TowerDefense.Entities.Enemies
 
                 if (sqdist < MathF.Pow(WALL_DIST, 2))
                 {
-                    for (int i = 0; i < 2; i++)
+                    for (int i = 0; i < starts.Length; i++)
                     {
                         var start = starts[i];
                         var end = ends[i];
@@ -246,17 +250,19 @@ namespace TowerDefense.Entities.Enemies
         {
             base.DrawDebug(spriteBatch);
 
-            var direction = Velocity.Normalized();
-            float radius = 8f;
-            float ang = MathF.PI / 2 -  WALL_FOV / 2;
-            Vector2 offset = -direction * MathF.Tan(ang) * radius;
-            
-            var starts = new[] {
-                Position + offset,
-                Position + offset
-            };
-            spriteBatch.DrawLine(starts[0], Position + Velocity.Normalized().Rotate(WALL_FOV / 2) * WALL_DIST, Color.Red);
-            spriteBatch.DrawLine(starts[1], Position + Velocity.Normalized().Rotate(-WALL_FOV / 2) * WALL_DIST, Color.Red);
+            var velDirection = Velocity.Normalized();
+            // float radius = 8f;
+            // float ang = MathF.PI / 2 -  WALL_FOV / 2;
+            // Vector2 offset = -velDirection * MathF.Tan(ang) * radius;
+
+            var starts = new[] { Position };
+            var ends = new[] { Position + velDirection * WALL_DIST };
+
+            for (int i = 0; i < starts.Length; i++)
+            {
+                spriteBatch.DrawLine(starts[i], ends[i], Color.Red);
+            }
+
             spriteBatch.DrawLine(Position, Position + wallSteeringDeubug.Normalized() * WALL_DIST, Color.Green);
             if (intersect.HasValue)
                 spriteBatch.DrawPoint(intersect.Value, Color.Blue, 4);
