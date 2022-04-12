@@ -134,11 +134,11 @@ namespace TowerDefense
                     float currNoise = noiseMap[i * MAP_SIZE + j];
                     if (currNoise < 0.1f)
                     {
-                        tileMap[i][j] = "water";
+                        tileMap[i][j] = "deepwater";
                     }
                     else if (currNoise < 0.2f)
                     {
-                        tileMap[i][j] = "beach";
+                        tileMap[i][j] = "water";
                     }
                     else if (currNoise < 0.3f)
                     {
@@ -146,15 +146,11 @@ namespace TowerDefense
                     }
                     else if (currNoise < 0.4f)
                     {
-                        tileMap[i][j] = "stone";
+                        tileMap[i][j] = "snow";
                     }
                     else if (currNoise < 0.5f)
                     {
                         tileMap[i][j] = "desert";
-                    }
-                    else if (currNoise < 0.6f)
-                    {
-                        tileMap[i][j] = "snow";
                     }
                     else
                     {
@@ -212,7 +208,7 @@ namespace TowerDefense
             tileTextures = new Dictionary<string, Texture2D>();
 
             Content.RootDirectory = "Content";
-            string[] tileNames = new string[] { "grass", "dirt" };
+            string[] tileNames = new string[] { "grass", "dirt", "snow", "water", "beach", "stone", "desert", "deepwater" };
             foreach (string name in tileNames)
             {
                 tileTextures.Add(name, Content.Load<Texture2D>("Sprites/Tiles/" + name));
