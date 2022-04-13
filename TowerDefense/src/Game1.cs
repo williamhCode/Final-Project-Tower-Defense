@@ -57,7 +57,7 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_SIZE = 100;
+        private const int MAP_SIZE = 200;
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
 
@@ -123,10 +123,10 @@ namespace TowerDefense
             float[] noiseMap = NoiseMap.GenerateNoiseMap(
                 MAP_SIZE, MAP_SIZE,
                 seed: 1,
-                scale: 20f,
-                octaves: 5,
-                persistance: 0.5f,
-                lacunarity: 0.5f,
+                scale: 15f,
+                octaves: 3,
+                persistance: 1f,
+                lacunarity: 1f,
                 offset: Vector2.Zero
             );
 
@@ -194,33 +194,25 @@ namespace TowerDefense
                     float height = noiseMap[i * MAP_SIZE + j];
                     for (int x = 0; x < noiseMap.Length; x++)
                     {
-                        if (height <= 0.05f)
+                        if (height <= 0.1f)
                         {
                             tileMap[i][j] = "deepwater";
                         }
-                        else if (height <= 0.1f)
+                        else if (height <= 0.3f)
                         {
                             tileMap[i][j] = "water";
                         }
-                        else if (height <= 0.12f)
+                        else if (height <= 0.35f)
                         {
                             tileMap[i][j] = "beach";
                         }
-                        else if (height < 0.3f)
+                        else if (height < 0.8f)
                         {
                             tileMap[i][j] = "grass";
-                        }
-                        else if (height < 0.5f)
-                        {
-                            tileMap[i][j] = "sand";
-                        }
-                        else if (height < 0.7f)
-                        {
-                            tileMap[i][j] = "snow";
                         }
                         else
                         {
-                            tileMap[i][j] = "grass";
+                            tileMap[i][j] = "sand";
                         }
                     }
                 }
@@ -502,7 +494,7 @@ namespace TowerDefense
                         break;
                 }
             }
-        EndBuilding:;
+            EndBuilding:;
 
             if (mouseState.WasButtonJustDown(MouseButton.Left))
             {
@@ -518,7 +510,21 @@ namespace TowerDefense
                 }
             }
 
-        EndMouse:;
+            EndMouse:;
+
+            if (keyboardState.IsKeyDown(Keys.C))
+            {
+                if (currentSelector == Selector.Bandit)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
+                        }
+                    }
+                }
+            }
 
 
             if (keyboardState.WasKeyJustDown(Keys.E))

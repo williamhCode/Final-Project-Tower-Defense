@@ -19,7 +19,8 @@ namespace TowerDefense.Camera
         public float Zoom 
         { 
             get { return _zoom; }
-            set { _zoom = Math.Max(1, value); }
+            // set { _zoom = Math.Max(1, value); }
+            set { _zoom = value; }
         }
 
         public Camera2D(float width, float height)
