@@ -58,7 +58,7 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_SIZE = 200;
+        private const int MAP_SIZE = 50;
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
 
