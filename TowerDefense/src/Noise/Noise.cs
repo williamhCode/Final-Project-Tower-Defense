@@ -8,7 +8,7 @@ namespace TowerDefense.NoiseTest
     public class Noise
     {   
         
-        public float[] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, int persistance, int lacunarity, Vector2 offset)
+        public float[] GenerateNoiseMap(int mapWidth, int mapHeight, int seed, float scale, int octaves, float persistance, float lacunarity, Vector2 offset)
         {
             float[] noiseMap = new float[mapWidth * mapHeight];
             var random = new System.Random(seed);
@@ -52,16 +52,16 @@ namespace TowerDefense.NoiseTest
                         float sampleX = (x - halfWidth) / scale * frequency + octaveOffsets[i].X;
                         float sampleY = (y - halfHeight) / scale * frequency + octaveOffsets[i].Y;
 
-                        double perlineValue = openSimplexNoise.Evaluate(sampleX, sampleY) * 2 - 1;
+                        double perlineValue = openSimplexNoise.Evaluate(sampleX, sampleY);
 
                         noiseHeight += (float)perlineValue * amplitude;
                         amplitude *= persistance;
                         frequency *= lacunarity;
                     }
 
-                    if(noiseHeight < maxNoiseHeight)
+                    if(noiseHeight > maxNoiseHeight)
                         maxNoiseHeight = noiseHeight;
-                    else if(noiseHeight > minNoiseHeight)
+                    if(noiseHeight < minNoiseHeight)
                         minNoiseHeight = noiseHeight;
 
                     noiseMap[y * mapWidth + x] = noiseHeight;

@@ -48,7 +48,7 @@ namespace TowerDefense
         private Building[][] buildingTiles;
         private Building[] buildings;
         private Tower[] towers;
-        private Enemy[] enemies; 
+        private Enemy[] enemies;
         private List<Projectile> projectiles;
 
         private SpatialHashGrid SHGBuildings;
@@ -56,7 +56,7 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_SIZE = 1000;
+        private const int MAP_SIZE = 100;
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
 
@@ -119,42 +119,96 @@ namespace TowerDefense
             // Generate and display Tilemap depending on biomes created
             // Generate resources within the subsets on the building level
             Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
-            float[] noiseMap = NoiseMap.GenerateNoiseMap(MAP_SIZE, MAP_SIZE, 12345, 0.3f, 2, 1, 1, Vector2.Zero);
-            // for (int i = 0; i < tileMap.Length; i++)
+            float[] noiseMap = NoiseMap.GenerateNoiseMap(MAP_SIZE, MAP_SIZE, 1, 1f, 1, 0.5f, 0.5f, Vector2.Zero);
+            // foreach (float f in noiseMap)
             // {
-            //     for (int j = 0; j < tileMap[i].Length; j++)
-            //     {
-            //         tileMap[i][j] = "grass";
-            //     }
+            //     Console.WriteLine(f);
             // }
-            for (int i = 0; i < tileMap.Length; i++)
+            string[][] noiseMapString = new string[MAP_SIZE][];
+            for (int i = 0; i < noiseMapString.Length; i++)
             {
-                for (int j = 0; j < tileMap[i].Length; j++)
+                noiseMapString[i] = new string[MAP_SIZE];
+            }
+            for (int i = 0; i < noiseMapString.Length; i++)
+            {
+                for (int j = 0; j < noiseMapString[i].Length; j++)
                 {
-                    float currNoise = noiseMap[i * MAP_SIZE + j];
-                    if (currNoise < 0.1f)
+                    var currentHeight = noiseMap[i * MAP_SIZE + j];
+                    
+                    if (currentHeight <= 0.05)
                     {
-                        tileMap[i][j] = "deepwater";
+                        noiseMapString[i][j] = "W";
                     }
-                    else if (currNoise < 0.2f)
+                    else if(currentHeight <= 0.1)
                     {
-                        tileMap[i][j] = "water";
+                        noiseMapString[i][j] = "w";
                     }
-                    else if (currNoise < 0.3f)
+                    else if(currentHeight <= 0.12)
                     {
-                        tileMap[i][j] = "grass";
+                        noiseMapString[i][j] = "b";
                     }
-                    else if (currNoise < 0.4f)
+                    else if(currentHeight <= 0.3)
                     {
-                        tileMap[i][j] = "snow";
+                        noiseMapString[i][j] = "g";
                     }
-                    else if (currNoise < 0.5f)
+                    else if(currentHeight <= 0.5)
                     {
-                        tileMap[i][j] = "desert";
+                        noiseMapString[i][j] = "d";
+                    }
+                    else if(currentHeight <= 0.7)
+                    {
+                        noiseMapString[i][j] = "s";
                     }
                     else
                     {
-                        tileMap[i][j] = "grass";
+                        noiseMapString[i][j] = "g";
+                    }
+                }
+            }
+            for(int i = 0; i < noiseMapString.Length; i++)
+            {
+                for(int j = 0; j < noiseMapString[i].Length; j++)
+                {
+                    Console.Write(noiseMapString[i][j] + "\t");
+                }
+                Console.WriteLine();
+            }
+
+            for (int i = 0; i < MAP_SIZE; i++)
+            {
+                for (int j = 0; j < MAP_SIZE; j++)
+                {
+                    float height = noiseMap[i * MAP_SIZE + j];
+                    for (int x = 0; x < noiseMap.Length; x++)
+                    {
+                        if (height <= 0.05f)
+                        {
+                            tileMap[i][j] = "deepwater";
+                        }
+                        else if (height <= 0.1f)
+                        {
+                            tileMap[i][j] = "water";
+                        }
+                        else if (height <= 0.12f)
+                        {
+                            tileMap[i][j] = "beach";
+                        }
+                        else if (height < 0.3f)
+                        {
+                            tileMap[i][j] = "grass";
+                        }
+                        else if (height < 0.5f)
+                        {
+                            tileMap[i][j] = "sand";
+                        }
+                        else if (height < 0.7f)
+                        {
+                            tileMap[i][j] = "snow";
+                        }
+                        else
+                        {
+                            tileMap[i][j] = "grass";
+                        }
                     }
                 }
             }
@@ -207,13 +261,14 @@ namespace TowerDefense
             // load tile textures
             tileTextures = new Dictionary<string, Texture2D>();
 
-            Content.RootDirectory = "Content";
-            string[] tileNames = new string[] { "grass", "dirt", "snow", "water", "beach", "stone", "desert", "deepwater" };
+            Content.RootDirectory = "Content/Sprites/Tiles";
+            string[] tileNames = new string[] { "grass", "snow", "water", "beach", "sand", "deepwater" };
             foreach (string name in tileNames)
             {
-                tileTextures.Add(name, Content.Load<Texture2D>("Sprites/Tiles/" + name));
+                tileTextures.Add(name, Content.Load<Texture2D>(name));
             }
 
+            Content.RootDirectory = "Content";
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
@@ -434,7 +489,7 @@ namespace TowerDefense
                         break;
                 }
             }
-            EndBuilding:;
+        EndBuilding:;
 
             if (mouseState.WasButtonJustDown(MouseButton.Left))
             {
@@ -450,7 +505,7 @@ namespace TowerDefense
                 }
             }
 
-            EndMouse:;
+        EndMouse:;
 
 
             if (keyboardState.WasKeyJustDown(Keys.E))
@@ -502,8 +557,8 @@ namespace TowerDefense
             });
 
             sw.Stop();
-            Console.WriteLine(sw.Elapsed.TotalSeconds);
-            Console.WriteLine(enemies.Length);
+            //Console.WriteLine(sw.Elapsed.TotalSeconds);
+            //Console.WriteLine(enemies.Length);
 
             // enemy death
             var enemiesTemp = new List<Enemy>(enemies);
