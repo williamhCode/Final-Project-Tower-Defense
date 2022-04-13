@@ -27,12 +27,14 @@ using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
+using TowerDefense.NoiseTest;
 using static TowerDefense.Collision.CollisionFuncs;
 using TowerDefense.Collision;
 
 using System.Diagnostics;
 using System.Threading.Tasks;
 
+//test
 namespace TowerDefense
 {
     public class Game1 : MlemGame
@@ -56,6 +58,7 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
+        private const int MAP_SIZE = 200;
         private Dictionary<string, Texture2D> tileTextures;
         private string[][] tileMap;
 
@@ -74,6 +77,16 @@ namespace TowerDefense
             Remove,
             Bandit,
         }
+
+        // public enum TileTypes
+        // {
+        //     Water,
+        //     Beach,
+        //     Grass,
+        //     Stone,
+        //     Desert,
+        //     Snow
+        // }
 
         private Selector currentSelector;
 
@@ -100,17 +113,113 @@ namespace TowerDefense
             projectiles = new List<Projectile>();
 
             // tile map initialization
-            tileMap = new string[20][];
+            tileMap = new string[MAP_SIZE][];
             for (int i = 0; i < tileMap.Length; i++)
             {
-                tileMap[i] = new string[20];
+                tileMap[i] = new string[MAP_SIZE];
             }
+            // Implementing Perlin Noise and Biome generation into the tilemap 
+            // Generate Float[] for Perlin Noise
+            // Generate Biomes for specific ranges within the Noise values
+            // Create subsets within certain biomes to allow generation of specific resources
+            // Generate and display Tilemap depending on biomes created
+            // Generate resources within the subsets on the building level
+            Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
+            float[] noiseMap = NoiseMap.GenerateNoiseMap(
+                MAP_SIZE, MAP_SIZE,
+                seed: 1,
+                scale: 15f,
+                octaves: 3,
+                persistance: 1f,
+                lacunarity: 1f,
+                offset: Vector2.Zero
+            );
 
-            for (int i = 0; i < tileMap.Length; i++)
+            // foreach (float f in noiseMap)
+            // {
+            //     Console.WriteLine(f);
+            // }
+
+            /*
+            string[][] noiseMapString = new string[MAP_SIZE][];
+            for (int i = 0; i < noiseMapString.Length; i++)
             {
-                for (int j = 0; j < tileMap[i].Length; j++)
+                noiseMapString[i] = new string[MAP_SIZE];
+            }
+            for (int i = 0; i < noiseMapString.Length; i++)
+            {
+                for (int j = 0; j < noiseMapString[i].Length; j++)
                 {
-                    tileMap[i][j] = "grass";
+                    var currentHeight = noiseMap[i * MAP_SIZE + j];
+
+                    if (currentHeight <= 0.05)
+                    {
+                        noiseMapString[i][j] = "W";
+                    }
+                    else if (currentHeight <= 0.1)
+                    {
+                        noiseMapString[i][j] = "w";
+                    }
+                    else if (currentHeight <= 0.12)
+                    {
+                        noiseMapString[i][j] = "b";
+                    }
+                    else if (currentHeight <= 0.3)
+                    {
+                        noiseMapString[i][j] = "g";
+                    }
+                    else if (currentHeight <= 0.5)
+                    {
+                        noiseMapString[i][j] = "d";
+                    }
+                    else if (currentHeight <= 0.7)
+                    {
+                        noiseMapString[i][j] = "s";
+                    }
+                    else
+                    {
+                        noiseMapString[i][j] = "g";
+                    }
+                }
+            }
+            for (int i = 0; i < noiseMapString.Length; i++)
+            {
+                for (int j = 0; j < noiseMapString[i].Length; j++)
+                {
+                    Console.Write(noiseMapString[i][j] + "\t");
+                }
+                Console.WriteLine();
+            }
+            */
+
+            for (int i = 0; i < MAP_SIZE; i++)
+            {
+                for (int j = 0; j < MAP_SIZE; j++)
+                {
+                    float height = noiseMap[i * MAP_SIZE + j];
+                    for (int x = 0; x < noiseMap.Length; x++)
+                    {
+                        if (height <= 0.1f)
+                        {
+                            tileMap[i][j] = "deepwater";
+                        }
+                        else if (height <= 0.3f)
+                        {
+                            tileMap[i][j] = "water";
+                        }
+                        else if (height <= 0.35f)
+                        {
+                            tileMap[i][j] = "beach";
+                        }
+                        else if (height < 0.8f)
+                        {
+                            tileMap[i][j] = "grass";
+                        }
+                        else
+                        {
+                            tileMap[i][j] = "sand";
+                        }
+                    }
                 }
             }
 
@@ -162,13 +271,14 @@ namespace TowerDefense
             // load tile textures
             tileTextures = new Dictionary<string, Texture2D>();
 
-            Content.RootDirectory = "Content";
-            string[] tileNames = new string[] { "grass", "dirt" };
+            Content.RootDirectory = "Content/Sprites/Tiles";
+            string[] tileNames = new string[] { "grass", "snow", "water", "beach", "sand", "deepwater" };
             foreach (string name in tileNames)
             {
-                tileTextures.Add(name, Content.Load<Texture2D>("Sprites/Tiles/" + name));
+                tileTextures.Add(name, Content.Load<Texture2D>(name));
             }
 
+            Content.RootDirectory = "Content";
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
@@ -207,8 +317,6 @@ namespace TowerDefense
             this.root.ScrollBar.SmoothScrolling = true;
             root.AddChild(new VerticalSpace(2));
             this.UiSystem.Add("TestUi", this.root);
-
-            float timesPressed = 0f;
             /*
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
             //var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
@@ -424,6 +532,20 @@ namespace TowerDefense
                     currentSelector = value;
                 }
             }
+            if (keyboardState.IsKeyDown(Keys.C))
+            {
+                if (currentSelector == Selector.Bandit)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
+                        }
+                    }
+                }
+            }
+
 
             if (keyboardState.WasKeyJustUp(Keys.E))
             {
