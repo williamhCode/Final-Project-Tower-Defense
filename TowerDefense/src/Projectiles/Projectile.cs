@@ -57,7 +57,7 @@ namespace TowerDefense.Projectiles
 
         public override (Vector2, float) GetCurrentState()
         {
-            var position = Obj.StartPosition + speed * TimeElapsed;
+            var position = StartPosition + speed * TimeElapsed;
             return (position, angle);
         }
     }

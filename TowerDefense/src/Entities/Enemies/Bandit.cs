@@ -47,8 +47,8 @@ namespace TowerDefense.Entities.Enemies
 
         public Bandit(Vector2 position, int health) : base(position, health)
         {
-            // CShape = new CCircle(position, 5);
-            CShape = new CRectangle(position, 16, 6);
+            CShape = new CCircle(position, 7);
+            // CShape = new CRectangle(position, 16, 6);
 
             animationState = AnimationState.Copy();
             animationState.SetState(BANDIT_STATE, BanditState.Idle);
@@ -56,6 +56,8 @@ namespace TowerDefense.Entities.Enemies
 
             HitboxShape = new CRectangle(position, 20, 32);
             YHitboxOffset = 14;
+
+            InitRays();
         }
 
         public override void Move(Vector2 goal, float dt)
@@ -129,7 +131,7 @@ namespace TowerDefense.Entities.Enemies
             float radius = 8f;
             float ang = MathF.PI / 2 - WALL_FOV / 2;
             var offset = -velDirection * MathF.Tan(ang) * radius;
-            
+
             var starts = new[] {
                 Position + offset,
                 Position + offset
@@ -233,6 +235,114 @@ namespace TowerDefense.Entities.Enemies
             }
         }
 
+        private const float STEERING_DIST = 60f;
+        private const int NUM_RAYS = 16;
+        private Vector2[] rays = new Vector2[NUM_RAYS];
+
+        private void InitRays()
+        {
+            for (int i = 0; i < NUM_RAYS; i++)
+            {
+                var angle = (float)i / NUM_RAYS * MathF.PI * 2;
+                rays[i] = new Vector2(MathF.Cos(angle), MathF.Sin(angle));
+            }
+        }
+
+        private struct DebugInfo
+        {
+            public Vector2 start;
+            public Vector2 end;
+            public Color color;
+        }
+        private DebugInfo[] debugInfo = new DebugInfo[NUM_RAYS];
+
+        public override void Steer(float dt, SpatialHashGrid SHGBuildings, Vector2 goal)
+        {
+            var buildingsToCheck = SHGBuildings.QueryEntities(Position, STEERING_DIST);
+
+            var direction = (goal - Position).Normalized();
+            var raysDot = new float[NUM_RAYS];
+            for (int i = 0; i < NUM_RAYS; i++)
+            {
+                var ray = rays[i];
+                var rayDot = Vector2.Dot(ray, direction);
+                raysDot[i] = rayDot;
+            }
+            // normalize
+            raysDot = raysDot.Select(x => (x + 1) / 2).ToArray();
+
+            // create boolean array for each ray
+            var rayCollision = new bool[NUM_RAYS];
+            for (int i = 0; i < NUM_RAYS; i++)
+            {
+                var start = Position;
+                var end = Position + rays[i] * STEERING_DIST;
+                foreach (var b in buildingsToCheck)
+                {
+                    if (IsColliding((CPolygon)b.CShape, start, end))
+                    {
+                        rayCollision[i] = true;
+                        break;
+                    }
+                }
+            }
+
+            // select ray with highest dot product and no collision
+            var maxDot = float.MinValue;
+            var maxDotIndex = -1;
+            for (int i = 0; i < NUM_RAYS; i++)
+            {
+                if (!rayCollision[i] && raysDot[i] > maxDot)
+                {
+                    maxDot = raysDot[i];
+                    maxDotIndex = i;
+                }
+            }
+
+            // if no ray found, steer to zero, else steer towards that ray
+            Vector2 steering;
+            if (maxDotIndex == -1)
+            {
+                steering = Vector2.Zero;
+            }
+            else
+            {
+                // steering is the direction of the largest dot product ray
+                steering = rays[maxDotIndex].Normalized();
+
+                // steering is the sum all non-colliding rays
+                // steering = Vector2.Zero;
+                // for (int i = 0; i < NUM_RAYS; i++)
+                // {
+                //     if (!rayCollision[i])
+                //     {
+                //         steering += rays[i] * raysDot[i];
+                //     }
+                // }
+                // steering = steering.Normalized();
+            }
+
+            Velocity = Velocity.MoveTowards(MAX_SPEED * steering, ACCELERATION * dt);
+
+            // add debug info
+            for (int i = 0; i < NUM_RAYS; i++)
+            {
+                var start = Position;
+                var end = Position + rays[i] * raysDot[i] * STEERING_DIST;
+                debugInfo[i] = new DebugInfo
+                {
+                    start = start,
+                    end = end,
+                    color = rayCollision[i] ? Color.Red : Color.Green
+                };
+            }
+
+            if (maxDotIndex != -1)
+            {
+                debugInfo[maxDotIndex].color = Color.Purple;
+            }
+        }
+
         public override void Update(float dt)
         {
             base.Update(dt);
@@ -247,9 +357,10 @@ namespace TowerDefense.Entities.Enemies
         {
             base.DrawDebug(spriteBatch);
 
+            /* old debug
             var velDirection = Velocity.Normalized();
             float radius = 8f;
-            float ang = MathF.PI / 2 -  WALL_FOV / 2;
+            float ang = MathF.PI / 2 - WALL_FOV / 2;
             Vector2 offset = -velDirection * MathF.Tan(ang) * radius;
 
             var starts = new[] {
@@ -269,6 +380,13 @@ namespace TowerDefense.Entities.Enemies
             spriteBatch.DrawLine(Position, Position + wallSteeringDeubug.Normalized() * WALL_DIST, Color.Green);
             if (intersect.HasValue)
                 spriteBatch.DrawPoint(intersect.Value, Color.Blue, 4);
+            */
+
+            // new debug
+            foreach (var info in debugInfo)
+            {
+                spriteBatch.DrawLine(info.start, info.end, info.color);
+            }
         }
     }
 }

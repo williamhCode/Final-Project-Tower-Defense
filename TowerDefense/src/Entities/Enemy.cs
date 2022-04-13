@@ -46,6 +46,8 @@ namespace TowerDefense.Entities
 
         public abstract void ApplyFlocking(float dt, SpatialHashGrid SHGFlocking, SpatialHashGrid SHGBuildings, Vector2 goal);
 
+        public abstract void Steer(float dt, SpatialHashGrid SHGBuildings, Vector2 goal);
+
         public override void Update(float dt)
         {
             Position += Velocity * dt;

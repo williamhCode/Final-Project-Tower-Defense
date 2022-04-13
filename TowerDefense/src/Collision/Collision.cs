@@ -33,7 +33,7 @@ namespace TowerDefense.Collision
         }
 
         /// <summary>
-        /// Check if a polygon is intersecting with a line + return the closest intersection point.
+        /// Check if a polygon is intersecting with a line + returns the square distance, intersection, and normal.
         /// </summary>
         public static bool IsColliding(
             CPolygon poly, Vector2 start, Vector2 end, out (float sqdist, Vector2 intersection, Vector2 normal)? collData)
@@ -65,6 +65,43 @@ namespace TowerDefense.Collision
             {
                 collData = (minDistSq, minIntersection.Value, normal.Value);
                 return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Check if two lines are intersecting.
+        /// </summary>
+        public static bool IsIntersecting(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4)
+        {
+            Vector2 p12 = p2 - p1;
+            Vector2 p34 = p4 - p3;
+            Vector2 p13 = p3 - p1;
+
+            float d = Cross(p12, p34);
+            if (d == 0)
+                return false;
+            float u = Cross(p13, p34) / d;
+            float v = Cross(p13, p12) / d;
+
+            return u >= 0 && u <= 1 && v >= 0 && v <= 1;
+        }
+
+        /// <summary>
+        /// Check if a polygon is intersecting with a line.
+        /// </summary>
+        public static bool IsColliding(CPolygon poly, Vector2 start, Vector2 end)
+        {
+            for (int i = 0; i < poly.Vertices.Length; i++)
+            {
+                Vector2 p1 = poly.Vertices[i];
+                Vector2 p2 = poly.Vertices[(i + 1) % poly.Vertices.Length];
+
+                if (IsIntersecting(p1, p2, start, end))
+                {
+                    return true;
+                }
             }
 
             return false;

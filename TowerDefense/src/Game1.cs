@@ -445,10 +445,15 @@ namespace TowerDefense
             player.DecideDirection(worldPosition);
 
             // enemy flocking
-            Parallel.ForEach(enemies, e =>
+            // Parallel.ForEach(enemies, e =>
+            // {
+            //     e.ApplyFlocking(dt, SHGFlocking, SHGBuildings, player.Position);
+            // });
+            // enemy movement
+            foreach (var enemy in enemies)
             {
-                e.ApplyFlocking(dt, SHGFlocking, SHGBuildings, player.Position);
-            });
+                enemy.Steer(dt, SHGBuildings, player.Position);
+            }
 
             // projectile
             var projectilesTemp = new List<Projectile>(projectiles);
