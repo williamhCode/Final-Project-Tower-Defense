@@ -25,7 +25,7 @@ using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
-using Towerdefense.Entities.Components;
+using TowerDefense.Entities.Components;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;

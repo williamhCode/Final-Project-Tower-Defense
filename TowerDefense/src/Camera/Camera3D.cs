@@ -50,7 +50,7 @@ namespace TowerDefense.Camera
     {
         public Ortho_Camera(Vector3 position, float width, float height) : base(position, width, height)
         {
-            this.projectionMatrix = Matrix.CreateOrthographic(width/5, height/5, -100, 100);
+            this.projectionMatrix = Matrix.CreateOrthographic(width, height, -100, 100);
         }
 
         public override Matrix GetViewMatrix()
