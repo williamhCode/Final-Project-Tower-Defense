@@ -120,11 +120,22 @@ namespace TowerDefense
             // Generate and display Tilemap depending on biomes created
             // Generate resources within the subsets on the building level
             Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
-            float[] noiseMap = NoiseMap.GenerateNoiseMap(MAP_SIZE, MAP_SIZE, 1, 1f, 1, 0.5f, 0.5f, Vector2.Zero);
+            float[] noiseMap = NoiseMap.GenerateNoiseMap(
+                MAP_SIZE, MAP_SIZE,
+                seed: 1,
+                scale: 20f,
+                octaves: 5,
+                persistance: 0.5f,
+                lacunarity: 0.5f,
+                offset: Vector2.Zero
+            );
+
             // foreach (float f in noiseMap)
             // {
             //     Console.WriteLine(f);
             // }
+
+            /*
             string[][] noiseMapString = new string[MAP_SIZE][];
             for (int i = 0; i < noiseMapString.Length; i++)
             {
@@ -135,28 +146,28 @@ namespace TowerDefense
                 for (int j = 0; j < noiseMapString[i].Length; j++)
                 {
                     var currentHeight = noiseMap[i * MAP_SIZE + j];
-                    
+
                     if (currentHeight <= 0.05)
                     {
                         noiseMapString[i][j] = "W";
                     }
-                    else if(currentHeight <= 0.1)
+                    else if (currentHeight <= 0.1)
                     {
                         noiseMapString[i][j] = "w";
                     }
-                    else if(currentHeight <= 0.12)
+                    else if (currentHeight <= 0.12)
                     {
                         noiseMapString[i][j] = "b";
                     }
-                    else if(currentHeight <= 0.3)
+                    else if (currentHeight <= 0.3)
                     {
                         noiseMapString[i][j] = "g";
                     }
-                    else if(currentHeight <= 0.5)
+                    else if (currentHeight <= 0.5)
                     {
                         noiseMapString[i][j] = "d";
                     }
-                    else if(currentHeight <= 0.7)
+                    else if (currentHeight <= 0.7)
                     {
                         noiseMapString[i][j] = "s";
                     }
@@ -166,14 +177,15 @@ namespace TowerDefense
                     }
                 }
             }
-            for(int i = 0; i < noiseMapString.Length; i++)
+            for (int i = 0; i < noiseMapString.Length; i++)
             {
-                for(int j = 0; j < noiseMapString[i].Length; j++)
+                for (int j = 0; j < noiseMapString[i].Length; j++)
                 {
                     Console.Write(noiseMapString[i][j] + "\t");
                 }
                 Console.WriteLine();
             }
+            */
 
             for (int i = 0; i < MAP_SIZE; i++)
             {
