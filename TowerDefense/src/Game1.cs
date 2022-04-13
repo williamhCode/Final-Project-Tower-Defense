@@ -78,16 +78,6 @@ namespace TowerDefense
             Bandit,
         }
 
-        // public enum TileTypes
-        // {
-        //     Water,
-        //     Beach,
-        //     Grass,
-        //     Stone,
-        //     Desert,
-        //     Snow
-        // }
-
         private Selector currentSelector;
 
         public Game1()
@@ -135,63 +125,7 @@ namespace TowerDefense
                 offset: Vector2.Zero
             );
 
-            // foreach (float f in noiseMap)
-            // {
-            //     Console.WriteLine(f);
-            // }
-
-            /*
-            string[][] noiseMapString = new string[MAP_SIZE][];
-            for (int i = 0; i < noiseMapString.Length; i++)
-            {
-                noiseMapString[i] = new string[MAP_SIZE];
-            }
-            for (int i = 0; i < noiseMapString.Length; i++)
-            {
-                for (int j = 0; j < noiseMapString[i].Length; j++)
-                {
-                    var currentHeight = noiseMap[i * MAP_SIZE + j];
-
-                    if (currentHeight <= 0.05)
-                    {
-                        noiseMapString[i][j] = "W";
-                    }
-                    else if (currentHeight <= 0.1)
-                    {
-                        noiseMapString[i][j] = "w";
-                    }
-                    else if (currentHeight <= 0.12)
-                    {
-                        noiseMapString[i][j] = "b";
-                    }
-                    else if (currentHeight <= 0.3)
-                    {
-                        noiseMapString[i][j] = "g";
-                    }
-                    else if (currentHeight <= 0.5)
-                    {
-                        noiseMapString[i][j] = "d";
-                    }
-                    else if (currentHeight <= 0.7)
-                    {
-                        noiseMapString[i][j] = "s";
-                    }
-                    else
-                    {
-                        noiseMapString[i][j] = "g";
-                    }
-                }
-            }
-            for (int i = 0; i < noiseMapString.Length; i++)
-            {
-                for (int j = 0; j < noiseMapString[i].Length; j++)
-                {
-                    Console.Write(noiseMapString[i][j] + "\t");
-                }
-                Console.WriteLine();
-            }
-            */
-
+            // Generate Biomes
             for (int i = 0; i < MAP_SIZE; i++)
             {
                 for (int j = 0; j < MAP_SIZE; j++)
@@ -378,7 +312,6 @@ namespace TowerDefense
         private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
         {
             var nearbyWalls = new List<Wall>();
-
 
             var posXs = new int[] { -1, 1, 0, 0 };
             var posYs = new int[] { 0, 0, -1, 1 };
@@ -620,22 +553,6 @@ namespace TowerDefense
                 e.Update(dt);
             }
 
-            // raycast test
-            // start = player.Position;
-            // end = worldPosition;
-
-            // collData = null;
-            // foreach (var building in buildings)
-            // {
-            //     if (IsColliding((CPolygon)building.CShape, start, end, out var tempCollData))
-            //     {
-            //         if (collData == null || tempCollData.Value.dist < collData.Value.dist)
-            //         {
-            //             collData = tempCollData;
-            //         }
-            //     }
-            // }
-
             // collision detection and resolution
             // create new list from Player and Enemy entities
             var entitiesToCheck = entities.Where(e =>
@@ -721,16 +638,6 @@ namespace TowerDefense
             {
                 projectile.Draw(SpriteBatch);
             }
-
-            // raycast test
-            // SpriteBatch.DrawLine(start, end, Color.Red);
-            // if (collData.HasValue)
-            // {
-            //     var data = collData.Value;
-            //     SpriteBatch.DrawLine(data.intersection, data.intersection + data.normal * 10, Color.Blue);
-            //     SpriteBatch.DrawPoint(data.intersection - new Vector2(0.5f, 0.5f), Color.Black, 2);
-            //     Console.WriteLine($"Intersection: {data.intersection}");
-            // }
 
             SpriteBatch.End();
 
