@@ -54,8 +54,9 @@ namespace TowerDefense.Camera
         }
 
         public override Matrix GetViewMatrix()
-        {
-            return Matrix.CreateRotationX(MathHelper.ToRadians(45));
+        {   Matrix viewMatrix=Matrix.CreateRotationX(MathHelper.ToRadians(45));
+        
+            return viewMatrix;
         }
     }
 

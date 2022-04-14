@@ -23,13 +23,9 @@ using TowerDefense.Camera;
 using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
-using TowerDefense.Hashing;
-using TowerDefense.Projectiles;
-using TowerDefense.Entities.Components;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
-using System.Threading.Tasks;
 
 namespace TowerDefense
 {
@@ -53,36 +49,20 @@ namespace TowerDefense
         Texture2D testtex;
 
         Ortho_Camera camera3D;
+        private RenderTarget2D modelBase;
 
+        public float scale=0.4444f;
         private Player player;
         private List<Entity> entities;
-        private Building[][] buildingTiles;
-        private Building[] buildings;
-        private Tower[] towers;
+        private Wall[] walls;
         private Enemy[] enemies;
-        private List<Projectile> projectiles;
 
-        private SpatialHashGrid SHGBuildings;
-        private SpatialHashGrid SHGFlocking;
-        private SpatialHashGrid SHGEnemies;
+        public const int TILE_SIZE = 32;
+        public Dictionary<string, Texture2D> tileTextures;
+        public string[][] tileMap;
+        public static GraphicsDeviceManager graphics;
 
-        private const int TILE_SIZE = 32;
-        private Dictionary<string, Texture2D> tileTextures;
-        private string[][] tileMap;
-
-        private MouseStateExtended mouseState;
-        private KeyboardStateExtended keyboardState;
-        private bool debug;
-
-        public enum Selector
-        {
-            Bandit,
-            BasicTower,
-            Wall,
-            Remove
-        }
-
-        private Selector currentSelector;
+        float angle;
 
         public Game1()
         {
@@ -95,29 +75,39 @@ namespace TowerDefense
         protected override void Initialize()
         {
             base.Initialize();
+            graphics=this.GraphicsDeviceManager;
 
 
 
             // create camera
-            camera3D = new Ortho_Camera(new Vector3(0, 0, 2), 1280, 720);
-
+            camera3D = new Ortho_Camera(new Vector3(0, 0, 2), 32, 18);
+            
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
-            model = Content.Load<Model>("mortor");
-            testtex=Content.Load<Texture2D>("testtexture");
+            model = Content.Load<Model>("buffingTower");
+            Content.RootDirectory= "Content/Textures";
+            testtex=Content.Load<Texture2D>("BTTexture");
+            //graphics.IsFullScreen=true;
+            //graphics.PreferredBackBufferHeight=128;
+            //graphics.PreferredBackBufferHeight=72;
+            
+            //graphics.ApplyChanges();
 
-            camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
+            camera = new Camera2D(this.GraphicsDeviceManager.PreferredBackBufferHeight, this.GraphicsDeviceManager.PreferredBackBufferWidth);
 
             // entities initialization
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
+                // new Bandit(new Vector2(100, 100), 10),
             };
-
-            buildings = entities.OfType<Building>().ToArray();
-            towers = buildings.OfType<Tower>().ToArray();
+            for (int i = 0; i < 10; i++)
+            {
+                entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
+                entities.Add(new Wall(new Vector2(100, (i + 1) * 16 + 100)));
+            }
+            walls = entities.OfType<Wall>().ToArray();
             enemies = entities.OfType<Enemy>().ToArray();
-            projectiles = new List<Projectile>();
 
 
             // tile map initialization
@@ -134,24 +124,6 @@ namespace TowerDefense
                     tileMap[i][j] = "grass";
                 }
             }
-
-            buildingTiles = new Building[tileMap.Length][];
-            for (int i = 0; i < buildingTiles.Length; i++)
-            {
-                buildingTiles[i] = new Building[tileMap[i].Length];
-            }
-
-            SHGBuildings = new SpatialHashGrid(32);
-            foreach (var building in buildings)
-            {
-                SHGBuildings.AddEntity(building, building.Position);
-            }
-
-            SHGFlocking = new SpatialHashGrid(90);
-
-            SHGEnemies = new SpatialHashGrid(90);
-
-            debug = false;
         }
 
         /// <summary>
@@ -161,12 +133,8 @@ namespace TowerDefense
         {
             return
             assembly.GetTypes()
-            .Where(t =>
-            {
-                var ns = t.Namespace;
-                return ns == null ? false : ns.Contains(nameSpace, StringComparison.Ordinal);
-            })
-            .ToArray();
+                    .Where(t => t.Namespace.Contains(nameSpace, StringComparison.Ordinal))
+                    .ToArray();
         }
 
         protected override void LoadContent()
@@ -209,121 +177,38 @@ namespace TowerDefense
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
-                // = Color.Black,
-                ButtonHoveredColor = Color.Red,
-                //TextScale = 0.1f,
             };
-
             this.UiSystem.Style = style;
             this.UiSystem.AutoScaleReferenceSize = new Point(1280, 720);
-            this.UiSystem.AutoScaleWithScreen = false;
-            this.UiSystem.GlobalScale = 1;
+            this.UiSystem.AutoScaleWithScreen = true;
+            this.UiSystem.GlobalScale = 5;
 
-
-            this.root = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
-            this.root.ScrollBar.SmoothScrolling = true;
-            root.AddChild(new VerticalSpace(2));
-            this.UiSystem.Add("TestUi", this.root);
             /*
+            this.root = new Panel(Anchor.TopLeft, new Vector2(100,100), Vector2.Zero, false, true);
+            this.root.ScrollBar.SmoothScrolling = true;
+            this.UiSystem.Add("TestUi", this.root);
+            float timesPressed = 0f;
             var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
-            //var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
-            //CoroutineHandler.Start(WobbleProgressBar(bar1));
-            var button1 = box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
+            var bar1 = box.AddChild(new ProgressBar(Anchor.Center, new Vector2(100,10), MLEM.Misc.Direction2.Right, 100f, timesPressed));
+            box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
             {
                 OnPressed = close => 
                 {
-                    //this.UiSystem.Remove("TestUi");
-                    //this.UiSystem.Remove("InfoBox");
-                    timesPressed += 1f;
-                    //CoroutineHandler.Start(WobbleButton(element));
-                }, 
+                    this.UiSystem.Remove("TestUi");
+                    this.UiSystem.Remove("InfoBox");
+                },  
+                OnPressed = increase => timesPressed += 1f,
                 PositionOffset = new Vector2(0, 1)
             });
             this.UiSystem.Add("InfoBox", box);
             */
-
-            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Wall")
-            {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.Wall;
-                },
-                PositionOffset = new Vector2(10, 0)
-            });
-            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Tower")
-            {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.BasicTower;
-                },
-                PositionOffset = new Vector2(10, 0)
-            });
-            var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Remove Building")
-            {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.Remove;
-                },
-                PositionOffset = new Vector2(10, 0)
-            });
-            button3.AddTooltip(p => this.InputHandler.IsModifierKeyDown(MLEM.Input.ModifierKey.Control) ? "AAAAAA" : string.Empty);
-            var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
-            {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.Bandit;
-                },
-                PositionOffset = new Vector2(10, 0)
-            });
-        }
-
-        private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
-        {
-            var nearbyWalls = new List<Wall>();
-
-
-            var posXs = new int[] { -1, 1, 0, 0 };
-            var posYs = new int[] { 0, 0, -1, 1 };
-
-            for (int i = 0; i < 4; i++)
-            {
-                var x = xTilePos + posXs[i];
-                var y = yTilePos + posYs[i];
-                if (x >= 0 && x < buildingTiles.Length && y >= 0 && y < buildingTiles[x].Length)
-                {
-                    var tempWall = buildingTiles[x][y];
-                    var nearbyWall = tempWall as Wall;
-                    if (nearbyWall != null)
-                    {
-                        nearbyWalls.Add(nearbyWall);
-                    }
-                }
-            }
-
-            return nearbyWalls;
+            //render target for 3d models
+            modelBase=new RenderTarget2D(GraphicsDevice,198,108);
         }
 
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
-
-            // update type arrays
-            buildings = entities.OfType<Building>().ToArray();
-            towers = buildings.OfType<Tower>().ToArray();
-            enemies = entities.OfType<Enemy>().ToArray();
-
-            // update spatial hash grids
-            SHGFlocking.Clear();
-            foreach (var enemy in enemies)
-            {
-                SHGFlocking.AddEntity(enemy, enemy.Position);
-            }
-
-            SHGEnemies.Clear();
-            foreach (var enemy in enemies)
-            {
-                SHGEnemies.AddEntity(enemy, enemy.HitboxShape);
-            }
 
             float dt = gameTime.GetElapsedSeconds();
 
@@ -343,154 +228,46 @@ namespace TowerDefense
             var mousePosition = new Vector2(mouseState.X, mouseState.Y);
             player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
-            var area = root.Area;
-            if (area.Contains(mousePosition.X, mousePosition.Y) && !root.IsHidden)
-                goto EndMouse;
-
-            if (mouseState.IsButtonDown(MouseButton.Left))
+            float up = 0;
+            if (state.IsKeyDown(Keys.Space))
             {
-                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
-
-                int xTilePos = (int)MathF.Floor(worldPosition.X / TILE_SIZE);
-                int yTilePos = (int)MathF.Floor(worldPosition.Y / TILE_SIZE);
-
-                if (xTilePos < 0 || xTilePos >= buildingTiles.Length || yTilePos < 0 || yTilePos >= buildingTiles[xTilePos].Length)
-                {
-                    goto EndBuilding;
-                }
-
-                Building currBuilding = buildingTiles[xTilePos][yTilePos];
-
-                switch (currentSelector)
-                {
-                    case Selector.Wall:
-                        if (currBuilding == null)
-                        {
-                            var wall = new Wall(position);
-                            entities.Add(wall);
-                            buildingTiles[xTilePos][yTilePos] = wall;
-                            SHGBuildings.AddEntity(wall, wall.Position);
-
-                            var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
-                            foreach (var nearbyWall in nearbyWalls)
-                            {
-                                var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
-                                entities.Add(inBetweenWall);
-                                SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
-                            }
-                        }
-                        break;
-
-                    case Selector.BasicTower:
-                        if (currBuilding == null)
-                        {
-                            var tower = new BasicTower(position);
-                            entities.Add(tower);
-                            buildingTiles[xTilePos][yTilePos] = tower;
-                            SHGBuildings.AddEntity(tower, tower.Position);
-                        }
-                        break;
-
-                    case Selector.Remove:
-                        if (currBuilding != null)
-                        {
-                            entities.Remove(currBuilding);
-                            buildingTiles[xTilePos][yTilePos] = null;
-                            SHGBuildings.RemoveEntityPosition(currBuilding);
-
-                            if (currBuilding is Wall)
-                            {
-                                var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
-                                foreach (var nearbyWall in nearbyWalls)
-                                {
-                                    var tempPos = (nearbyWall.Position + currBuilding.Position) / 2;
-                                    var inBetweenWall = entities.Find(e => e.Position == tempPos);
-                                    if (inBetweenWall != null)
-                                    {
-                                        entities.Remove(inBetweenWall);
-                                        SHGBuildings.RemoveEntityCShape(inBetweenWall);
-                                    }
-                                }
-                            }
-                        }
-                        break;
-                }
+                up += 1;
             }
-            EndBuilding:;
-
-            if (mouseState.WasButtonJustDown(MouseButton.Left))
+            if (state.IsKeyDown(Keys.LeftShift))
             {
-                if (currentSelector == Selector.Bandit)
-                {
-                    for (int i = 0; i < 5; i++)
-                    {
-                        for (int j = 0; j < 5; j++)
-                        {
-                            entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
-                        }
-                    }
-                }
-            }
-
-            EndMouse:;
-
-
-            if (keyboardState.WasKeyJustDown(Keys.E))
-            {
-                debug = !debug;
-            }
-
-            if (keyboardState.WasKeyJustDown(Keys.Q))
-            {
-                root.IsHidden = !root.IsHidden;
+                up -= 1;
             }
 
             // camera3D.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
 
-            player.Move(dt, direction);
-            player.DecideDirection(worldPosition);
-
-            // enemy flocking
-            Parallel.ForEach(enemies, e =>
+            if (state.IsKeyDown(Keys.Left))
             {
-                e.ApplyFlocking(dt, SHGFlocking, player.Position);
-            });
-
-            // projectile
-            var projectilesTemp = new List<Projectile>(projectiles);
-            foreach (var projectile in projectilesTemp)
-            {
-                projectile.Update(dt);
-                if (projectile.HasEnded)
-                {
-                    projectiles.Remove(projectile);
-                }
+                model_y_rotation -= 180f * dt;
             }
 
-            Stopwatch sw = new Stopwatch();
-            sw.Start();
-
-            Parallel.ForEach(towers, tower =>
+            if (state.IsKeyDown(Keys.Right))
             {
-                var projectile = tower.Shoot(SHGEnemies);
-                if (projectile != null)
-                {
-                    projectiles.Add(projectile);
-                }
-            });
+                model_y_rotation += 180f * dt;
+            }
 
-            sw.Stop();
-            Console.WriteLine(sw.Elapsed.TotalSeconds);
-            Console.WriteLine(enemies.Length);
 
-            // enemy death
-            var enemiesTemp = new List<Enemy>(enemies);
-            foreach (var enemy in enemiesTemp)
+            var mouseNow = Mouse.GetState();
+            if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
             {
-                if (enemy.IsDead)
-                {
-                    entities.Remove(enemy);
-                }
+                Vector2 mouseDifference;
+                mouseDifference.X = mouseDefaultPos.X - mouseNow.X;
+                mouseDifference.Y = mouseDefaultPos.Y - mouseNow.Y;
+
+                // camera3D.Rotate(mouseDifference.X / 400, mouseDifference.Y / 400);
+
+                Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
+            }
+
+
+            // enemy movement
+            foreach (var e in enemies)
+            {
+                e.Move(player.Position, dt);
             }
 
             // updates
@@ -511,10 +288,9 @@ namespace TowerDefense
 
             foreach (var e in entitiesToCheck)
             {
-                var buildings = SHGBuildings.QueryEntities(e.CShape);
-                buildings = buildings.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
+                var temp_walls = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
 
-                foreach (var building in buildings)
+                foreach (var wall in temp_walls)
                 {
                     if (IsColliding(wall.CShape, e.CShape, out Vector2 mtv))
                     {
@@ -536,6 +312,7 @@ namespace TowerDefense
             camera.LookAt(player.Position);
         }
 
+       
         protected override async void DoDraw(GameTime gameTime)
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
@@ -571,13 +348,18 @@ namespace TowerDefense
             // SpriteBatch.Begin();
             // SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
             // SpriteBatch.End();
+            // Set the render target
+        //GraphicsDevice.SetRenderTarget(modelBase);
+ 
+        //GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
 
-            var projectilesLookup = projectiles.ToLookup(p => p.HasHit);
+            
+            scale = 1f/(108f/graphics.GraphicsDevice.Viewport.Height);
 
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
-
-            // draw tilemap
-            for (int row = 0; row < tileMap.Length; row++)
+            GraphicsDevice.SetRenderTarget(modelBase);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
+for (int i = 0; i < 2; i++)
             {
                 foreach (ModelMesh mesh in model.Meshes)
                 {
@@ -600,33 +382,20 @@ namespace TowerDefense
                 }
             }
 
-            // projectiles have hit get drawn below
-            foreach (var projectile in projectilesLookup[true])
-            {
-                projectile.Draw(SpriteBatch);
-            }
-
-            // draw entities
-            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
-            foreach (var entity in entities_temp)
-            {
-                if (debug)
-                    entity.DrawDebug(SpriteBatch);
-                entity.Draw(SpriteBatch);
-            }
-
-            // projectiles have not hit get drawn above
-            foreach (var projectile in projectilesLookup[false])
-            {
-                projectile.Draw(SpriteBatch);
-            }
 
             SpriteBatch.End();
-
-            // Drawing the Text
+            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             SpriteBatch.Begin();
-            SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
+            SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
+            
+                
+            
             SpriteBatch.End();
+            //GraphicsDevice.Clear(Color.Black);
+            
+
+            
 
             base.DoDraw(gameTime);
         }
@@ -638,37 +407,5 @@ namespace TowerDefense
             base.UnloadContent();
         }
 
-        private static IEnumerator<Wait> WobbleButton(Element button)
-        {
-            var counter = 0f;
-            while (counter < 4 * Math.PI && button.Root != null)
-            {
-                button.Transform = Matrix.CreateTranslation((float)Math.Sin(counter / 2) * 2 * button.Scale, 0, 0);
-                counter += 0.1f;
-                yield return new Wait(0.01f);
-            }
-            button.Transform = Matrix.Identity;
-        }
-
-        private static IEnumerator<Wait> WobbleProgressBar(ProgressBar bar)
-        {
-            var reducing = false;
-            while (bar.Root != null)
-            {
-                if (reducing)
-                {
-                    bar.CurrentValue -= 0.1f;
-                    if (bar.CurrentValue <= 0)
-                        reducing = false;
-                }
-                else
-                {
-                    bar.CurrentValue += 0.1f;
-                    if (bar.CurrentValue >= bar.MaxValue)
-                        reducing = true;
-                }
-                yield return new Wait(0.01f);
-            }
-        }
     }
 }
