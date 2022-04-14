@@ -13,6 +13,30 @@
 
 #---------------------------------- Content ---------------------------------#
 
+#begin Effects/basictower.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Effects/basictower.wav
+
+#begin Effects/enemyappear.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Effects/enemyappear.wav
+
+#begin Effects/playerwalk.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Effects/playerwalk.wav
+
+#begin Effects/wood.wav
+/importer:WavImporter
+/processor:SoundEffectProcessor
+/processorParam:Quality=Best
+/build:Effects/wood.wav
+
 #begin Font/Frame.spritefont
 /importer:FontDescriptionImporter
 /processor:FontDescriptionProcessor
