@@ -203,7 +203,7 @@ namespace TowerDefense
             this.UiSystem.Add("InfoBox", box);
             */
             //render target for 3d models
-            modelBase=new RenderTarget2D(GraphicsDevice,198,108);
+            modelBase=new RenderTarget2D(GraphicsDevice,198,108,false,SurfaceFormat.Alpha8,DepthFormat.Depth16);
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -353,12 +353,19 @@ namespace TowerDefense
  
         //GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
 
-            
+    
             scale = 1f/(108f/graphics.GraphicsDevice.Viewport.Height);
+           
+       
 
             GraphicsDevice.SetRenderTarget(modelBase);
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);        
+            DepthStencilState dss = new DepthStencilState();
+            dss.DepthBufferEnable = true;
+            GraphicsDevice.DepthStencilState = dss;
+        
+
 for (int i = 0; i < 2; i++)
             {
                 foreach (ModelMesh mesh in model.Meshes)
@@ -375,8 +382,8 @@ for (int i = 0; i < 2; i++)
                         effect.View = camera3D.GetViewMatrix();
                         effect.World = Matrix.CreateRotationY(MathHelper.ToRadians(model_y_rotation)) * Matrix.CreateTranslation(0, 0, i * 4);
                         effect.Projection = camera3D.GetProjectionMatrix();
-                        effect.Texture=testtex;
-                        effect.TextureEnabled=true;
+                        //effect.Texture=testtex;
+                        //effect.TextureEnabled=true;
                     }
                     mesh.Draw();
                 }
@@ -386,7 +393,7 @@ for (int i = 0; i < 2; i++)
             SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            SpriteBatch.Begin();
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);
             SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
             
                 
