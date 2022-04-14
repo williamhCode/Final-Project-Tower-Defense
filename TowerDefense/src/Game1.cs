@@ -51,7 +51,7 @@ namespace TowerDefense
         Ortho_Camera camera3D;
         private RenderTarget2D modelBase;
 
-        public float scale=0.4444f;
+        public float scale = 0.4444f;
         private Player player;
         private List<Entity> entities;
         private Wall[] walls;
@@ -75,22 +75,22 @@ namespace TowerDefense
         protected override void Initialize()
         {
             base.Initialize();
-            graphics=this.GraphicsDeviceManager;
+            graphics = this.GraphicsDeviceManager;
 
 
 
             // create camera
             camera3D = new Ortho_Camera(new Vector3(0, 0, 2), 32, 18);
-            
+
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
             model = Content.Load<Model>("buffingTower");
-            Content.RootDirectory= "Content/Textures";
-            testtex=Content.Load<Texture2D>("BTTexture");
+            Content.RootDirectory = "Content/Textures";
+            testtex = Content.Load<Texture2D>("BTTexture");
             //graphics.IsFullScreen=true;
             //graphics.PreferredBackBufferHeight=128;
             //graphics.PreferredBackBufferHeight=72;
-            
+
             //graphics.ApplyChanges();
 
             camera = new Camera2D(this.GraphicsDeviceManager.PreferredBackBufferHeight, this.GraphicsDeviceManager.PreferredBackBufferWidth);
@@ -203,7 +203,7 @@ namespace TowerDefense
             this.UiSystem.Add("InfoBox", box);
             */
             //render target for 3d models
-            modelBase=new RenderTarget2D(GraphicsDevice,198,108,false,SurfaceFormat.Alpha8,DepthFormat.Depth16);
+            modelBase = new RenderTarget2D(GraphicsDevice, 198, 108, false, SurfaceFormat.Color, DepthFormat.Depth16);
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -312,7 +312,7 @@ namespace TowerDefense
             camera.LookAt(player.Position);
         }
 
-       
+
         protected override async void DoDraw(GameTime gameTime)
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
@@ -349,24 +349,20 @@ namespace TowerDefense
             // SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
             // SpriteBatch.End();
             // Set the render target
-        //GraphicsDevice.SetRenderTarget(modelBase);
- 
-        //GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+            //GraphicsDevice.SetRenderTarget(modelBase);
 
-    
-            scale = 1f/(108f/graphics.GraphicsDevice.Viewport.Height);
-           
-       
+            //GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+
+
+            scale = 1f / (108f / graphics.GraphicsDevice.Viewport.Height);
 
             GraphicsDevice.SetRenderTarget(modelBase);
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);        
+            SpriteBatch.Begin(depthStencilState: DepthStencilState.Default);
             DepthStencilState dss = new DepthStencilState();
-            dss.DepthBufferEnable = true;
             GraphicsDevice.DepthStencilState = dss;
-        
 
-for (int i = 0; i < 2; i++)
+            for (int i = 0; i < 2; i++)
             {
                 foreach (ModelMesh mesh in model.Meshes)
                 {
@@ -377,8 +373,8 @@ for (int i = 0; i < 2; i++)
                         effect.DirectionalLight0.DiffuseColor = new Vector3(0.3f, 0.3f, 0.3f);
                         effect.DirectionalLight0.Direction = new Vector3(0.0f, -1.0f, 0.0f);
                         effect.DirectionalLight0.SpecularColor = new Vector3(0.5f, 0.2f, 0.2f);
-                       
-                        
+
+
                         effect.View = camera3D.GetViewMatrix();
                         effect.World = Matrix.CreateRotationY(MathHelper.ToRadians(model_y_rotation)) * Matrix.CreateTranslation(0, 0, i * 4);
                         effect.Projection = camera3D.GetProjectionMatrix();
@@ -389,20 +385,13 @@ for (int i = 0; i < 2; i++)
                 }
             }
 
-
             SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
             GraphicsDevice.Clear(Color.CornflowerBlue);
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);
-            SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
-            
-                
-            
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp);
+            SpriteBatch.Draw(modelBase, Vector2.Zero, null, Color.White, 0f, Vector2.Zero, scale, SpriteEffects.None, 0f);
             SpriteBatch.End();
             //GraphicsDevice.Clear(Color.Black);
-            
-
-            
 
             base.DoDraw(gameTime);
         }
