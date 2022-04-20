@@ -84,7 +84,7 @@ namespace TowerDefense
             
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
-            model = Content.Load<Model>("buffingTower");
+            model = Content.Load<Model>("ballista");
             Content.RootDirectory= "Content/Textures";
             testtex=Content.Load<Texture2D>("BTTexture");
             //graphics.IsFullScreen=true;
@@ -382,8 +382,8 @@ for (int i = 0; i < 2; i++)
                         effect.View = camera3D.GetViewMatrix();
                         effect.World = Matrix.CreateRotationY(MathHelper.ToRadians(model_y_rotation)) * Matrix.CreateTranslation(0, 0, i * 4);
                         effect.Projection = camera3D.GetProjectionMatrix();
-                        //effect.Texture=testtex;
-                        //effect.TextureEnabled=true;
+                        effect.Texture=testtex;
+                        effect.TextureEnabled=true;
                     }
                     mesh.Draw();
                 }
