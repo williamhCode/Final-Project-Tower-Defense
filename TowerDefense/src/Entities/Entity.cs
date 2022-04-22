@@ -30,7 +30,7 @@ namespace TowerDefense.Entities
 
         public abstract void Draw(SpriteBatch spriteBatch);
         
-        public void DrawDebug(SpriteBatch spriteBatch)
+        public virtual void DrawDebug(SpriteBatch spriteBatch)
         {
             CShape.Draw(spriteBatch, Color.Black, 1);
         }

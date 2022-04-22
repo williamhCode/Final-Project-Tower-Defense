@@ -7,64 +7,59 @@ using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Hashing;
+using Towerdefense.Entities.Components;
+
 
 namespace TowerDefense.Entities
 {
-    public abstract class Enemy : Entity
+    public abstract class Enemy : Entity, IFaceableComponent, IHitboxComponent
     {
-        protected const string DIRECTION = "Direction";
+        public Entity Obj => this;
+
+        protected const string DIRECTION = IFaceableComponent.DIRECTION;
         protected enum Direction
         {
             Left,
             Right
         }
 
-        protected AnimationState<Enum> animationState;
+        public AnimationState<Enum> animationState { get; set; }
 
-        public int Health { get; private set; }
-        public Boolean IsDead { get; private set; }
+        public int Health { get; set; }
+        public Boolean IsDead => Health <= 0;
+
+        public CShape HitboxShape { get; set; }
+        public float YHitboxOffset { get; set; }
 
         public Enemy(Vector2 position, int health)
         {   
             Position = position;
             Velocity = new Vector2(0, 0);
-            IsDead = false;
+            Health = health;
         }
 
         public abstract void Move(Vector2 goal, float dt);
 
-        public void DecideDirection(Vector2 goal)
-        {
-            Vector2 direction = goal - Position;
-            if (Vector2.Dot(direction, Vector2.UnitX) > 0)
-            {
-                animationState.SetState(DIRECTION, Direction.Right);
-            }
-            else
-            {
-                animationState.SetState(DIRECTION, Direction.Left);
-            }
-        }
+        public void UpdateHitbox() => this._UpdateHitbox();
 
-        public abstract void ApplyFlocking(SpatialHashGrid SHG, Vector2 goal, float dt);
+        public void DecideDirection(Vector2 goal) => this._DecideDirection(goal);
+
+        public abstract void ApplyFlocking(float dt, SpatialHashGrid SHGFlocking, SpatialHashGrid SHGBuildings, Vector2 goal);
+
+        public abstract void Steer(float dt, SpatialHashGrid SHGBuildings, Vector2 goal);
 
         public override void Update(float dt)
         {
             Position += Velocity * dt;
             CShape.Update();
+            UpdateHitbox();
             animationState.Update(dt);
         }
-        
-        public void Damage()
+
+        public override void DrawDebug(SpriteBatch spriteBatch)
         {
-            Health--;
-
-            if (Health <= 0)
-            {
-                IsDead = true;
-
-            }
+            base.DrawDebug(spriteBatch);
+            HitboxShape.Draw(spriteBatch, Color.Blue, 1);
         }
-
     }
 }

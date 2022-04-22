@@ -9,6 +9,7 @@ using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Entities;
 using TowerDefense.Hashing;
+using TowerDefense.Projectiles;
 
 using System;
 using System.Collections.Generic;
@@ -24,45 +25,55 @@ namespace TowerDefense.Entities.Buildings
         public static void LoadContent(ContentManager content)
         {
             content.RootDirectory = "Content/Sprites/Towers";
-            
+
             float frameTime = 0f;
             AnimationState = new AnimationState<string>("state");
             AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>("BasicTower"), 48, 48, frameTime), "base");
-            AnimationState.SetState("state", "base");
-            
         }
 
         public BasicTower(Vector2 position) : base(position)
         {
-            Position = position;
-            Velocity = new Vector2(0, 0);
-            Range = 100;
-            Damage = 2;
+            Range = 300;
+            Damage = 1;
+            fireRate = 10f;
+            fireTime = fireRate;
             CShape = new CRectangle(position, 32, 32);
 
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
+            animationState.SetState("state", "base");
+            animationState.Update(0);
         }
 
-        public override void Shoot(float dt, List<Enemy> enemies)
+        public override Projectile Shoot(SpatialHashGrid SHG)
         {
-            //throw new NotImplementedException();
-        }
+            if (!CanFire())
+                return null;
 
-        public override void DetectEnemy(float dt, List<Enemy> enemies)
-        {
-            //throw new NotImplementedException();
-            //eventually return all enemies in range
+            var enemiesInRange = GetEnemiesInRange(SHG);
+
+            if (enemiesInRange.Count == 0)
+                return null;
+
+            // find closest position in enemies in range
+            var closestEnemy = GetClosestEnemy(enemiesInRange);
+
+            var path = new StraightPath();
+            // var damageType = new AreaDamage(SHG, 50, 150);
+            var damageType = new DirectDamage(closestEnemy);
+            var projectile = new Projectile(startPosition: Position, targetPosition: closestEnemy.HitboxShape.Position, speed: 2000, damage: Damage, path, damageType, 0.25f);
+
+            return projectile;
         }
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(24, 32));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(24, 38));
         }
 
-        public override void Update(float dt)
+        public override void DrawDebug(SpriteBatch spriteBatch)
         {
-            CShape.Update();
-            AnimationState.Update(dt);
+            base.DrawDebug(spriteBatch);
+            spriteBatch.DrawCircle(Position, Range, 20, Color.Black);
         }
     }
 }

@@ -24,13 +24,13 @@ namespace TowerDefense.Entities.Buildings
             float frameTime = 0f;
             AnimationState = new AnimationState<string>("state");
             // AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>(""), 16, 24, frameTime), "full");
-            AnimationState.SetState("state", "full");
         }
 
         public Tree(Vector2 position) : base(position)
         {
             CShape = new Collision.CRectangle(position, 16, 16);
-            animationState = AnimationState;
+            animationState = AnimationState.Copy();
+            animationState.SetState("state", "full");
             animationState.Update(0);
         }
 
@@ -41,7 +41,7 @@ namespace TowerDefense.Entities.Buildings
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position - new Vector2(8, 16));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(8, 16));
         }
     }
 }

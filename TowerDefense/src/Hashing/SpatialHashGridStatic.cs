@@ -148,14 +148,12 @@ namespace TowerDefense.Hashing
         {
             int minX, maxX, minY, maxY;
 
-            if (cShape is CCircle)
+            if (cShape is CCircle cCircle)
             {
-                CCircle cCircle = (CCircle)cShape;
                 (minX, maxX, minY, maxY) = GetCCircleRanges(cCircle);
             }
-            else if (cShape is CRectangle)
+            else if (cShape is CRectangle cRectangle)
             {
-                CRectangle cRectangle = (CRectangle)cShape;
                 (minX, maxX, minY, maxY) = GetCRectangleRanges(cRectangle);
             }
             else
