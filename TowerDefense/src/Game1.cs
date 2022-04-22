@@ -152,7 +152,7 @@ namespace TowerDefense
             tileTextures = new Dictionary<string, Texture2D>();
 
             Content.RootDirectory = "Content";
-            string[] tileNames = new string[] { "grass", "dirt" };
+            string[] tileNames = new string[] { "grass"};
             foreach (string name in tileNames)
             {
                 tileTextures.Add(name, Content.Load<Texture2D>("Sprites/Tiles/" + name));
