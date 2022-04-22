@@ -84,7 +84,7 @@ namespace TowerDefense
             
             Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             Content.RootDirectory = "Content/Models";
-            model = Content.Load<Model>("ballista");
+            model = Content.Load<Model>("buffingtower");
             Content.RootDirectory= "Content/Textures";
             testtex=Content.Load<Texture2D>("BTTexture");
             //graphics.IsFullScreen=true;
