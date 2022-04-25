@@ -309,31 +309,6 @@ namespace TowerDefense
             });
         }
 
-        private List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
-        {
-            var nearbyWalls = new List<Wall>();
-
-            var posXs = new int[] { -1, 1, 0, 0 };
-            var posYs = new int[] { 0, 0, -1, 1 };
-
-            for (int i = 0; i < 4; i++)
-            {
-                var x = xTilePos + posXs[i];
-                var y = yTilePos + posYs[i];
-                if (x >= 0 && x < buildingTiles.Length && y >= 0 && y < buildingTiles[x].Length)
-                {
-                    var tempWall = buildingTiles[x][y];
-                    var nearbyWall = tempWall as Wall;
-                    if (nearbyWall != null)
-                    {
-                        nearbyWalls.Add(nearbyWall);
-                    }
-                }
-            }
-
-            return nearbyWalls;
-        }
-
         protected override void DoUpdate(GameTime gameTime)
         {
             base.DoUpdate(gameTime);
@@ -440,8 +415,34 @@ namespace TowerDefense
                         }
                         break;
                 }
+
+                List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
+                {
+                    var nearbyWalls = new List<Wall>();
+
+                    var posXs = new int[] { -1, 1, 0, 0 };
+                    var posYs = new int[] { 0, 0, -1, 1 };
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var x = xTilePos + posXs[i];
+                        var y = yTilePos + posYs[i];
+
+                        if (x >= 0 && x < buildingTiles.Length && y >= 0 && y < buildingTiles[x].Length)
+                        {
+                            var tempWall = buildingTiles[x][y];
+                            var nearbyWall = tempWall as Wall;
+                            if (nearbyWall != null)
+                            {
+                                nearbyWalls.Add(nearbyWall);
+                            }
+                        }
+                    }
+
+                    return nearbyWalls;
+                }
             }
-            EndBuilding:;
+        EndBuilding:;
 
             if (mouseState.WasButtonJustDown(MouseButton.Left))
             {
@@ -456,7 +457,7 @@ namespace TowerDefense
                     }
                 }
             }
-            EndMouse:;
+        EndMouse:;
 
             foreach (Selector value in Enum.GetValues(typeof(Selector)))
             {

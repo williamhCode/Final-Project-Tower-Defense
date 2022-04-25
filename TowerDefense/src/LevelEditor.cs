@@ -1,15 +1,11 @@
 using System;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Coroutine;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 using MLEM.Ui;
 using MLEM.Ui.Elements;
@@ -22,17 +18,11 @@ using MonoGame.Extended.Input;
 
 using TowerDefense.Camera;
 using TowerDefense.Entities;
-using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
-using Towerdefense.Entities.Components;
-using TowerDefense.NoiseTest;
-using static TowerDefense.Collision.CollisionFuncs;
-using TowerDefense.Collision;
 
-using System.Diagnostics;
-using System.Threading.Tasks;
+using Newtonsoft.Json.Linq;
 
 //test
 namespace TowerDefense
@@ -57,28 +47,29 @@ namespace TowerDefense
         private SpatialHashGrid SHGFlocking;
         private SpatialHashGrid SHGEnemies;
 
-        private const int TILE_SIZE = 32;
-        private const int MAP_SIZE = 50;
-        private Dictionary<string, Texture2D> tileTextures;
-        private string[][] tileMap;
+        private const int TILE_SIZE = 24;
+        private const int MAP_WIDTH = 20;
+        private const int MAP_HEIGHT = 20;
+
+        private const float CAMERA_SPEED = 400f;
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
         private bool debug;
 
-        private Vector2 start;
-        private Vector2 end;
-        (float dist, Vector2 intersection, Vector2 normal)? collData;
+        private TileType[][] tileTypeMap;
+        private int[][] tileMap;
+        Dictionary<int, Texture2D> textureDict = new Dictionary<int, Texture2D>();
+        readonly (int X, int Y)[] neighborOffsets = new[] { (-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1) };
 
-        public enum Selector
+        public enum TileType
         {
-            Wall,
-            BasicTower,
-            Remove,
-            Bandit,
+            Undefined = -1,
+            Grass,
+            Sand
         }
 
-        private Selector currentSelector;
+        private TileType currentSelector;
 
         public LevelEditor()
         {
@@ -92,10 +83,30 @@ namespace TowerDefense
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // tile map initialization
-            tileMap = new string[MAP_SIZE][];
+            tileTypeMap = new TileType[MAP_HEIGHT][];
+            for (int i = 0; i < tileTypeMap.Length; i++)
+            {
+                tileTypeMap[i] = new TileType[MAP_WIDTH];
+            }
+            for (int i = 0; i < tileTypeMap.Length; i++)
+            {
+                for (int j = 0; j < tileTypeMap[i].Length; j++)
+                {
+                    tileTypeMap[i][j] = TileType.Undefined;
+                }
+            }
+
+            tileMap = new int[MAP_HEIGHT][];
             for (int i = 0; i < tileMap.Length; i++)
             {
-                tileMap[i] = new string[MAP_SIZE];
+                tileMap[i] = new int[MAP_WIDTH];
+            }
+            for (int i = 0; i < tileMap.Length; i++)
+            {
+                for (int j = 0; j < tileMap[i].Length; j++)
+                {
+                    tileMap[i][j] = -1;
+                }
             }
         }
 
@@ -125,14 +136,44 @@ namespace TowerDefense
 
             base.LoadContent();
 
-            // load tile textures
-            tileTextures = new Dictionary<string, Texture2D>();
+            // load TileInfo.json
+            dynamic tileInfo = JObject.Parse(File.ReadAllText("Content/TileInfo.json"));
 
-            Content.RootDirectory = "Content/Sprites/Tiles";
-            string[] tileNames = new string[] { "grass", "snow", "water", "beach", "sand", "deepwater" };
-            foreach (string name in tileNames)
+            Content.RootDirectory = tileInfo.RootDirectory;
+
+            dynamic dataList = tileInfo.DataList;
+            for (int i = 0; i < dataList.Count; i++)
             {
-                tileTextures.Add(name, Content.Load<Texture2D>(name));
+                dynamic data = dataList[i];
+
+                Texture2D spriteSheet = Content.Load<Texture2D>((string)data.TileName);
+
+                int tileSize = data.TileSize;
+                int width = data.Width;
+                int height = data.Height;
+
+                dynamic configList = data.ConfigList;
+                for (int j = 0; j < configList.Count; j++)
+                {
+                    string config = configList[j];
+                    if (config == "None") continue;
+                    config = config.Replace(",", "");
+                    config = config.Remove(4, 1);
+                    config = new string(config.Reverse().ToArray());
+
+                    int value = Convert.ToInt32(config, 2);
+                    value |= i << 8;
+
+                    Texture2D texture = new Texture2D(GraphicsDevice, tileSize, tileSize);
+                    // set texture data from sprite sheet
+                    Color[] colors = new Color[tileSize * tileSize];
+                    int x = (j % width) * tileSize;
+                    int y = (j / width) * tileSize;
+                    spriteSheet.GetData(0, new Rectangle(x, y, tileSize, tileSize), colors, 0, tileSize * tileSize);
+                    texture.SetData(colors);
+
+                    textureDict.Add(value, texture);
+                }
             }
 
             Content.RootDirectory = "Content";
@@ -151,7 +192,6 @@ namespace TowerDefense
                 }
             }
 
-
             // UI initialization
             var style = new UntexturedStyle(this.SpriteBatch)
             {
@@ -168,41 +208,19 @@ namespace TowerDefense
             root.AddChild(new VerticalSpace(2));
             this.UiSystem.Add("TestUi", this.root);
 
-            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Wall")
+            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Grass")
             {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.Wall;
-                },
                 OnSelected = element =>
                 {
-                    currentSelector = Selector.Wall;
-                    Console.WriteLine("Wall selected");
+                    currentSelector = TileType.Grass;
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Tower")
+            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
-                    currentSelector = Selector.BasicTower;
-                },
-                PositionOffset = new Vector2(10, 0)
-            });
-            var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Remove Building")
-            {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.Remove;
-                },
-                PositionOffset = new Vector2(10, 0)
-            });
-            // button3.AddTooltip(p => this.InputHandler.IsModifierKeyDown(MLEM.Input.ModifierKey.Control) ? "AAAAAA" : string.Empty);
-            var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
-            {
-                OnPressed = element =>
-                {
-                    currentSelector = Selector.Bandit;
+                    currentSelector = TileType.Undefined;
                 },
                 PositionOffset = new Vector2(10, 0)
             });
@@ -235,16 +253,73 @@ namespace TowerDefense
                 int xTilePos = (int)MathF.Floor(worldPosition.X / TILE_SIZE);
                 int yTilePos = (int)MathF.Floor(worldPosition.Y / TILE_SIZE);
 
-                if (xTilePos < 0 || xTilePos >= buildingTiles.Length || yTilePos < 0 || yTilePos >= buildingTiles[xTilePos].Length)
+                if (xTilePos >= 0 && xTilePos < MAP_WIDTH && yTilePos >= 0 && yTilePos < MAP_HEIGHT)
                 {
-                    goto EndBuilding;
+                    tileTypeMap[xTilePos][yTilePos] = currentSelector;
+                    UpdateTile(xTilePos, yTilePos);
+                    for (int i = 0; i < 8; i++)
+                    {
+                        var offset = neighborOffsets[i];
+                        int x = xTilePos + offset.X;
+                        int y = yTilePos + offset.Y;
+                        UpdateTile(x, y);
+                    }
                 }
             }
-        EndBuilding:;
+
+            void UpdateTile(int xPos, int yPos)
+            {
+                TileType tileType;
+                try
+                {
+                    tileType = tileTypeMap[xPos][yPos];
+                }
+                catch (IndexOutOfRangeException)
+                {
+                    return;
+                }
+
+                if (tileType == TileType.Undefined) return;
+
+                // nB = neighborsBool
+                var nB = new bool[8];
+                for (int i = 0; i < 8; i++)
+                {
+                    var offset = neighborOffsets[i];
+                    int x = xPos + offset.X;
+                    int y = yPos + offset.Y;
+
+                    try
+                    {
+                        nB[i] = tileType == tileTypeMap[x][y];
+                    }
+                    catch (IndexOutOfRangeException)
+                    {
+                        nB[i] = false;
+                    }
+                }
+
+                // corner tiles only valid if its surrounded by the same tile
+                nB[0] = nB[0] && nB[1] && nB[3];
+                nB[2] = nB[2] && nB[1] && nB[4];
+                nB[5] = nB[5] && nB[3] && nB[6];
+                nB[7] = nB[7] && nB[4] && nB[6];
+
+                // convert nB to int
+                int nBInt = 0;
+                for (int i = 0; i < 8; i++)
+                {
+                    if (nB[i])
+                        nBInt |= 1 << i;
+                }
+                nBInt |= (int)tileType << 8;
+
+                tileMap[xPos][yPos] = nBInt;
+            }
 
         EndMouse:;
 
-            foreach (Selector value in Enum.GetValues(typeof(Selector)))
+            foreach (TileType value in Enum.GetValues(typeof(TileType)))
             {
                 if (keyboardState.WasKeyJustUp(Keys.D1 + (int)value))
                 {
@@ -265,13 +340,19 @@ namespace TowerDefense
             // camera
             if (keyboardState.IsKeyDown(Keys.OemPlus))
             {
-                camera.Zoom *= 1.1f;
+                camera.ZoomFromCenter(1.1f);
             }
             if (keyboardState.IsKeyDown(Keys.OemMinus))
             {
-                camera.Zoom /= 1.1f;
+                camera.ZoomFromCenter(1 / 1.1f);
             }
 
+            var direction = new Vector2(
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.D)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.A)),
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.S)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.W))
+            );
+
+            camera.Move(direction / camera.Zoom * dt * CAMERA_SPEED);
         }
 
         protected override void DoDraw(GameTime gameTime)
@@ -280,8 +361,6 @@ namespace TowerDefense
 
             GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            var projectilesLookup = projectiles.ToLookup(p => p.HasHit);
-
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
             // draw tilemap
@@ -289,33 +368,11 @@ namespace TowerDefense
             {
                 for (int col = 0; col < tileMap[row].Length; col++)
                 {
-                    var tile = tileMap[row][col];
-                    if (tile != null)
+                    if (tileTypeMap[row][col] != TileType.Undefined)
                     {
-                        SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
+                        SpriteBatch.Draw(textureDict[tileMap[row][col]], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
                     }
                 }
-            }
-
-            // projectiles have hit get drawn below
-            foreach (var projectile in projectilesLookup[true])
-            {
-                projectile.Draw(SpriteBatch);
-            }
-
-            // draw entities
-            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
-            foreach (var entity in entities_temp)
-            {
-                if (debug)
-                    entity.DrawDebug(SpriteBatch);
-                entity.Draw(SpriteBatch);
-            }
-
-            // projectiles have not hit get drawn above
-            foreach (var projectile in projectilesLookup[false])
-            {
-                projectile.Draw(SpriteBatch);
             }
 
             SpriteBatch.End();
