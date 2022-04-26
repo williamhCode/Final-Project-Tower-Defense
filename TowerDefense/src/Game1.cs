@@ -133,8 +133,12 @@ namespace TowerDefense
         {
             return
             assembly.GetTypes()
-                    .Where(t => t.Namespace.Contains(nameSpace, StringComparison.Ordinal))
-                    .ToArray();
+            .Where(t =>
+            {
+                var ns = t.Namespace;
+                return ns == null ? false : ns.Contains(nameSpace, StringComparison.Ordinal);
+            })
+            .ToArray();
         }
 
         protected override void LoadContent()
