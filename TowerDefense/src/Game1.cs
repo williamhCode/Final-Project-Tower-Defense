@@ -323,39 +323,39 @@ namespace TowerDefense
 
             // GraphicsDevice.Clear(Color.CornflowerBlue);
 
-            // SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
+             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
-            // // draw tilemap
-            // for (int row = 0; row < tileMap.Length; row++)
-            // {
-            //     for (int col = 0; col < tileMap[row].Length; col++)
-            //     {
-            //         var tile = tileMap[row][col];
-            //         if (tile != null)
-            //         {
-            //             SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
-            //         }
-            //     }
-            // }
+            //// draw tilemap
+             for (int row = 0; row < tileMap.Length; row++)
+             {
+                 for (int col = 0; col < tileMap[row].Length; col++)
+                 {
+                     var tile = tileMap[row][col];
+                     if (tile != null)
+                     {
+                         SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
+                     }
+                 }
+             }
 
-            // // draw entities
-            // var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
-            // foreach (var entity in entities_temp)
-            // {
-            //     entity.DrawDebug(SpriteBatch);
-            //     entity.Draw(SpriteBatch);
-            // }
+             // draw entities
+             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
+             foreach (var entity in entities_temp)
+             {
+                 entity.DrawDebug(SpriteBatch);
+               entity.Draw(SpriteBatch);
+             }
 
-            // SpriteBatch.End();
+             SpriteBatch.End();
 
             // // Drawing the Text
-            // SpriteBatch.Begin();
-            // SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
-            // SpriteBatch.End();
+             SpriteBatch.Begin();
+             SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
+             SpriteBatch.End();
             // Set the render target
-        //GraphicsDevice.SetRenderTarget(modelBase);
+        GraphicsDevice.SetRenderTarget(modelBase);
  
-        //GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+        GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
 
     
             scale = 1f/(108f/graphics.GraphicsDevice.Viewport.Height);
@@ -363,7 +363,7 @@ namespace TowerDefense
        
 
             GraphicsDevice.SetRenderTarget(modelBase);
-            //GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);        
             DepthStencilState dss = new DepthStencilState();
             dss.DepthBufferEnable = true;
@@ -396,7 +396,7 @@ for (int i = 0; i < 2; i++)
 
             SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
-            //GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);
             SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
             
