@@ -131,28 +131,25 @@ namespace TowerDefense
                 for (int j = 0; j < MAP_SIZE; j++)
                 {
                     float height = noiseMap[i * MAP_SIZE + j];
-                    for (int x = 0; x < noiseMap.Length; x++)
+                    if (height <= 0.1f)
                     {
-                        if (height <= 0.1f)
-                        {
-                            tileMap[i][j] = "deepwater";
-                        }
-                        else if (height <= 0.3f)
-                        {
-                            tileMap[i][j] = "water";
-                        }
-                        else if (height <= 0.35f)
-                        {
-                            tileMap[i][j] = "beach";
-                        }
-                        else if (height < 0.8f)
-                        {
-                            tileMap[i][j] = "grass";
-                        }
-                        else
-                        {
-                            tileMap[i][j] = "sand";
-                        }
+                        tileMap[i][j] = "deepwater";
+                    }
+                    else if (height <= 0.3f)
+                    {
+                        tileMap[i][j] = "water";
+                    }
+                    else if (height <= 0.35f)
+                    {
+                        tileMap[i][j] = "beach";
+                    }
+                    else if (height < 0.8f)
+                    {
+                        tileMap[i][j] = "grass";
+                    }
+                    else
+                    {
+                        tileMap[i][j] = "sand";
                     }
                 }
             }

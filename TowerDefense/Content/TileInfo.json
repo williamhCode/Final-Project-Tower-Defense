@@ -2,8 +2,8 @@
     "RootDirectory": "Content/Sprites/Tiles",
     "DataList": [
         {
-            "TileName": "Test",
-            "TileSize": 24,
+            "TileName": "GrassTiles",
+            "TileSize": 32,
             "Width": 12,
             "Height": 4,
             "ConfigList": [
@@ -35,7 +35,7 @@
 
                 "011,011,011",
                 "011,111,110",
-                "None",
+                "111,111,111",
                 "110,111,110",
 
 
@@ -50,7 +50,7 @@
                 "110,110,010",
 
                 "011,111,011",
-                "111,111,111",
+                "None",
                 "110,111,011",
                 "110,110,110",
 
