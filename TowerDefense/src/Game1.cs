@@ -321,11 +321,11 @@ namespace TowerDefense
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
 
-            // GraphicsDevice.Clear(Color.CornflowerBlue);
+             GraphicsDevice.Clear(Color.CornflowerBlue);
 
              SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
-            //// draw tilemap
+            // // draw tilemap
              for (int row = 0; row < tileMap.Length; row++)
              {
                  for (int col = 0; col < tileMap[row].Length; col++)
@@ -338,12 +338,12 @@ namespace TowerDefense
                  }
              }
 
-             // draw entities
+            // // draw entities
              var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
              foreach (var entity in entities_temp)
              {
                  entity.DrawDebug(SpriteBatch);
-               entity.Draw(SpriteBatch);
+                 entity.Draw(SpriteBatch);
              }
 
              SpriteBatch.End();
@@ -352,7 +352,7 @@ namespace TowerDefense
              SpriteBatch.Begin();
              SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
              SpriteBatch.End();
-            // Set the render target
+             //Set the render target
         GraphicsDevice.SetRenderTarget(modelBase);
  
         GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
@@ -363,7 +363,7 @@ namespace TowerDefense
        
 
             GraphicsDevice.SetRenderTarget(modelBase);
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            //GraphicsDevice.Clear(Color.CornflowerBlue);
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);        
             DepthStencilState dss = new DepthStencilState();
             dss.DepthBufferEnable = true;
