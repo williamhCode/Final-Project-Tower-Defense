@@ -254,7 +254,7 @@ namespace TowerDefense
                 model_y_rotation += 180f * dt;
             }
 
-
+            Console.WriteLine(player);
             var mouseNow = Mouse.GetState();
             if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
             {
