@@ -264,7 +264,7 @@ namespace TowerDefense
 
                 // camera3D.Rotate(mouseDifference.X / 400, mouseDifference.Y / 400);
 
-                Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
+                //Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
             }
 
 
