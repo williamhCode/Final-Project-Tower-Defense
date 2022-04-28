@@ -104,6 +104,18 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Tiles/GrassTiles.png
 
+#begin Sprites/Tiles/PathTile.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Tiles/PathTile.png
+
 #begin Sprites/Tiles/sand.PNG
 /importer:TextureImporter
 /processor:TextureProcessor

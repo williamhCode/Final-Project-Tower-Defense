@@ -49,8 +49,8 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_WIDTH = 40;
-        private const int MAP_HEIGHT = 40;
+        private const int MAP_WIDTH = 100;
+        private const int MAP_HEIGHT = 100;
 
         private const float CAMERA_SPEED = 600f;
 
@@ -67,6 +67,7 @@ namespace TowerDefense
         {
             Undefined = -1,
             Grass,
+            Path,
         }
 
         private TileType currentSelector;
@@ -113,7 +114,7 @@ namespace TowerDefense
             float[] noiseMap = NoiseMap.GenerateNoiseMap(
                 MAP_WIDTH, MAP_HEIGHT,
                 seed: 1,
-                scale: 5f,
+                scale: 7f,
                 octaves: 1,
                 persistance: 1f,
                 lacunarity: 1f,
@@ -126,13 +127,13 @@ namespace TowerDefense
                 for (int j = 0; j < MAP_HEIGHT; j++)
                 {
                     float height = noiseMap[i * MAP_WIDTH + j];
-                    if (height <= 0.4f)
+                    if (height <= 0.7f)
                     {
-                        tileTypeMap[i][j] = TileType.Grass;
+                        tileTypeMap[i][j] = TileType.Path;
                     }
                     else
                     {
-                        tileTypeMap[i][j] = TileType.Undefined;
+                        tileTypeMap[i][j] = TileType.Grass;
                     }
                 }
             }
@@ -253,7 +254,15 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
+            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Path")
+            {
+                OnSelected = element =>
+                {
+                    currentSelector = TileType.Path;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+            var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
             {
                 OnSelected = element =>
                 {
@@ -297,6 +306,11 @@ namespace TowerDefense
                     nBInt |= 1 << i;
             }
             nBInt |= (int)tileType << 8;
+
+            if (!textureDict.ContainsKey(nBInt))
+            {
+                nBInt = (int)tileType << 8;
+            }
 
             tileMap[xPos][yPos] = nBInt;
         }
@@ -424,7 +438,7 @@ namespace TowerDefense
             if (currTileType.HasValue && currentSelector != TileType.Undefined && currentSelector != currTileType)
             {
                 var previewPosition = tilePos * TILE_SIZE;
-                SpriteBatch.Draw(textureDict[(int)currentSelector], previewPosition, Color.White * 0.6f);
+                SpriteBatch.Draw(textureDict[(int)currentSelector << 8], previewPosition, Color.White * 0.6f);
             }
 
             SpriteBatch.End();
