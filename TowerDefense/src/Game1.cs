@@ -1,15 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using Coroutine;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
 
 using MLEM.Ui;
 using MLEM.Ui.Elements;
@@ -29,9 +25,7 @@ using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
 using TowerDefense.NoiseTest;
 using static TowerDefense.Collision.CollisionFuncs;
-using TowerDefense.Collision;
 
-using System.Diagnostics;
 using System.Threading.Tasks;
 
 //test
@@ -84,6 +78,7 @@ namespace TowerDefense
         {
             Instance = this;
             this.IsMouseVisible = true;
+            Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
@@ -108,12 +103,8 @@ namespace TowerDefense
             {
                 tileMap[i] = new string[MAP_SIZE];
             }
-            // Implementing Perlin Noise and Biome generation into the tilemap 
-            // Generate Float[] for Perlin Noise
-            // Generate Biomes for specific ranges within the Noise values
-            // Create subsets within certain biomes to allow generation of specific resources
-            // Generate and display Tilemap depending on biomes created
-            // Generate resources within the subsets on the building level
+
+            // Implementing Perlin Noise and Biome generation into the tilemap array
             Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
             float[] noiseMap = NoiseMap.GenerateNoiseMap(
                 MAP_SIZE, MAP_SIZE,
@@ -209,7 +200,6 @@ namespace TowerDefense
                 tileTextures.Add(name, Content.Load<Texture2D>(name));
             }
 
-            Content.RootDirectory = "Content";
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
@@ -224,10 +214,6 @@ namespace TowerDefense
                     loadContent.Invoke(null, new object[] { Content });
                 }
             }
-
-            // var tex = new Texture2D(GraphicsDevice, 10, 10, false, SurfaceFormat.Color);
-            // Color[] az = Enumerable.Range(0, 100).Select(i => Color.Red).ToArray();
-            // tex.SetData(az);
 
             // UI initialization
             var style = new UntexturedStyle(this.SpriteBatch)
@@ -248,23 +234,6 @@ namespace TowerDefense
             this.root.ScrollBar.SmoothScrolling = true;
             root.AddChild(new VerticalSpace(2));
             this.UiSystem.Add("TestUi", this.root);
-            /*
-            var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
-            //var bar1 = box.AddChild(new ProgressBar(Anchor.AutoLeft, new Vector2(1,8), MLEM.Misc.Direction2.Right, 10));
-            //CoroutineHandler.Start(WobbleProgressBar(bar1));
-            var button1 = box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
-            {
-                OnPressed = element => 
-                {
-                    //this.UiSystem.Remove("TestUi");
-                    //this.UiSystem.Remove("InfoBox");
-                    timesPressed += 1f;
-                    //CoroutineHandler.Start(WobbleButton(element));
-                }, 
-                PositionOffset = new Vector2(0, 1)
-            });
-            this.UiSystem.Add("InfoBox", box);
-            */
 
             var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Wall")
             {
@@ -295,7 +264,6 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            // button3.AddTooltip(p => this.InputHandler.IsModifierKeyDown(MLEM.Input.ModifierKey.Control) ? "AAAAAA" : string.Empty);
             var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
             {
                 OnPressed = element =>
@@ -477,7 +445,6 @@ namespace TowerDefense
                 }
             }
 
-
             if (keyboardState.WasKeyJustUp(Keys.E))
             {
                 debug = !debug;
@@ -502,6 +469,7 @@ namespace TowerDefense
             // {
             //     e.ApplyFlocking(dt, SHGFlocking, SHGBuildings, player.Position);
             // });
+
             // enemy movement
             foreach (var enemy in enemies)
             {
@@ -519,9 +487,6 @@ namespace TowerDefense
                 }
             }
 
-            // Stopwatch sw = new Stopwatch();
-            // sw.Start();
-
             Parallel.ForEach(towers, tower =>
             {
                 var projectile = tower.Shoot(SHGEnemies);
@@ -530,10 +495,6 @@ namespace TowerDefense
                     projectiles.Add(projectile);
                 }
             });
-
-            // sw.Stop();
-            // Console.WriteLine(sw.Elapsed.TotalSeconds);
-            // Console.WriteLine($"Enemies Count: {enemies.Length}");
 
             // enemy death
             var enemiesTemp = new List<Enemy>(enemies);
@@ -650,39 +611,6 @@ namespace TowerDefense
         protected override void UnloadContent()
         {
             base.UnloadContent();
-        }
-
-        private static IEnumerator<Wait> WobbleButton(Element button)
-        {
-            var counter = 0f;
-            while (counter < 4 * Math.PI && button.Root != null)
-            {
-                button.Transform = Matrix.CreateTranslation((float)Math.Sin(counter / 2) * 2 * button.Scale, 0, 0);
-                counter += 0.1f;
-                yield return new Wait(0.01f);
-            }
-            button.Transform = Matrix.Identity;
-        }
-
-        private static IEnumerator<Wait> WobbleProgressBar(ProgressBar bar)
-        {
-            var reducing = false;
-            while (bar.Root != null)
-            {
-                if (reducing)
-                {
-                    bar.CurrentValue -= 0.1f;
-                    if (bar.CurrentValue <= 0)
-                        reducing = false;
-                }
-                else
-                {
-                    bar.CurrentValue += 0.1f;
-                    if (bar.CurrentValue >= bar.MaxValue)
-                        reducing = true;
-                }
-                yield return new Wait(0.01f);
-            }
         }
     }
 }
