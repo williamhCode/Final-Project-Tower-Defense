@@ -363,7 +363,7 @@ namespace TowerDefense
        
 
             GraphicsDevice.SetRenderTarget(modelBase);
-            //GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);        
             DepthStencilState dss = new DepthStencilState();
             dss.DepthBufferEnable = true;
