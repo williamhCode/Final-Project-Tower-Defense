@@ -78,7 +78,6 @@ namespace TowerDefense
         {
             Instance = this;
             this.IsMouseVisible = true;
-            Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
@@ -200,6 +199,8 @@ namespace TowerDefense
                 tileTextures.Add(name, Content.Load<Texture2D>(name));
             }
 
+            Content.RootDirectory = "Content";
+            
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 

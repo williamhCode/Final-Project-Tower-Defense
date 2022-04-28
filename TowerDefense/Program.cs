@@ -10,7 +10,7 @@ namespace TowerDefense
         {
             // using (var game = new Game1())
             //     game.Run();
-            using (var game = new LevelEditor())
+            using (var game = new Game1())
                 game.Run();
         }
     }
