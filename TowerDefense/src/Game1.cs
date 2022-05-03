@@ -50,7 +50,7 @@ namespace TowerDefense
 
         Ortho_Camera camera3D;
         private RenderTarget2D modelBase;
-
+        private Viewport modelview;
         public float scale=0.4444f;
         private Player player;
         private List<Entity> entities;
@@ -87,6 +87,7 @@ namespace TowerDefense
             model = Content.Load<Model>("ballista");
             Content.RootDirectory= "Content/Textures";
             testtex=Content.Load<Texture2D>("BTTexture");
+            //modelview=
             //graphics.IsFullScreen=true;
             //graphics.PreferredBackBufferHeight=128;
             //graphics.PreferredBackBufferHeight=72;
@@ -254,7 +255,7 @@ namespace TowerDefense
                 model_y_rotation += 180f * dt;
             }
 
-            Console.WriteLine(player);
+            
             var mouseNow = Mouse.GetState();
             if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
             {
@@ -353,6 +354,8 @@ namespace TowerDefense
              SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
              SpriteBatch.End();
              //Set the render target
+GraphicsDevice.Viewport= (modelview);
+
         GraphicsDevice.SetRenderTarget(modelBase);
  
         GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
