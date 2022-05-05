@@ -8,15 +8,13 @@ namespace TowerDefense.Entities
     {
         public int Health { get; set; }
 
+        public Boolean IsDead => Health <= 0;
+
         public Building(Vector2 position)
         {
             Position = position;
             Velocity = new Vector2(0, 0);
         }
 
-        public bool IsDead()
-        {
-            return Health <= 0;
-        }
     }
 }

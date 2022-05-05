@@ -25,6 +25,7 @@ using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
 using TowerDefense.NoiseTest;
 using static TowerDefense.Collision.CollisionFuncs;
+using static TowerDefense.Extensions.ExtensionMethods;
 
 using System.Threading.Tasks;
 
@@ -59,10 +60,6 @@ namespace TowerDefense
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
         private bool debug;
-
-        private Vector2 start;
-        private Vector2 end;
-        (float dist, Vector2 intersection, Vector2 normal)? collData;
 
         public enum Selector
         {
@@ -544,6 +541,19 @@ namespace TowerDefense
                 if (enemy.IsDead)
                 {
                     entities.Remove(enemy);
+                }
+            }
+        
+            // building death
+            var buildingsTemp = new List<Building>(buildings);
+            foreach (var building in buildingsTemp)
+            {
+                if (building.IsDead)
+                {
+                    entities.Remove(building);
+                    var pos = buildingTiles.CoordinatesOf(building);
+                    
+                    SHGBuildings.RemoveEntityPosition(building);
                 }
             }
 

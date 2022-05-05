@@ -49,6 +49,8 @@ namespace TowerDefense.Entities.Buildings
             RockType state = (RockType)values.GetValue(random.Next(values.Length));
             animationState.SetState("state", state);
             animationState.Update(0);
+
+            Health = 10;
         }
 
         public override void Update(float dt)
