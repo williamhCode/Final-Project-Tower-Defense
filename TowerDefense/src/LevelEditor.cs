@@ -34,7 +34,7 @@ namespace TowerDefense
         public static LevelEditor Instance { get; private set; }
         public SpriteFont font;
         private Camera2D camera;
-        private Panel root;
+        private Panel panel1;
 
         private Player player;
         private List<Entity> entities;
@@ -49,8 +49,8 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_WIDTH = 100;
-        private const int MAP_HEIGHT = 100;
+        private const int MAP_WIDTH = 50;
+        private const int MAP_HEIGHT = 50;
 
         private const float CAMERA_SPEED = 600f;
 
@@ -241,12 +241,12 @@ namespace TowerDefense
             this.UiSystem.AutoScaleWithScreen = false;
             this.UiSystem.GlobalScale = 1;
 
-            this.root = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
-            this.root.ScrollBar.SmoothScrolling = true;
-            root.AddChild(new VerticalSpace(2));
-            this.UiSystem.Add("TestUi", this.root);
+            this.panel1 = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
+            this.panel1.ScrollBar.SmoothScrolling = true;
+            panel1.AddChild(new VerticalSpace(2));
+            this.UiSystem.Add("TestUi", this.panel1);
 
-            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Grass")
+            var button1 = panel1.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Grass")
             {
                 OnSelected = element =>
                 {
@@ -254,7 +254,7 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Path")
+            var button2 = panel1.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Path")
             {
                 OnSelected = element =>
                 {
@@ -262,7 +262,7 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
+            var button3 = panel1.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
             {
                 OnSelected = element =>
                 {
@@ -331,8 +331,8 @@ namespace TowerDefense
             var mousePosition = mouseState.Position.ToVector2();
             var worldPosition = camera.ScreenToWorld(mousePosition);
 
-            var area = root.Area;
-            if (area.Contains(mousePosition.X, mousePosition.Y) && !root.IsHidden)
+            var area = panel1.Area;
+            if (area.Contains(mousePosition.X, mousePosition.Y) && !panel1.IsHidden)
                 goto EndMouse;
 
             if (mouseState.IsButtonDown(MouseButton.Left))
@@ -374,7 +374,7 @@ namespace TowerDefense
 
             if (keyboardState.WasKeyJustUp(Keys.Q))
             {
-                root.IsHidden = !root.IsHidden;
+                panel1.IsHidden = !panel1.IsHidden;
             }
 
             // camera
