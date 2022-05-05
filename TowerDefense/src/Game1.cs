@@ -70,6 +70,8 @@ namespace TowerDefense
             BasicTower,
             Remove,
             Bandit,
+            Rock,
+            Tree
         }
 
         private Selector currentSelector;
@@ -273,6 +275,24 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
+
+            var button5 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Rock")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Rock;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+
+            var button6 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Tree")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Tree;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -354,6 +374,26 @@ namespace TowerDefense
                             entities.Add(tower);
                             buildingTiles[xTilePos][yTilePos] = tower;
                             SHGBuildings.AddEntity(tower, tower.Position);
+                        }
+                        break;
+                    
+                    case Selector.Rock:
+                        if (currBuilding == null)
+                        {
+                            var rock = new Rock(position);
+                            entities.Add(rock);
+                            buildingTiles[xTilePos][yTilePos] = rock;
+                            SHGBuildings.AddEntity(rock, rock.Position);
+                        }
+                        break;
+
+                    case Selector.Tree:
+                        if(currBuilding == null)
+                        {
+                            var tree = new Tree(position);
+                            entities.Add(tree);
+                            buildingTiles[xTilePos][yTilePos] = tree;
+                            SHGBuildings.AddEntity(tree, tree.Position);
                         }
                         break;
 
