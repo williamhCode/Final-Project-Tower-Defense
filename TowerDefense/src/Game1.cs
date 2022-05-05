@@ -552,7 +552,10 @@ namespace TowerDefense
                 {
                     entities.Remove(building);
                     var pos = buildingTiles.CoordinatesOf(building);
-                    
+                    if (pos.HasValue)
+                    {
+                        buildingTiles[pos.Value.X][pos.Value.Y] = null;
+                    } 
                     SHGBuildings.RemoveEntityPosition(building);
                 }
             }

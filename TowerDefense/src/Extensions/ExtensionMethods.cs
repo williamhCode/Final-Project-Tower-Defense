@@ -4,17 +4,15 @@ namespace TowerDefense.Extensions
 {
     public static class ExtensionMethods
     {
-        public static Tuple<int, int> CoordinatesOf<T>(this T[,] matrix, T value)
+        public static (int X, int Y)? CoordinatesOf<T>(this T[][] matrix, T value)
         {
-            int w = matrix.GetLength(0); // width
-            int h = matrix.GetLength(1); // height
-
-            for (int x = 0; x < w; ++x)
+            for (int x = 0; x < matrix.Length; x++)
             {
-                for (int y = 0; y < h; ++y)
+                for (int y = 0; y < matrix[x].Length; y++)
                 {
-                    if (matrix[x, y].Equals(value))
-                        return Tuple.Create(x, y);
+                    var currValue = matrix[x][y];
+                    if (currValue != null && currValue.Equals(value))
+                        return (x, y);
                 }
             }
 
