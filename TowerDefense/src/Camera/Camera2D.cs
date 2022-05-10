@@ -8,8 +8,8 @@ namespace TowerDefense.Camera
 {
     public class Camera2D
     {
-        public float Width { get; set; }
-        public float Height { get; set; }
+        public float Width { get; private set; }
+        public float Height { get; private set; }
         /// <summary>
         /// The screen's position (topleft) in world space.
         /// </summary>
@@ -23,12 +23,15 @@ namespace TowerDefense.Camera
             set { _zoom = value; }
         }
 
+        private readonly Vector2 halfScreenSize;
+
         public Camera2D(float width, float height)
         {
             Width = width;
             Height = height;
             Pan = Vector2.Zero;
             Zoom = 1;
+            halfScreenSize = new Vector2(width / 2, height / 2);
         }
         
         public RectangleF GetViewport()
@@ -44,7 +47,19 @@ namespace TowerDefense.Camera
 
         public void LookAt(Vector2 position)
         {
-            Pan = position - new Vector2(Width / 2, Height / 2) / Zoom;
+            Pan = position - halfScreenSize / Zoom;
+        }
+
+        public void Move(Vector2 amount)
+        {
+            Pan += amount;
+        }
+
+        public void ZoomFromCenter(float scale)
+        {
+            var center = Pan + halfScreenSize / Zoom;
+            Zoom *= scale;
+            LookAt(center);
         }
 
         public Vector2 WorldToScreen(Vector2 mouseCoords)

@@ -1,0 +1,8 @@
+"filename", "language", "C#", "XML", "JSON", "comment", "blank", "total"
+"/Users/williamhou/Documents/Coding/HVGP/Final-Project-Tower-Defense/TowerDefense/Content/TileInfo.json", "JSON", 0, 0, 61, 0, 14, 75
+"/Users/williamhou/Documents/Coding/HVGP/Final-Project-Tower-Defense/TowerDefense/Program.cs", "C#", 0, 0, 0, 2, 0, 2
+"/Users/williamhou/Documents/Coding/HVGP/Final-Project-Tower-Defense/TowerDefense/TowerDefense.csproj", "XML", 0, 1, 0, 0, 0, 1
+"/Users/williamhou/Documents/Coding/HVGP/Final-Project-Tower-Defense/TowerDefense/src/Camera/Camera2D.cs", "C#", 12, 0, 0, 0, 3, 15
+"/Users/williamhou/Documents/Coding/HVGP/Final-Project-Tower-Defense/TowerDefense/src/Game1.cs", "C#", 0, 0, 0, 0, 1, 1
+"/Users/williamhou/Documents/Coding/HVGP/Final-Project-Tower-Defense/TowerDefense/src/LevelEditor.cs", "C#", 300, 0, 0, 18, 66, 384
+"Total", "-", 312, 1, 61, 20, 84, 478

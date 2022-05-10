@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Audio;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Microsoft.Xna.Framework.Media;
+
 using MLEM.Ui;
 using MLEM.Ui.Elements;
 using MLEM.Ui.Style;
@@ -26,6 +24,9 @@ using TowerDefense.Entities.Buildings;
 using static TowerDefense.Collision.CollisionFuncs;
 
 using System.Diagnostics;
+using static TowerDefense.Extensions.ExtensionMethods;
+
+using System.Threading.Tasks;
 
 namespace TowerDefense
 {
@@ -62,7 +63,26 @@ namespace TowerDefense
         public string[][] tileMap;
         public static GraphicsDeviceManager graphics;
 
-        float angle;
+        private const int TILE_SIZE = 32;
+        private const int MAP_SIZE = 50;
+        private Dictionary<string, Texture2D> tileTextures;
+        private string[][] tileMap;
+
+        private MouseStateExtended mouseState;
+        private KeyboardStateExtended keyboardState;
+        private bool debug;
+
+        public enum Selector
+        {
+            Wall,
+            BasicTower,
+            Remove,
+            Bandit,
+            Rock,
+            Tree
+        }
+
+        private Selector currentSelector;
 
         public Game1()
         {
@@ -118,11 +138,43 @@ namespace TowerDefense
                 tileMap[i] = new string[20];
             }
 
+            // Implementing Perlin Noise and Biome generation into the tilemap array
+            Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
+            float[] noiseMap = NoiseMap.GenerateNoiseMap(
+                MAP_SIZE, MAP_SIZE,
+                seed: 1,
+                scale: 15f,
+                octaves: 3,
+                persistance: 1f,
+                lacunarity: 1f,
+                offset: Vector2.Zero
+            );
+
             for (int i = 0; i < tileMap.Length; i++)
             {
                 for (int j = 0; j < tileMap[i].Length; j++)
                 {
-                    tileMap[i][j] = "grass";
+                    float height = noiseMap[i * MAP_SIZE + j];
+                    if (height <= 0.1f)
+                    {
+                        tileMap[i][j] = "deepwater";
+                    }
+                    else if (height <= 0.3f)
+                    {
+                        tileMap[i][j] = "water";
+                    }
+                    else if (height <= 0.35f)
+                    {
+                        tileMap[i][j] = "beach";
+                    }
+                    else if (height < 0.8f)
+                    {
+                        tileMap[i][j] = "grass";
+                    }
+                    else
+                    {
+                        tileMap[i][j] = "sand";
+                    }
                 }
             }
         }
@@ -163,6 +215,8 @@ namespace TowerDefense
                 tileTextures.Add(name, Content.Load<Texture2D>("Sprites/Tiles/" + name));
             }
 
+            Content.RootDirectory = "Content";
+            
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
@@ -188,27 +242,69 @@ namespace TowerDefense
             this.UiSystem.AutoScaleWithScreen = true;
             this.UiSystem.GlobalScale = 5;
 
-            /*
-            this.root = new Panel(Anchor.TopLeft, new Vector2(100,100), Vector2.Zero, false, true);
-            this.root.ScrollBar.SmoothScrolling = true;
-            this.UiSystem.Add("TestUi", this.root);
-            float timesPressed = 0f;
-            var box = new Panel(Anchor.Center, new Vector2(100,1), Vector2.Zero, setHeightBasedOnChildren: true);
-            var bar1 = box.AddChild(new ProgressBar(Anchor.Center, new Vector2(100,10), MLEM.Misc.Direction2.Right, 100f, timesPressed));
-            box.AddChild(new Button(Anchor.AutoCenter, new Vector2(0.5F, 20), "Okay") 
-            {
-                OnPressed = close => 
-                {
-                    this.UiSystem.Remove("TestUi");
-                    this.UiSystem.Remove("InfoBox");
-                },  
-                OnPressed = increase => timesPressed += 1f,
-                PositionOffset = new Vector2(0, 1)
-            });
-            this.UiSystem.Add("InfoBox", box);
-            */
+            
             //render target for 3d models
             modelBase=new RenderTarget2D(GraphicsDevice,198,108,false,SurfaceFormat.Alpha8,DepthFormat.Depth16);
+            this.root = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
+            this.root.ScrollBar.SmoothScrolling = true;
+            root.AddChild(new VerticalSpace(2));
+            this.UiSystem.Add("TestUi", this.root);
+
+            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Wall")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Wall;
+                },
+                OnSelected = element =>
+                {
+                    currentSelector = Selector.Wall;
+                    Console.WriteLine("Wall selected");
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+            var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Tower")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.BasicTower;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+            var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Remove Building")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Remove;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+            var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Bandit;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+
+            var button5 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Rock")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Rock;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+
+            var button6 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Tree")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Tree;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -221,7 +317,178 @@ namespace TowerDefense
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
 
-            KeyboardState state = Keyboard.GetState();
+            keyboardState = KeyboardExtended.GetState();
+            mouseState = MouseExtended.GetState();
+
+            var mousePosition = mouseState.Position.ToVector2();
+            var worldPosition = camera.ScreenToWorld(mousePosition);
+
+            var area = root.Area;
+            if (area.Contains(mousePosition.X, mousePosition.Y) && !root.IsHidden)
+                goto EndMouse;
+
+            if (mouseState.IsButtonDown(MouseButton.Left))
+            {
+                var position = Vector2.Floor(worldPosition / TILE_SIZE) * TILE_SIZE + new Vector2(TILE_SIZE / 2);
+
+                int xTilePos = (int)MathF.Floor(worldPosition.X / TILE_SIZE);
+                int yTilePos = (int)MathF.Floor(worldPosition.Y / TILE_SIZE);
+
+                if (xTilePos < 0 || xTilePos >= buildingTiles.Length || yTilePos < 0 || yTilePos >= buildingTiles[xTilePos].Length)
+                {
+                    goto EndBuilding;
+                }
+
+                Building currBuilding = buildingTiles[xTilePos][yTilePos];
+
+                switch (currentSelector)
+                {
+                    case Selector.Wall:
+                        if (currBuilding == null)
+                        {
+                            var wall = new Wall(position);
+                            entities.Add(wall);
+                            buildingTiles[xTilePos][yTilePos] = wall;
+                            SHGBuildings.AddEntity(wall, wall.Position);
+
+                            var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
+                            foreach (var nearbyWall in nearbyWalls)
+                            {
+                                var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
+                                entities.Add(inBetweenWall);
+                                SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
+                            }
+                        }
+                        break;
+
+                    case Selector.BasicTower:
+                        if (currBuilding == null)
+                        {
+                            var tower = new BasicTower(position);
+                            entities.Add(tower);
+                            buildingTiles[xTilePos][yTilePos] = tower;
+                            SHGBuildings.AddEntity(tower, tower.Position);
+                        }
+                        break;
+                    
+                    case Selector.Rock:
+                        if (currBuilding == null)
+                        {
+                            var rock = new Rock(position);
+                            entities.Add(rock);
+                            buildingTiles[xTilePos][yTilePos] = rock;
+                            SHGBuildings.AddEntity(rock, rock.Position);
+                        }
+                        break;
+
+                    case Selector.Tree:
+                        if(currBuilding == null)
+                        {
+                            var tree = new Tree(position);
+                            entities.Add(tree);
+                            buildingTiles[xTilePos][yTilePos] = tree;
+                            SHGBuildings.AddEntity(tree, tree.Position);
+                        }
+                        break;
+
+                    case Selector.Remove:
+                        if (currBuilding != null)
+                        {
+                            entities.Remove(currBuilding);
+                            buildingTiles[xTilePos][yTilePos] = null;
+                            SHGBuildings.RemoveEntityPosition(currBuilding);
+
+                            if (currBuilding is Wall)
+                            {
+                                var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
+                                foreach (var nearbyWall in nearbyWalls)
+                                {
+                                    var tempPos = (nearbyWall.Position + currBuilding.Position) / 2;
+                                    var inBetweenWall = entities.Find(e => e.Position == tempPos);
+                                    if (inBetweenWall != null)
+                                    {
+                                        entities.Remove(inBetweenWall);
+                                        SHGBuildings.RemoveEntityCShape(inBetweenWall);
+                                    }
+                                }
+                            }
+                        }
+                        break;
+                }
+
+                List<Wall> GetNearbyWalls(int xTilePos, int yTilePos)
+                {
+                    var nearbyWalls = new List<Wall>();
+
+                    var posXs = new int[] { -1, 1, 0, 0 };
+                    var posYs = new int[] { 0, 0, -1, 1 };
+
+                    for (int i = 0; i < 4; i++)
+                    {
+                        var x = xTilePos + posXs[i];
+                        var y = yTilePos + posYs[i];
+
+                        if (x >= 0 && x < buildingTiles.Length && y >= 0 && y < buildingTiles[x].Length)
+                        {
+                            var tempWall = buildingTiles[x][y];
+                            var nearbyWall = tempWall as Wall;
+                            if (nearbyWall != null)
+                            {
+                                nearbyWalls.Add(nearbyWall);
+                            }
+                        }
+                    }
+
+                    return nearbyWalls;
+                }
+            }
+        EndBuilding:;
+
+            if (mouseState.WasButtonJustDown(MouseButton.Left))
+            {
+                if (currentSelector == Selector.Bandit)
+                {
+                    for (int i = 0; i < 1; i++)
+                    {
+                        for (int j = 0; j < 1; j++)
+                        {
+                            entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
+                        }
+                    }
+                }
+            }
+        EndMouse:;
+
+            foreach (Selector value in Enum.GetValues(typeof(Selector)))
+            {
+                if (keyboardState.WasKeyJustUp(Keys.D1 + (int)value))
+                {
+                    currentSelector = value;
+                }
+            }
+            if (keyboardState.IsKeyDown(Keys.C))
+            {
+                if (currentSelector == Selector.Bandit)
+                {
+                    for (int i = 0; i < 2; i++)
+                    {
+                        for (int j = 0; j < 2; j++)
+                        {
+                            entities.Add(new Bandit(worldPosition + new Vector2(i * 5, j * 5), 5));
+                        }
+                    }
+                }
+            }
+
+            if (keyboardState.WasKeyJustUp(Keys.E))
+            {
+                debug = !debug;
+            }
+
+            if (keyboardState.WasKeyJustUp(Keys.Q))
+            {
+                root.IsHidden = !root.IsHidden;
+            }
 
             // player movement
             var direction = new Vector2(
@@ -269,10 +536,62 @@ namespace TowerDefense
             }
 
 
+            // enemy flocking
+            // Parallel.ForEach(enemies, e =>
+            // {
+            //     e.ApplyFlocking(dt, SHGFlocking, SHGBuildings, player.Position);
+            // });
+
             // enemy movement
             foreach (var e in enemies)
             {
-                e.Move(player.Position, dt);
+                enemy.Steer(dt, SHGBuildings, player.Position);
+            }
+
+            // projectile
+            var projectilesTemp = new List<Projectile>(projectiles);
+            foreach (var projectile in projectilesTemp)
+            {
+                projectile.Update(dt);
+                if (projectile.HasEnded)
+                {
+                    projectiles.Remove(projectile);
+                }
+            }
+
+            Parallel.ForEach(towers, tower =>
+            {
+                var projectile = tower.Shoot(SHGEnemies);
+                if (projectile != null)
+                {
+                    projectiles.Add(projectile);
+                }
+            });
+
+            // enemy death
+            var enemiesTemp = new List<Enemy>(enemies);
+            foreach (var enemy in enemiesTemp)
+            {
+                if (enemy.IsDead)
+                {
+                    entities.Remove(enemy);
+                }
+            }
+        
+            // building death
+            var buildingsTemp = new List<Building>(buildings);
+            foreach (var building in buildingsTemp)
+            {
+                if (building.IsDead)
+                {
+                    entities.Remove(building);
+                    var pos = buildingTiles.CoordinatesOf(building);
+                    if (pos.HasValue)
+                    {
+                        buildingTiles[pos.Value.X][pos.Value.Y] = null;
+                    } 
+                    SHGBuildings.RemoveEntityPosition(building);
+                }
             }
 
             // updates

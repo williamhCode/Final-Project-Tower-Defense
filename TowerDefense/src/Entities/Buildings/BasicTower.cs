@@ -42,6 +42,8 @@ namespace TowerDefense.Entities.Buildings
             animationState = AnimationState.Copy();
             animationState.SetState("state", "base");
             animationState.Update(0);
+
+            Health = 10;
         }
 
         public override Projectile Shoot(SpatialHashGrid SHG)
