@@ -243,7 +243,7 @@ namespace TowerDefense
                 up -= 1;
             }
 
-            // camera3D.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
+             //camera3D.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
 
             if (state.IsKeyDown(Keys.Left))
             {
@@ -354,6 +354,7 @@ namespace TowerDefense
              SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
              SpriteBatch.End();
              //Set the render target
+
 GraphicsDevice.Viewport= (modelview);
 
         GraphicsDevice.SetRenderTarget(modelBase);
@@ -412,8 +413,8 @@ for (int i = 0; i < 2; i++)
             
 
             base.DoDraw(gameTime);
-        }
-
+        
+    }
         float model_y_rotation = 0;
 
         protected override void UnloadContent()
