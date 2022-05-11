@@ -34,7 +34,7 @@ namespace TowerDefense
         public static LevelEditor Instance { get; private set; }
         public SpriteFont font;
         private Camera2D camera;
-        private Panel panel1;
+        private Panel bottomPanel;
 
         private Player player;
         private List<Entity> entities;
@@ -204,11 +204,11 @@ namespace TowerDefense
 
                     Texture2D texture = new Texture2D(GraphicsDevice, tileSize, tileSize);
                     // set texture data from sprite sheet
-                    Color[] colors = new Color[tileSize * tileSize];
+                    Color[] textureData = new Color[tileSize * tileSize];
                     int x = (j % width) * tileSize;
                     int y = (j / width) * tileSize;
-                    spriteSheet.GetData(0, new Rectangle(x, y, tileSize, tileSize), colors, 0, tileSize * tileSize);
-                    texture.SetData(colors);
+                    spriteSheet.GetData(0, new Rectangle(x, y, tileSize, tileSize), textureData, 0, tileSize * tileSize);
+                    texture.SetData(textureData);
 
                     textureDict.Add(value, texture);
                 }
@@ -241,12 +241,12 @@ namespace TowerDefense
             this.UiSystem.AutoScaleWithScreen = false;
             this.UiSystem.GlobalScale = 1;
 
-            this.panel1 = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
-            this.panel1.ScrollBar.SmoothScrolling = true;
-            panel1.AddChild(new VerticalSpace(2));
-            this.UiSystem.Add("TestUi", this.panel1);
+            bottomPanel = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
+            bottomPanel.ScrollBar.SmoothScrolling = true;
+            bottomPanel.AddChild(new VerticalSpace(2));
+            this.UiSystem.Add("TestUi", bottomPanel);
 
-            var button1 = panel1.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Grass")
+            var button1 = bottomPanel.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Grass")
             {
                 OnSelected = element =>
                 {
@@ -254,7 +254,7 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            var button2 = panel1.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Path")
+            var button2 = bottomPanel.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Path")
             {
                 OnSelected = element =>
                 {
@@ -262,7 +262,7 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
-            var button3 = panel1.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
+            var button3 = bottomPanel.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Erase")
             {
                 OnSelected = element =>
                 {
@@ -270,6 +270,22 @@ namespace TowerDefense
                 },
                 PositionOffset = new Vector2(10, 0)
             });
+
+            var buttonFileSave = this.UiSystem.Add("FileSave", new Button(Anchor.AutoRight, new Vector2(60, 30), "Save")
+            {
+                OnPressed = element =>
+                {
+                    SaveMap();
+                },
+                CanBeSelected = false
+            });
+
+            // save the map into a JSON file
+            void SaveMap()
+            {
+                Console.WriteLine("Saving map...");
+            }
+
         }
 
         void UpdateTile(int xPos, int yPos)
@@ -331,8 +347,8 @@ namespace TowerDefense
             var mousePosition = mouseState.Position.ToVector2();
             var worldPosition = camera.ScreenToWorld(mousePosition);
 
-            var area = panel1.Area;
-            if (area.Contains(mousePosition.X, mousePosition.Y) && !panel1.IsHidden)
+            var area = bottomPanel.Area;
+            if (area.Contains(mousePosition.X, mousePosition.Y) && !bottomPanel.IsHidden)
                 goto EndMouse;
 
             if (mouseState.IsButtonDown(MouseButton.Left))
@@ -374,7 +390,11 @@ namespace TowerDefense
 
             if (keyboardState.WasKeyJustUp(Keys.Q))
             {
-                panel1.IsHidden = !panel1.IsHidden;
+                var rootElements = UiSystem.GetRootElements();
+                foreach (var e in rootElements)
+                {
+                    e.Element.IsHidden = !e.Element.IsHidden;
+                }
             }
 
             // camera

@@ -25,6 +25,7 @@ using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;
 using TowerDefense.NoiseTest;
 using static TowerDefense.Collision.CollisionFuncs;
+using static TowerDefense.Extensions.ExtensionMethods;
 
 using System.Threading.Tasks;
 
@@ -58,11 +59,7 @@ namespace TowerDefense
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
-        private bool debug;
-
-        private Vector2 start;
-        private Vector2 end;
-        (float dist, Vector2 intersection, Vector2 normal)? collData;
+        private int debugMode = 0;
 
         public enum Selector
         {
@@ -70,6 +67,8 @@ namespace TowerDefense
             BasicTower,
             Remove,
             Bandit,
+            Rock,
+            Tree
         }
 
         private Selector currentSelector;
@@ -78,7 +77,6 @@ namespace TowerDefense
         {
             Instance = this;
             this.IsMouseVisible = true;
-            Content.RootDirectory = "Content";
         }
 
         protected override void Initialize()
@@ -161,7 +159,7 @@ namespace TowerDefense
 
             SHGEnemies = new SpatialHashGrid(90);
 
-            debug = false;
+            debugMode = 0;
         }
 
         /// <summary>
@@ -200,6 +198,8 @@ namespace TowerDefense
                 tileTextures.Add(name, Content.Load<Texture2D>(name));
             }
 
+            Content.RootDirectory = "Content";
+            
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
@@ -269,6 +269,24 @@ namespace TowerDefense
                 OnPressed = element =>
                 {
                     currentSelector = Selector.Bandit;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+
+            var button5 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Rock")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Rock;
+                },
+                PositionOffset = new Vector2(10, 0)
+            });
+
+            var button6 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Tree")
+            {
+                OnPressed = element =>
+                {
+                    currentSelector = Selector.Tree;
                 },
                 PositionOffset = new Vector2(10, 0)
             });
@@ -353,6 +371,26 @@ namespace TowerDefense
                             entities.Add(tower);
                             buildingTiles[xTilePos][yTilePos] = tower;
                             SHGBuildings.AddEntity(tower, tower.Position);
+                        }
+                        break;
+                    
+                    case Selector.Rock:
+                        if (currBuilding == null)
+                        {
+                            var rock = new Rock(position);
+                            entities.Add(rock);
+                            buildingTiles[xTilePos][yTilePos] = rock;
+                            SHGBuildings.AddEntity(rock, rock.Position);
+                        }
+                        break;
+
+                    case Selector.Tree:
+                        if(currBuilding == null)
+                        {
+                            var tree = new Tree(position);
+                            entities.Add(tree);
+                            buildingTiles[xTilePos][yTilePos] = tree;
+                            SHGBuildings.AddEntity(tree, tree.Position);
                         }
                         break;
 
@@ -447,7 +485,9 @@ namespace TowerDefense
 
             if (keyboardState.WasKeyJustUp(Keys.E))
             {
-                debug = !debug;
+                debugMode += 1;
+                if (debugMode > 2)
+                    debugMode = 0;
             }
 
             if (keyboardState.WasKeyJustUp(Keys.Q))
@@ -503,6 +543,22 @@ namespace TowerDefense
                 if (enemy.IsDead)
                 {
                     entities.Remove(enemy);
+                }
+            }
+        
+            // building death
+            var buildingsTemp = new List<Building>(buildings);
+            foreach (var building in buildingsTemp)
+            {
+                if (building.IsDead)
+                {
+                    entities.Remove(building);
+                    var pos = buildingTiles.CoordinatesOf(building);
+                    if (pos.HasValue)
+                    {
+                        buildingTiles[pos.Value.X][pos.Value.Y] = null;
+                    } 
+                    SHGBuildings.RemoveEntityPosition(building);
                 }
             }
 
@@ -587,8 +643,9 @@ namespace TowerDefense
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
-                if (debug)
+                if (debugMode != 0)
                     entity.DrawDebug(SpriteBatch);
+                if (debugMode != 2)
                 entity.Draw(SpriteBatch);
             }
 

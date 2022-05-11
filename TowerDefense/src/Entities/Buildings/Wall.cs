@@ -33,6 +33,8 @@ namespace TowerDefense.Entities.Buildings
             animationState = AnimationState.Copy();
             animationState.SetState("state", "full");
             animationState.Update(0);
+
+            Health = 10;
         }
 
         public override void Update(float dt)
