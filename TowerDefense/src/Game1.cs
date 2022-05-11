@@ -1,10 +1,39 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
+using Coroutine;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using Microsoft.Xna.Framework.Media;
+
+using MLEM.Ui;
+using MLEM.Ui.Elements;
+using MLEM.Ui.Style;
+using MLEM.Startup;
+using MLEM.Font;
+using MonoGame.Framework.Utilities;
+using MonoGame.Extended;
+using MonoGame.Extended.Input;
+
+using TowerDefense.Camera;
+using TowerDefense.Entities;
+using TowerDefense.Entities.Enemies;
+using TowerDefense.Entities.Buildings;
+using TowerDefense.Hashing;
+using TowerDefense.Projectiles;
+using Towerdefense.Entities.Components;
+using TowerDefense.NoiseTest;
+using static TowerDefense.Collision.CollisionFuncs;
+using static TowerDefense.Extensions.ExtensionMethods;
+
+using System.Threading.Tasks;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 
 using MLEM.Ui;
 using MLEM.Ui.Elements;
@@ -23,10 +52,20 @@ using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
 using static TowerDefense.Collision.CollisionFuncs;
 
-using System.Diagnostics;
+
 using static TowerDefense.Extensions.ExtensionMethods;
 
 using System.Threading.Tasks;
+
+
+
+using MonoGame.Extended.Input;
+
+
+using TowerDefense.Projectiles;
+
+using TowerDefense.NoiseTest;
+
 
 namespace TowerDefense
 {
@@ -50,23 +89,29 @@ namespace TowerDefense
         Texture2D testtex;
 
         Ortho_Camera camera3D;
+        private SpatialHashGrid SHGBuildings;
+        private SpatialHashGrid SHGFlocking;
+        private SpatialHashGrid SHGEnemies;
         private RenderTarget2D modelBase;
         private Viewport modelview;
         public float scale=0.4444f;
         private Player player;
         private List<Entity> entities;
         private Wall[] walls;
+        private Building[][] buildingTiles;
         private Enemy[] enemies;
+        private Tower[] towers;
+        private Building[] buildings;
 
-        public const int TILE_SIZE = 32;
         public Dictionary<string, Texture2D> tileTextures;
         public string[][] tileMap;
         public static GraphicsDeviceManager graphics;
 
         private const int TILE_SIZE = 32;
         private const int MAP_SIZE = 50;
-        private Dictionary<string, Texture2D> tileTextures;
-        private string[][] tileMap;
+        private List<Projectile> projectiles;
+       
+        
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
@@ -107,6 +152,15 @@ namespace TowerDefense
             model = Content.Load<Model>("ballista");
             Content.RootDirectory= "Content/Textures";
             testtex=Content.Load<Texture2D>("BTTexture");
+
+
+            player = new Player(new Vector2(300, 300));
+            entities = new List<Entity> {
+                player,
+            };
+            buildings = entities.OfType<Building>().ToArray();
+            projectiles = new List<Projectile>();
+            towers = buildings.OfType<Tower>().ToArray();
             //modelview=
             //graphics.IsFullScreen=true;
             //graphics.PreferredBackBufferHeight=128;
@@ -318,7 +372,8 @@ namespace TowerDefense
                 Exit();
 
             keyboardState = KeyboardExtended.GetState();
-            mouseState = MouseExtended.GetState();
+            
+            MouseStateExtended mouseState = MouseExtended.GetState();
 
             var mousePosition = mouseState.Position.ToVector2();
             var worldPosition = camera.ScreenToWorld(mousePosition);
@@ -492,35 +547,14 @@ namespace TowerDefense
 
             // player movement
             var direction = new Vector2(
-                Convert.ToSingle(state.IsKeyDown(Keys.D)) - Convert.ToSingle(state.IsKeyDown(Keys.A)),
-                Convert.ToSingle(state.IsKeyDown(Keys.S)) - Convert.ToSingle(state.IsKeyDown(Keys.W))
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.D)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.A)),
+                Convert.ToSingle(keyboardState.IsKeyDown(Keys.S)) - Convert.ToSingle(keyboardState.IsKeyDown(Keys.W))
             );
-            //player.Move(direction, dt);
-            var mouseState = Mouse.GetState();
-            var mousePosition = new Vector2(mouseState.X, mouseState.Y);
-            player.DecideDirection(camera.ScreenToWorld(mousePosition));
 
-            float up = 0;
-            if (state.IsKeyDown(Keys.Space))
-            {
-                up += 1;
-            }
-            if (state.IsKeyDown(Keys.LeftShift))
-            {
-                up -= 1;
-            }
+            player.Move(dt, direction);
+            player.DecideDirection(worldPosition);
 
-             //camera3D.Move(direction.Y * dt * 5, direction.X * dt * 5, up * dt * 5);
-
-            if (state.IsKeyDown(Keys.Left))
-            {
-                model_y_rotation -= 180f * dt;
-            }
-
-            if (state.IsKeyDown(Keys.Right))
-            {
-                model_y_rotation += 180f * dt;
-            }
+            
 
             
             var mouseNow = Mouse.GetState();
@@ -543,7 +577,7 @@ namespace TowerDefense
             // });
 
             // enemy movement
-            foreach (var e in enemies)
+            foreach (var enemy in enemies)
             {
                 enemy.Steer(dt, SHGBuildings, player.Position);
             }
@@ -569,7 +603,7 @@ namespace TowerDefense
             });
 
             // enemy death
-            var enemiesTemp = new List<Enemy>(enemies);
+             var enemiesTemp = new List<Enemy>(enemies);
             foreach (var enemy in enemiesTemp)
             {
                 if (enemy.IsDead)
@@ -577,6 +611,7 @@ namespace TowerDefense
                     entities.Remove(enemy);
                 }
             }
+        
         
             // building death
             var buildingsTemp = new List<Building>(buildings);
@@ -624,16 +659,8 @@ namespace TowerDefense
                 }
             }
 
-            // camera
-            if (state.IsKeyDown(Keys.OemPlus))
-            {
-                camera.Zoom *= 1.1f;
-            }
-            if (state.IsKeyDown(Keys.OemMinus))
-            {
-                camera.Zoom /= 1.1f;
-            }
-            camera.LookAt(player.Position);
+            
+          
         }
 
        
@@ -743,3 +770,6 @@ for (int i = 0; i < 2; i++)
 
     }
 }
+
+
+
