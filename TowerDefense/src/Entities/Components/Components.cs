@@ -19,7 +19,7 @@ namespace Towerdefense.Entities.Components
     public interface IHitboxComponent : IEntityComponent
     {
         CShape HitboxShape { get; set; }
-        float YHitboxOffset { get; set; }
+        Vector2 HitboxOffset { get; set; }
         void UpdateHitbox();
     }
 
@@ -27,7 +27,7 @@ namespace Towerdefense.Entities.Components
     {
         public static void _UpdateHitbox(this IHitboxComponent obj)
         {
-            obj.HitboxShape.Position = obj.Position - new Vector2(0, obj.YHitboxOffset);
+            obj.HitboxShape.Position = obj.Position - obj.HitboxOffset;
             obj.HitboxShape.Update();
         }
     }

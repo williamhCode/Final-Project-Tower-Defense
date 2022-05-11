@@ -10,16 +10,20 @@ using TowerDefense.Maths;
 
 using System;
 
-namespace TowerDefense.Entities.Buildings
+namespace TowerDefense.Entities.Buildings.Resources
 {
-    public class Tree : Building
+    public class Rock : Resource
     {
         public static AnimationState<Enum> AnimationState;
         private AnimationState<Enum> animationState;
 
-        private enum TreeType
+        private enum RockType
         {
-            Tree = 1
+            Rock = 1,
+            BigRock,
+            FaceRock,
+            ThinkRock,
+            Boulder
         }
 
         public static void LoadContent(ContentManager content)
@@ -29,34 +33,37 @@ namespace TowerDefense.Entities.Buildings
             float frameTime = 0f;
             AnimationState = new AnimationState<Enum>("state");
 
-            foreach (TreeType treeType in Enum.GetValues(typeof(TreeType)))
+            foreach(RockType rockType in Enum.GetValues(typeof(RockType)))
             {
-                AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>($"tree{(int)treeType}"), 64, 64, frameTime), treeType);
+                AnimationState.AddSprite(new AnimatedSprite(content.Load<Texture2D>($"rock{(int)rockType}"), 32, 32, frameTime), rockType);
             }
         }
 
-        public Tree(Vector2 position) : base(position)
+        public Rock(Vector2 position) : base(position)
         {
             CShape = new CRectangle(position, 16, 16);
             animationState = AnimationState.Copy();
-            
-            Array values = Enum.GetValues(typeof(TreeType));
+
+            Array values = Enum.GetValues(typeof(RockType));
             Random random = new Random();
-            TreeType state = (TreeType)values.GetValue(random.Next(values.Length));
+            RockType state = (RockType)values.GetValue(random.Next(values.Length));
             animationState.SetState("state", state);
             animationState.Update(0);
 
             Health = 10;
+            HitboxShape = new CRectangle(position, 32, 32);
+            HitboxOffset = new Vector2(0, 8);
+            UpdateHitbox();
         }
 
         public override void Update(float dt)
         {
             // do nothing
         }
-
+ 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(32, 60));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 24));
         }
     }
 }

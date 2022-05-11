@@ -55,7 +55,7 @@ namespace TowerDefense.Entities.Enemies
             animationState.SetState(DIRECTION, Direction.Right);
 
             HitboxShape = new CRectangle(position, 20, 32);
-            YHitboxOffset = 14;
+            HitboxOffset = new Vector2(0, 14);
 
             InitRays();
         }

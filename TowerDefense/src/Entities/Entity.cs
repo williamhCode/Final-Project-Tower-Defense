@@ -32,7 +32,7 @@ namespace TowerDefense.Entities
         
         public virtual void DrawDebug(SpriteBatch spriteBatch)
         {
-            CShape.Draw(spriteBatch, Color.Black, 1);
+            CShape.Draw(spriteBatch, new Color(200, 20, 20), 1);
         }
     }
 }

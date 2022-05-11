@@ -20,6 +20,7 @@ using TowerDefense.Camera;
 using TowerDefense.Entities;
 using TowerDefense.Entities.Enemies;
 using TowerDefense.Entities.Buildings;
+using TowerDefense.Entities.Buildings.Resources;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
 using Towerdefense.Entities.Components;

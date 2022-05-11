@@ -29,7 +29,7 @@ namespace TowerDefense.Entities
         public Boolean IsDead => Health <= 0;
 
         public CShape HitboxShape { get; set; }
-        public float YHitboxOffset { get; set; }
+        public Vector2 HitboxOffset { get; set; }
 
         public Enemy(Vector2 position, int health)
         {   

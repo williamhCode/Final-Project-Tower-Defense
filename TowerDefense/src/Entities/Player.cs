@@ -42,7 +42,7 @@ namespace TowerDefense.Entities
         public AnimationState<Enum> animationState { get; set; }
 
         public CShape HitboxShape { get; set; }
-        public float YHitboxOffset { get; set; }
+        public Vector2 HitboxOffset { get; set; }
 
         public static void LoadContent(ContentManager content)
         {
@@ -68,7 +68,7 @@ namespace TowerDefense.Entities
             animationState.SetState(DIRECTION, Direction.Right);
 
             HitboxShape = new CRectangle(position, 20, 32);
-            YHitboxOffset = 14;
+            HitboxOffset = new Vector2(0, 14);
         }
 
         public void Move(float dt, Vector2 direction)
