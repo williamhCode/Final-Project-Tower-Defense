@@ -41,7 +41,7 @@ namespace TowerDefense.Entities.Buildings
 
         public Rock(Vector2 position) : base(position)
         {
-            CShape = new Collision.CRectangle(position, 32, 32);
+            CShape = new CRectangle(position, 16, 16);
             animationState = AnimationState.Copy();
 
             Array values = Enum.GetValues(typeof(RockType));
@@ -60,7 +60,7 @@ namespace TowerDefense.Entities.Buildings
  
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 16));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(16, 24));
         }
     }
 }

@@ -59,7 +59,7 @@ namespace TowerDefense
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
-        private bool debug;
+        private int debugMode = 0;
 
         public enum Selector
         {
@@ -159,7 +159,7 @@ namespace TowerDefense
 
             SHGEnemies = new SpatialHashGrid(90);
 
-            debug = false;
+            debugMode = 0;
         }
 
         /// <summary>
@@ -485,7 +485,9 @@ namespace TowerDefense
 
             if (keyboardState.WasKeyJustUp(Keys.E))
             {
-                debug = !debug;
+                debugMode += 1;
+                if (debugMode > 2)
+                    debugMode = 0;
             }
 
             if (keyboardState.WasKeyJustUp(Keys.Q))
@@ -641,8 +643,9 @@ namespace TowerDefense
             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
             foreach (var entity in entities_temp)
             {
-                if (debug)
+                if (debugMode != 0)
                     entity.DrawDebug(SpriteBatch);
+                if (debugMode != 2)
                 entity.Draw(SpriteBatch);
             }
 
