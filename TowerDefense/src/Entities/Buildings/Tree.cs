@@ -37,7 +37,7 @@ namespace TowerDefense.Entities.Buildings
 
         public Tree(Vector2 position) : base(position)
         {
-            CShape = new Collision.CRectangle(position, 32, 32);
+            CShape = new CRectangle(position, 16, 16);
             animationState = AnimationState.Copy();
             
             Array values = Enum.GetValues(typeof(TreeType));
@@ -56,7 +56,7 @@ namespace TowerDefense.Entities.Buildings
 
         public override void Draw(SpriteBatch spriteBatch)
         {
-            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(32, 48));
+            animationState.Sprite.Draw(spriteBatch, Position, new Vector2(32, 60));
         }
     }
 }

@@ -115,7 +115,7 @@ namespace TowerDefense
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
-        private bool debug;
+        private int debugMode = 0;
 
         public enum Selector
         {
@@ -231,6 +231,24 @@ namespace TowerDefense
                     }
                 }
             }
+
+            buildingTiles = new Building[tileMap.Length][];
+            for (int i = 0; i < buildingTiles.Length; i++)
+            {
+                buildingTiles[i] = new Building[tileMap[i].Length];
+            }
+
+            SHGBuildings = new SpatialHashGrid(32);
+            foreach (var building in buildings)
+            {
+                SHGBuildings.AddEntity(building, building.Position);
+            }
+
+            SHGFlocking = new SpatialHashGrid(90);
+
+            SHGEnemies = new SpatialHashGrid(90);
+
+            debugMode = 0;
         }
 
         /// <summary>
@@ -537,7 +555,9 @@ namespace TowerDefense
 
             if (keyboardState.WasKeyJustUp(Keys.E))
             {
-                debug = !debug;
+                debugMode += 1;
+                if (debugMode > 2)
+                    debugMode = 0;
             }
 
             if (keyboardState.WasKeyJustUp(Keys.Q))
@@ -743,6 +763,27 @@ for (int i = 0; i < 2; i++)
                 }
             }
 
+            // projectiles have hit get drawn below
+            foreach (var projectile in projectilesLookup[true])
+            {
+                projectile.Draw(SpriteBatch);
+            }
+
+            // draw entities
+            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
+            foreach (var entity in entities_temp)
+            {
+                if (debugMode != 0)
+                    entity.DrawDebug(SpriteBatch);
+                if (debugMode != 2)
+                entity.Draw(SpriteBatch);
+            }
+
+            // projectiles have not hit get drawn above
+            foreach (var projectile in projectilesLookup[false])
+            {
+                projectile.Draw(SpriteBatch);
+            }
 
             SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
