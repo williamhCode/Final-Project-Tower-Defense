@@ -28,90 +28,44 @@ using static TowerDefense.Collision.CollisionFuncs;
 using static TowerDefense.Extensions.ExtensionMethods;
 
 using System.Threading.Tasks;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework.Input;
 
-using MLEM.Ui;
-using MLEM.Ui.Elements;
-using MLEM.Ui.Style;
-using MLEM.Startup;
-using MLEM.Font;
-using MonoGame.Framework.Utilities;
-using MonoGame.Extended;
-
-
-using System.Reflection;
-
-using TowerDefense.Camera;
-using TowerDefense.Entities;
-using TowerDefense.Entities.Enemies;
-using TowerDefense.Entities.Buildings;
-using static TowerDefense.Collision.CollisionFuncs;
-
-
-using static TowerDefense.Extensions.ExtensionMethods;
-
-using System.Threading.Tasks;
-
-
-
-using MonoGame.Extended.Input;
-
-
-using TowerDefense.Projectiles;
-
-using TowerDefense.NoiseTest;
-
-
+//test
 namespace TowerDefense
 {
     public class Game1 : MlemGame
     {
         // variables
-
         public static Game1 Instance { get; private set; }
         public SpriteFont font;
         private Camera2D camera;
         private Panel root;
 
-        Matrix projectionMatrix;
-
-        Matrix viewMatrix;
-
-        Vector2 mouseDefaultPos = new Vector2(620, 360);
-
-
         Model model;
         Texture2D testtex;
-
         Ortho_Camera camera3D;
+        public float scale=0.4444f;
+        public static GraphicsDeviceManager graphics;
+
+
+        private RenderTarget2D modelBase;
+        private Viewport modelview;
+
+        private Player player;
+        private List<Entity> entities;
+        private Building[][] buildingTiles;
+        private Building[] buildings;
+        private Tower[] towers;
+        private Enemy[] enemies;
+        private List<Projectile> projectiles;
+
         private SpatialHashGrid SHGBuildings;
         private SpatialHashGrid SHGFlocking;
         private SpatialHashGrid SHGEnemies;
-        private RenderTarget2D modelBase;
-        private Viewport modelview;
-        public float scale=0.4444f;
-        private Player player;
-        private List<Entity> entities;
-        private Wall[] walls;
-        private Building[][] buildingTiles;
-        private Enemy[] enemies;
-        private Tower[] towers;
-        private Building[] buildings;
-
-        public Dictionary<string, Texture2D> tileTextures;
-        public string[][] tileMap;
-        public static GraphicsDeviceManager graphics;
 
         private const int TILE_SIZE = 32;
         private const int MAP_SIZE = 50;
-        private List<Projectile> projectiles;
-       
-        
+        private Dictionary<string, Texture2D> tileTextures;
+        private string[][] tileMap;
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
@@ -133,64 +87,36 @@ namespace TowerDefense
         {
             Instance = this;
             this.IsMouseVisible = true;
-
-
         }
 
         protected override void Initialize()
         {
             base.Initialize();
-            graphics=this.GraphicsDeviceManager;
-
-
-
-            // create camera
-            camera3D = new Ortho_Camera(new Vector3(0, 0, 2), 32, 18);
-            
-            Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
-            Content.RootDirectory = "Content/Models";
-            model = Content.Load<Model>("ballista");
-            Content.RootDirectory= "Content/Textures";
-            testtex=Content.Load<Texture2D>("BTTexture");
-
-
-            player = new Player(new Vector2(300, 300));
-            entities = new List<Entity> {
-                player,
-            };
-            buildings = entities.OfType<Building>().ToArray();
-            projectiles = new List<Projectile>();
-            towers = buildings.OfType<Tower>().ToArray();
-            //modelview=
-            //graphics.IsFullScreen=true;
-            //graphics.PreferredBackBufferHeight=128;
-            //graphics.PreferredBackBufferHeight=72;
-            
-            //graphics.ApplyChanges();
-
-            camera = new Camera2D(this.GraphicsDeviceManager.PreferredBackBufferHeight, this.GraphicsDeviceManager.PreferredBackBufferWidth);
+            camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
 
             // entities initialization
             player = new Player(new Vector2(300, 300));
             entities = new List<Entity> {
                 player,
-                // new Bandit(new Vector2(100, 100), 10),
             };
-            for (int i = 0; i < 10; i++)
-            {
-                entities.Add(new Wall(new Vector2(i * 16 + 100, 100)));
-                entities.Add(new Wall(new Vector2(100, (i + 1) * 16 + 100)));
-            }
-            walls = entities.OfType<Wall>().ToArray();
-            enemies = entities.OfType<Enemy>().ToArray();
 
+            buildings = entities.OfType<Building>().ToArray();
+            towers = buildings.OfType<Tower>().ToArray();
+            enemies = entities.OfType<Enemy>().ToArray();
+            projectiles = new List<Projectile>();
 
             // tile map initialization
-            tileMap = new string[20][];
+            tileMap = new string[MAP_SIZE][];
             for (int i = 0; i < tileMap.Length; i++)
             {
-                tileMap[i] = new string[20];
+                tileMap[i] = new string[MAP_SIZE];
             }
+
+            // 3dcam plus model Initilization
+            graphics=this.GraphicsDeviceManager;
+            camera3D = new Ortho_Camera(new Vector3(0, 0, 2), 32, 18);
+            Content.RootDirectory = "Content/Models";
+            model = Content.Load<Model>("ballista");
 
             // Implementing Perlin Noise and Biome generation into the tilemap array
             Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
@@ -204,9 +130,10 @@ namespace TowerDefense
                 offset: Vector2.Zero
             );
 
-            for (int i = 0; i < tileMap.Length; i++)
+            // Generate Biomes
+            for (int i = 0; i < MAP_SIZE; i++)
             {
-                for (int j = 0; j < tileMap[i].Length; j++)
+                for (int j = 0; j < MAP_SIZE; j++)
                 {
                     float height = noiseMap[i * MAP_SIZE + j];
                     if (height <= 0.1f)
@@ -280,7 +207,7 @@ namespace TowerDefense
             // load tile textures
             tileTextures = new Dictionary<string, Texture2D>();
 
-             Content.RootDirectory = "Content/Sprites/Tiles";
+            Content.RootDirectory = "Content/Sprites/Tiles";
             string[] tileNames = new string[] { "grass", "snow", "water", "beach", "sand", "deepwater" };
             foreach (string name in tileNames)
             {
@@ -289,6 +216,9 @@ namespace TowerDefense
 
             Content.RootDirectory = "Content";
             
+            //set render target
+            modelBase=new RenderTarget2D(GraphicsDevice,198,108,false,SurfaceFormat.Alpha8,DepthFormat.Depth16);
+
             // load fonts
             font = Content.Load<SpriteFont>("Font/Frame");
 
@@ -308,15 +238,17 @@ namespace TowerDefense
             var style = new UntexturedStyle(this.SpriteBatch)
             {
                 Font = new GenericSpriteFont(LoadContent<SpriteFont>("Font/Frame")),
+                // = Color.Black,
+                // ButtonHoveredColor = Color.Red,
+                //TextScale = 0.1f,
+                // SelectionIndicator = new MLEM.Textures.NinePatch(new MLEM.Textures.TextureRegion(tex, new Rectangle(0, 0, 100, 100)), 4),
             };
+
             this.UiSystem.Style = style;
             this.UiSystem.AutoScaleReferenceSize = new Point(1280, 720);
-            this.UiSystem.AutoScaleWithScreen = true;
-            this.UiSystem.GlobalScale = 5;
+            this.UiSystem.AutoScaleWithScreen = false;
+            this.UiSystem.GlobalScale = 1;
 
-            
-            //render target for 3d models
-            modelBase=new RenderTarget2D(GraphicsDevice,198,108,false,SurfaceFormat.Alpha8,DepthFormat.Depth16);
             this.root = new Panel(Anchor.Center, new Vector2(800, 100), new Vector2(0, 300), false, true);
             this.root.ScrollBar.SmoothScrolling = true;
             root.AddChild(new VerticalSpace(2));
@@ -383,6 +315,24 @@ namespace TowerDefense
         {
             base.DoUpdate(gameTime);
 
+            // update type arrays
+            buildings = entities.OfType<Building>().ToArray();
+            towers = buildings.OfType<Tower>().ToArray();
+            enemies = entities.OfType<Enemy>().ToArray();
+
+            // update spatial hash grids
+            SHGFlocking.Clear();
+            foreach (var enemy in enemies)
+            {
+                SHGFlocking.AddEntity(enemy, enemy.Position);
+            }
+
+            SHGEnemies.Clear();
+            foreach (var enemy in enemies)
+            {
+                SHGEnemies.AddEntity(enemy, enemy.HitboxShape);
+            }
+
             float dt = gameTime.GetElapsedSeconds();
 
             // game inputs
@@ -390,8 +340,7 @@ namespace TowerDefense
                 Exit();
 
             keyboardState = KeyboardExtended.GetState();
-            
-            MouseStateExtended mouseState = MouseExtended.GetState();
+            mouseState = MouseExtended.GetState();
 
             var mousePosition = mouseState.Position.ToVector2();
             var worldPosition = camera.ScreenToWorld(mousePosition);
@@ -574,22 +523,6 @@ namespace TowerDefense
             player.Move(dt, direction);
             player.DecideDirection(worldPosition);
 
-            
-
-            
-            var mouseNow = Mouse.GetState();
-            if (mouseNow.X != mouseDefaultPos.X || mouseNow.Y != mouseDefaultPos.Y)
-            {
-                Vector2 mouseDifference;
-                mouseDifference.X = mouseDefaultPos.X - mouseNow.X;
-                mouseDifference.Y = mouseDefaultPos.Y - mouseNow.Y;
-
-                // camera3D.Rotate(mouseDifference.X / 400, mouseDifference.Y / 400);
-
-                //Mouse.SetPosition((int)mouseDefaultPos.X, (int)mouseDefaultPos.Y);
-            }
-
-
             // enemy flocking
             // Parallel.ForEach(enemies, e =>
             // {
@@ -623,7 +556,7 @@ namespace TowerDefense
             });
 
             // enemy death
-             var enemiesTemp = new List<Enemy>(enemies);
+            var enemiesTemp = new List<Enemy>(enemies);
             foreach (var enemy in enemiesTemp)
             {
                 if (enemy.IsDead)
@@ -631,7 +564,6 @@ namespace TowerDefense
                     entities.Remove(enemy);
                 }
             }
-        
         
             // building death
             var buildingsTemp = new List<Building>(buildings);
@@ -667,11 +599,12 @@ namespace TowerDefense
 
             foreach (var e in entitiesToCheck)
             {
-                var temp_walls = walls.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToArray();
+                var buildings = SHGBuildings.QueryEntities(e.CShape);
+                buildings = buildings.OrderBy(w => (w.Position - e.Position).LengthSquared()).ToList();
 
-                foreach (var wall in temp_walls)
+                foreach (var building in buildings)
                 {
-                    if (IsColliding(wall.CShape, e.CShape, out Vector2 mtv))
+                    if (IsColliding(building.CShape, e.CShape, out Vector2 mtv))
                     {
                         e.Position += mtv;
                         e.CShape.Update();
@@ -679,52 +612,51 @@ namespace TowerDefense
                 }
             }
 
-            
-          
+            foreach (IHitboxComponent e in entitiesToCheck)
+            {
+                e.UpdateHitbox();
+            }
+
+            // camera
+            if (keyboardState.IsKeyDown(Keys.OemPlus))
+            {
+                camera.Zoom *= 1.1f;
+            }
+            if (keyboardState.IsKeyDown(Keys.OemMinus))
+            {
+                camera.Zoom /= 1.1f;
+            }
+            camera.LookAt(player.Position);
         }
 
-       
-        protected override async void DoDraw(GameTime gameTime)
+        protected override void DoDraw(GameTime gameTime)
         {
             float frameRate = 1 / gameTime.GetElapsedSeconds();
 
-             GraphicsDevice.Clear(Color.CornflowerBlue);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
 
-             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
+            var projectilesLookup = projectiles.ToLookup(p => p.HasHit);
 
-            // // draw tilemap
-             for (int row = 0; row < tileMap.Length; row++)
-             {
-                 for (int col = 0; col < tileMap[row].Length; col++)
-                 {
-                     var tile = tileMap[row][col];
-                     if (tile != null)
-                     {
-                         SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
-                     }
-                 }
-             }
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
-            // // draw entities
-             var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
-             foreach (var entity in entities_temp)
-             {
-                 entity.DrawDebug(SpriteBatch);
-                 entity.Draw(SpriteBatch);
-             }
-
-             SpriteBatch.End();
-
-            // // Drawing the Text
-             SpriteBatch.Begin();
-             SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
-             SpriteBatch.End();
-             //Set the render target
-
-GraphicsDevice.Viewport= (modelview);
+            // draw tilemap
+            for (int row = 0; row < tileMap.Length; row++)
+            {
+                for (int col = 0; col < tileMap[row].Length; col++)
+                {
+                    var tile = tileMap[row][col];
+                    if (tile != null)
+                    {
+                        SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
+                    }
+                }
+            }
+            //render model
+        SpriteBatch.End();
+        GraphicsDevice.Viewport= (modelview);
 
         GraphicsDevice.SetRenderTarget(modelBase);
- 
+
         GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
 
     
@@ -739,7 +671,7 @@ GraphicsDevice.Viewport= (modelview);
             dss.DepthBufferEnable = true;
             GraphicsDevice.DepthStencilState = dss;
         
-
+ float model_y_rotation = 0;
 for (int i = 0; i < 2; i++)
             {
                 foreach (ModelMesh mesh in model.Meshes)
@@ -762,6 +694,15 @@ for (int i = 0; i < 2; i++)
                     mesh.Draw();
                 }
             }
+            
+
+
+            SpriteBatch.End();
+            GraphicsDevice.SetRenderTarget(null);
+            GraphicsDevice.Clear(Color.CornflowerBlue);
+            SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);
+            SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
+            SpriteBatch.End();
 
             // projectiles have hit get drawn below
             foreach (var projectile in projectilesLookup[true])
@@ -785,32 +726,31 @@ for (int i = 0; i < 2; i++)
                 projectile.Draw(SpriteBatch);
             }
 
-            SpriteBatch.End();
-            GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(Color.CornflowerBlue);
-            SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);
-            SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
-            
-                
-            
-            SpriteBatch.End();
-            //GraphicsDevice.Clear(Color.Black);
             
 
-            
+            // Drawing the Text
+            SpriteBatch.Begin();
+            SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
+            SpriteBatch.End();
 
             base.DoDraw(gameTime);
-        
-    }
-        float model_y_rotation = 0;
+        }
 
         protected override void UnloadContent()
         {
             base.UnloadContent();
         }
-
     }
 }
 
 
+
+                 
+
+
+ 
+ 
+
+ 
+    
 

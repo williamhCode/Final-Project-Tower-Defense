@@ -71,7 +71,8 @@ namespace TowerDefense.Sprite
             Rectangle sourceRectangle = new Rectangle(Width * column, Height * row, Width, Height);
 
             var flip = Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-            spriteBatch.Draw(Texture, position, sourceRectangle, Color.White, rotation, Vector2.Zero, 1, flip, 0);
+            
+            //spriteBatch.Draw(Texture, position, sourceRectangle, Color.White, rotation, Vector2.Zero, 1, flip, 0);
         }
     }
 }
