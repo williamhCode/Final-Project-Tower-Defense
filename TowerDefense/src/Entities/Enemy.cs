@@ -7,7 +7,7 @@ using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
 using TowerDefense.Hashing;
-using Towerdefense.Entities.Components;
+using TowerDefense.Entities.Components;
 
 
 namespace TowerDefense.Entities

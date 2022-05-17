@@ -22,6 +22,7 @@ using TowerDefense.Entities.Buildings;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
 using TowerDefense.NoiseTest;
+using TowerDefense.Map;
 
 using Newtonsoft.Json.Linq;
 
@@ -49,8 +50,8 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_WIDTH = 50;
-        private const int MAP_HEIGHT = 50;
+        private const int MAP_WIDTH = 100;
+        private const int MAP_HEIGHT = 100;
 
         private const float CAMERA_SPEED = 600f;
 
@@ -58,17 +59,7 @@ namespace TowerDefense
         private KeyboardStateExtended keyboardState;
         private bool debug;
 
-        private TileType[][] tileTypeMap;
-        private int[][] tileMap;
-        Dictionary<int, Texture2D> textureDict = new Dictionary<int, Texture2D>();
-        readonly (int X, int Y)[] neighborOffsets = new[] { (-1, -1), (0, -1), (1, -1), (-1, 0), (1, 0), (-1, 1), (0, 1), (1, 1) };
-
-        public enum TileType
-        {
-            Undefined = -1,
-            Grass,
-            Path,
-        }
+        MapHandler mapHandler = new MapHandler(MAP_WIDTH, MAP_HEIGHT, TILE_SIZE);
 
         private TileType currentSelector;
 
@@ -82,33 +73,6 @@ namespace TowerDefense
         {
             base.Initialize();
             camera = new Camera2D(GraphicsDevice.Viewport.Width, GraphicsDevice.Viewport.Height);
-
-            // tile map initialization
-            tileTypeMap = new TileType[MAP_HEIGHT][];
-            for (int i = 0; i < tileTypeMap.Length; i++)
-            {
-                tileTypeMap[i] = new TileType[MAP_WIDTH];
-            }
-            for (int i = 0; i < tileTypeMap.Length; i++)
-            {
-                for (int j = 0; j < tileTypeMap[i].Length; j++)
-                {
-                    tileTypeMap[i][j] = TileType.Undefined;
-                }
-            }
-
-            tileMap = new int[MAP_HEIGHT][];
-            for (int i = 0; i < tileMap.Length; i++)
-            {
-                tileMap[i] = new int[MAP_WIDTH];
-            }
-            for (int i = 0; i < tileMap.Length; i++)
-            {
-                for (int j = 0; j < tileMap[i].Length; j++)
-                {
-                    tileMap[i][j] = -1;
-                }
-            }
 
             Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
             float[] noiseMap = NoiseMap.GenerateNoiseMap(
@@ -129,23 +93,16 @@ namespace TowerDefense
                     float height = noiseMap[i * MAP_WIDTH + j];
                     if (height <= 0.7f)
                     {
-                        tileTypeMap[i][j] = TileType.Path;
+                        mapHandler.tileTypeMap[i][j] = TileType.Path;
                     }
                     else
                     {
-                        tileTypeMap[i][j] = TileType.Grass;
+                        mapHandler.tileTypeMap[i][j] = TileType.Grass;
                     }
                 }
             }
 
-            // Update tile map
-            for (int i = 0; i < MAP_WIDTH; i++)
-            {
-                for (int j = 0; j < MAP_HEIGHT; j++)
-                {
-                    UpdateTile(i, j);
-                }
-            }
+            mapHandler.UpdateTileMap();
         }
 
         /// <summary>
@@ -175,44 +132,7 @@ namespace TowerDefense
             base.LoadContent();
 
             // tile loading and configuration
-            dynamic tileInfo = JObject.Parse(File.ReadAllText("Content/TileInfo.json"));
-
-            Content.RootDirectory = tileInfo.RootDirectory;
-
-            dynamic dataList = tileInfo.DataList;
-            for (int i = 0; i < dataList.Count; i++)
-            {
-                dynamic data = dataList[i];
-
-                Texture2D spriteSheet = Content.Load<Texture2D>((string)data.TileName);
-
-                int tileSize = data.TileSize;
-                int width = data.Width;
-                int height = data.Height;
-
-                dynamic configList = data.ConfigList;
-                for (int j = 0; j < configList.Count; j++)
-                {
-                    string config = configList[j];
-                    if (config == "None") continue;
-                    config = config.Replace(",", "");
-                    config = config.Remove(4, 1);
-                    config = new string(config.Reverse().ToArray());
-
-                    int value = Convert.ToInt32(config, 2);
-                    value |= i << 8;
-
-                    Texture2D texture = new Texture2D(GraphicsDevice, tileSize, tileSize);
-                    // set texture data from sprite sheet
-                    Color[] textureData = new Color[tileSize * tileSize];
-                    int x = (j % width) * tileSize;
-                    int y = (j / width) * tileSize;
-                    spriteSheet.GetData(0, new Rectangle(x, y, tileSize, tileSize), textureData, 0, tileSize * tileSize);
-                    texture.SetData(textureData);
-
-                    textureDict.Add(value, texture);
-                }
-            }
+            mapHandler.LoadTileInfo(this, "Content/TileInfo.json");
 
             // load fonts
             Content.RootDirectory = "Content";
@@ -275,60 +195,12 @@ namespace TowerDefense
             {
                 OnPressed = element =>
                 {
-                    SaveMap();
+                    mapHandler.SaveMap();
                 },
                 CanBeSelected = false
             });
 
             // save the map into a JSON file
-            void SaveMap()
-            {
-                Console.WriteLine("Saving map...");
-            }
-
-        }
-
-        void UpdateTile(int xPos, int yPos)
-        {
-            TileType tileType;
-            try { tileType = tileTypeMap[xPos][yPos]; }
-            catch (IndexOutOfRangeException) { return; }
-
-            if (tileType == TileType.Undefined) return;
-
-            // nB = neighborsBool
-            var nB = new bool[8];
-            for (int i = 0; i < 8; i++)
-            {
-                var offset = neighborOffsets[i];
-                int x = xPos + offset.X;
-                int y = yPos + offset.Y;
-
-                try { nB[i] = tileType == tileTypeMap[x][y]; }
-                catch (IndexOutOfRangeException) { nB[i] = false; }
-            }
-
-            // corner tiles only valid if its surrounded by the same tile
-            nB[0] = nB[0] && nB[1] && nB[3];
-            nB[2] = nB[2] && nB[1] && nB[4];
-            nB[5] = nB[5] && nB[3] && nB[6];
-            nB[7] = nB[7] && nB[4] && nB[6];
-
-            // convert nB to int
-            int nBInt = 0;
-            for (int i = 0; i < 8; i++)
-            {
-                if (nB[i])
-                    nBInt |= 1 << i;
-            }
-            nBInt |= (int)tileType << 8;
-
-            if (!textureDict.ContainsKey(nBInt))
-            {
-                nBInt = (int)tileType << 8;
-            }
-
-            tileMap[xPos][yPos] = nBInt;
         }
 
         protected override void DoUpdate(GameTime gameTime)
@@ -360,14 +232,14 @@ namespace TowerDefense
 
                 if (xTilePos >= 0 && xTilePos < MAP_WIDTH && yTilePos >= 0 && yTilePos < MAP_HEIGHT)
                 {
-                    tileTypeMap[xTilePos][yTilePos] = currentSelector;
+                    mapHandler.tileTypeMap[xTilePos][yTilePos] = currentSelector;
                     for (int i = -1; i < 2; i++)
                     {
                         for (int j = -1; j < 2; j++)
                         {
                             int x = xTilePos + i;
                             int y = yTilePos + j;
-                            UpdateTile(x, y);
+                            mapHandler.UpdateTile(x, y);
                         }
                     }
                 }
@@ -424,27 +296,7 @@ namespace TowerDefense
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
             // draw tilemap
-            var viewport = camera.GetViewport();
-            int xStart = (int)Math.Floor(viewport.X / TILE_SIZE);
-            int yStart = (int)Math.Floor(viewport.Y / TILE_SIZE);
-            int xEnd = (int)Math.Ceiling((viewport.X + viewport.Width) / TILE_SIZE);
-            int yEnd = (int)Math.Ceiling((viewport.Y + viewport.Height) / TILE_SIZE);
-
-            xStart = Math.Max(xStart, 0);
-            yStart = Math.Max(yStart, 0);
-            xEnd = Math.Min(xEnd, MAP_WIDTH);
-            yEnd = Math.Min(yEnd, MAP_HEIGHT);
-
-            for (int row = xStart; row < xEnd; row++)
-            {
-                for (int col = yStart; col < yEnd; col++)
-                {
-                    if (tileTypeMap[row][col] != TileType.Undefined)
-                    {
-                        SpriteBatch.Draw(textureDict[tileMap[row][col]], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
-                    }
-                }
-            }
+            mapHandler.DrawMap(SpriteBatch, camera);
 
             // draw preview of current tile with transparency
             var screenPos = MouseExtended.GetState().Position.ToVector2();
@@ -452,13 +304,13 @@ namespace TowerDefense
             var tilePos = Vector2.Floor(worldPos / TILE_SIZE);
 
             TileType? currTileType;
-            try { currTileType = tileTypeMap[(int)tilePos.X][(int)tilePos.Y]; }
+            try { currTileType = mapHandler.tileTypeMap[(int)tilePos.X][(int)tilePos.Y]; }
             catch (IndexOutOfRangeException) { currTileType = null; }
 
             if (currTileType.HasValue && currentSelector != TileType.Undefined && currentSelector != currTileType)
             {
                 var previewPosition = tilePos * TILE_SIZE;
-                SpriteBatch.Draw(textureDict[(int)currentSelector << 8], previewPosition, Color.White * 0.6f);
+                SpriteBatch.Draw(mapHandler.textureDict[(int)currentSelector << 8], previewPosition, Color.White * 0.6f);
             }
 
             SpriteBatch.End();

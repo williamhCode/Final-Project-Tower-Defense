@@ -5,7 +5,7 @@ using TowerDefense.Collision;
 
 using System;
 
-namespace Towerdefense.Entities.Components
+namespace TowerDefense.Entities.Components
 {
     public interface IEntityComponent
     {

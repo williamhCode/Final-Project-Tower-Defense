@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -23,12 +24,15 @@ using TowerDefense.Entities.Buildings;
 using TowerDefense.Entities.Buildings.Resources;
 using TowerDefense.Hashing;
 using TowerDefense.Projectiles;
-using Towerdefense.Entities.Components;
+using TowerDefense.Entities.Components;
 using TowerDefense.NoiseTest;
 using static TowerDefense.Collision.CollisionFuncs;
 using static TowerDefense.Extensions.ExtensionMethods;
+using TowerDefense.Map;
 
 using System.Threading.Tasks;
+
+using Newtonsoft.Json.Linq;
 
 //test
 namespace TowerDefense
@@ -54,9 +58,10 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_SIZE = 50;
-        private Dictionary<string, Texture2D> tileTextures;
-        private string[][] tileMap;
+        private const int MAP_WIDTH = 50;
+        private const int MAP_HEIGHT = 50;
+
+        MapHandler mapHandler = new MapHandler(MAP_WIDTH, MAP_HEIGHT, TILE_SIZE);
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
@@ -96,58 +101,54 @@ namespace TowerDefense
             enemies = entities.OfType<Enemy>().ToArray();
             projectiles = new List<Projectile>();
 
-            // tile map initialization
-            tileMap = new string[MAP_SIZE][];
-            for (int i = 0; i < tileMap.Length; i++)
-            {
-                tileMap[i] = new string[MAP_SIZE];
-            }
-
             // Implementing Perlin Noise and Biome generation into the tilemap array
-            Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
-            float[] noiseMap = NoiseMap.GenerateNoiseMap(
-                MAP_SIZE, MAP_SIZE,
-                seed: 1,
-                scale: 15f,
-                octaves: 3,
-                persistance: 1f,
-                lacunarity: 1f,
-                offset: Vector2.Zero
-            );
+            // Noise NoiseMap = new TowerDefense.NoiseTest.Noise();
+            // float[] noiseMap = NoiseMap.GenerateNoiseMap(
+            //     MAP_WIDTH, MAP_HEIGHT,
+            //     seed: 1,
+            //     scale: 15f,
+            //     octaves: 3,
+            //     persistance: 1f,
+            //     lacunarity: 1f,
+            //     offset: Vector2.Zero
+            // );
 
-            // Generate Biomes
-            for (int i = 0; i < MAP_SIZE; i++)
-            {
-                for (int j = 0; j < MAP_SIZE; j++)
-                {
-                    float height = noiseMap[i * MAP_SIZE + j];
-                    if (height <= 0.1f)
-                    {
-                        tileMap[i][j] = "deepwater";
-                    }
-                    else if (height <= 0.3f)
-                    {
-                        tileMap[i][j] = "water";
-                    }
-                    else if (height <= 0.35f)
-                    {
-                        tileMap[i][j] = "beach";
-                    }
-                    else if (height < 0.8f)
-                    {
-                        tileMap[i][j] = "grass";
-                    }
-                    else
-                    {
-                        tileMap[i][j] = "sand";
-                    }
-                }
-            }
+            // // Generate Biomes
+            // for (int i = 0; i < MAP_WIDTH; i++)
+            // {
+            //     for (int j = 0; j < MAP_HEIGHT; j++)
+            //     {
+            //         float height = noiseMap[i * MAP_WIDTH + j];
+            //         if (height <= 0.1f)
+            //         {
+            //             tileMap[i][j] = "deepwater";
+            //         }
+            //         else if (height <= 0.3f)
+            //         {
+            //             tileMap[i][j] = "water";
+            //         }
+            //         else if (height <= 0.35f)
+            //         {
+            //             tileMap[i][j] = "beach";
+            //         }
+            //         else if (height < 0.8f)
+            //         {
+            //             tileMap[i][j] = "grass";
+            //         }
+            //         else
+            //         {
+            //             tileMap[i][j] = "sand";
+            //         }
+            //     }
+            // }
 
-            buildingTiles = new Building[tileMap.Length][];
+            mapHandler.LoadMap();
+            mapHandler.UpdateTileMap();
+
+            buildingTiles = new Building[MAP_HEIGHT][];
             for (int i = 0; i < buildingTiles.Length; i++)
             {
-                buildingTiles[i] = new Building[tileMap[i].Length];
+                buildingTiles[i] = new Building[MAP_WIDTH];
             }
 
             SHGBuildings = new SpatialHashGrid(32);
@@ -159,7 +160,7 @@ namespace TowerDefense
             SHGFlocking = new SpatialHashGrid(90);
 
             SHGEnemies = new SpatialHashGrid(90);
-
+    
             debugMode = 0;
         }
 
@@ -189,15 +190,8 @@ namespace TowerDefense
 
             base.LoadContent();
 
-            // load tile textures
-            tileTextures = new Dictionary<string, Texture2D>();
-
-            Content.RootDirectory = "Content/Sprites/Tiles";
-            string[] tileNames = new string[] { "grass", "snow", "water", "beach", "sand", "deepwater" };
-            foreach (string name in tileNames)
-            {
-                tileTextures.Add(name, Content.Load<Texture2D>(name));
-            }
+            // tile loading and configuration
+            mapHandler.LoadTileInfo(this, "Content/TileInfo.json");
 
             Content.RootDirectory = "Content";
             
@@ -622,17 +616,7 @@ namespace TowerDefense
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp, rasterizerState: RasterizerState.CullNone, transformMatrix: camera.GetTransform(), blendState: BlendState.AlphaBlend);
 
             // draw tilemap
-            for (int row = 0; row < tileMap.Length; row++)
-            {
-                for (int col = 0; col < tileMap[row].Length; col++)
-                {
-                    var tile = tileMap[row][col];
-                    if (tile != null)
-                    {
-                        SpriteBatch.Draw(tileTextures[tile], new Vector2(TILE_SIZE * row, TILE_SIZE * col), Color.White);
-                    }
-                }
-            }
+            mapHandler.DrawMap(SpriteBatch, camera);
 
             // projectiles have hit get drawn below
             foreach (var projectile in projectilesLookup[true])
