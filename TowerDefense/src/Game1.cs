@@ -58,8 +58,8 @@ namespace TowerDefense
         private SpatialHashGrid SHGEnemies;
 
         private const int TILE_SIZE = 32;
-        private const int MAP_WIDTH = 50;
-        private const int MAP_HEIGHT = 50;
+        private const int MAP_WIDTH = 100;
+        private const int MAP_HEIGHT = 100;
 
         private int rockAmount = 0;
         private int woodAmount = 0;
@@ -74,6 +74,7 @@ namespace TowerDefense
 
         public enum Selector
         {
+            None = -1,
             Wall,
             BasicTower,
             Remove,
@@ -240,22 +241,25 @@ namespace TowerDefense
             root.AddChild(new VerticalSpace(2));
             this.UiSystem.Add("TestUi", this.root);
 
-            var button1 = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Wall")
+            var buttonNothing = root.AddChild(new Button(Anchor.AutoLeft, new Vector2(80, 80), "Nothing")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
-                    currentSelector = Selector.Wall;
+                    currentSelector = Selector.None;
                 },
+                PositionOffset = new Vector2(10, 0)
+            });
+            var button1 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Wall")
+            {
                 OnSelected = element =>
                 {
                     currentSelector = Selector.Wall;
-                    Console.WriteLine("Wall selected");
                 },
                 PositionOffset = new Vector2(10, 0)
             });
             var button2 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Tower")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
                     currentSelector = Selector.BasicTower;
                 },
@@ -263,7 +267,7 @@ namespace TowerDefense
             });
             var button3 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Remove Building")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
                     currentSelector = Selector.Remove;
                 },
@@ -271,7 +275,7 @@ namespace TowerDefense
             });
             var button4 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80, 80), "Bandit")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
                     currentSelector = Selector.Bandit;
                 },
@@ -280,7 +284,7 @@ namespace TowerDefense
 
             var button5 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Rock")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
                     currentSelector = Selector.Rock;
                 },
@@ -289,7 +293,7 @@ namespace TowerDefense
 
             var button6 = root.AddChild(new Button(Anchor.AutoInline, new Vector2(80,80), "Tree")
             {
-                OnPressed = element =>
+                OnSelected = element =>
                 {
                     currentSelector = Selector.Tree;
                 },
@@ -334,6 +338,30 @@ namespace TowerDefense
             var area = root.Area;
             if (area.Contains(mousePosition.X, mousePosition.Y) && !root.IsHidden)
                 goto EndMouse;
+
+            if (mouseState.WasButtonJustDown(MouseButton.Left))
+            {
+                if (player.HitResource(SHGBuildings, out Type type))
+                {
+                    if (type == typeof(Rock))
+                    {
+                        rockAmount++;
+                        PrintResources();
+                    }
+                    else if (type == typeof(Tree))
+                    {
+                        woodAmount++;
+                        PrintResources();
+                    }
+                }
+
+                void PrintResources()
+                {
+                    Console.WriteLine(rockAmount);
+                    Console.WriteLine(woodAmount);
+                    Console.WriteLine(goldAmount);
+                }
+            }
 
             if (mouseState.IsButtonDown(MouseButton.Left))
             {

@@ -60,8 +60,8 @@ namespace TowerDefense.Entities.Buildings
             var closestEnemy = GetClosestEnemy(enemiesInRange);
 
             var path = new StraightPath();
-            // var damageType = new AreaDamage(SHG, 50, 150);
-            var damageType = new DirectDamage(closestEnemy);
+            var damageType = new AreaDamage(SHG, 50, 150);
+            // var damageType = new DirectDamage(closestEnemy);
             var projectile = new Projectile(startPosition: Position, targetPosition: closestEnemy.HitboxShape.Position, speed: 2000, damage: Damage, path, damageType, 0.25f);
 
             return projectile;

@@ -192,7 +192,7 @@ namespace TowerDefense.Map
             {
                 for (int j = 0; j < WIDTH; j++)
                 {
-                    map.Data.Add(tileTypeMap[i][j]);
+                    map.Data.Add(tileTypeMap[j][i]);
                 }
             }
 

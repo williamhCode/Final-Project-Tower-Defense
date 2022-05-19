@@ -7,6 +7,8 @@ using MonoGame.Extended;
 using TowerDefense.Collision;
 using TowerDefense.Sprite;
 using TowerDefense.Maths;
+using TowerDefense.Hashing;
+using TowerDefense.Entities.Buildings;
 using TowerDefense.Entities.Components;
 using static TowerDefense.Entities.Components.IFaceableComponent;
 
@@ -95,13 +97,22 @@ namespace TowerDefense.Entities
             axeReverse = false;
 
             var vertices = new Vector2[] {
-                new Vector2(-8, -24),
-                new Vector2(24, -24),
-                new Vector2(-8, 8),
-                new Vector2(24, 8)
+                new Vector2(6, -20),
+                new Vector2(20, -20),
+                new Vector2(6, 4),
+                new Vector2(20, 4)
             };
             vertices = CPolygon.OrderCounterClockwise(vertices);
             axeHitboxRight = new CPolygon(Vector2.Zero, vertices);
+
+            vertices = new Vector2[] {
+                new Vector2(-6, -20),
+                new Vector2(-20, -20),
+                new Vector2(-6, 4),
+                new Vector2(-20, 4)
+            };
+            vertices = CPolygon.OrderCounterClockwise(vertices);
+            axeHitboxLeft = new CPolygon(Vector2.Zero, vertices);
         }
 
         public void Move(float dt, Vector2 direction)
@@ -128,7 +139,7 @@ namespace TowerDefense.Entities
                 axeDir = axeDir.Normalized();
         }
 
-        private void update_axe()
+        private void UpdateAxe()
         {
             axeReverse = animationState.GetState(DIRECTION).Equals(Direction.Left);
             axePos = Position + new Vector2(axeReverse ? -2 : 2, -13);
@@ -137,9 +148,29 @@ namespace TowerDefense.Entities
             float dir = axeDir.Dot(new Vector2(1, 0));
             axeAngle = dir > 0 ? axeDir.ToAngle() - MathF.PI/2 - hitAngle : axeDir.ToAngle() + MathF.PI/2 + hitAngle;
 
-            axeHitboxRight.Position = axePos;
-            axeHitboxRight.Rotation = MathHelper.ToDegrees(axeAngle);
-            axeHitboxRight.Update();
+            axeHitbox = axeReverse ? axeHitboxLeft : axeHitboxRight;
+            axeHitbox.Position = axePos;
+            axeHitbox.Rotation = MathHelper.ToDegrees(axeAngle);
+            axeHitbox.Update();
+        }
+
+        public bool HitResource(SpatialHashGrid SHGBuildings, out Type type)
+        {
+            type = null;
+
+            var entities = SHGBuildings.QueryEntities(Position, 30);
+            foreach (var entity in entities)
+            {
+                if (entity is Resource resource)
+                    if (CollisionFuncs.IsColliding(axeHitbox, resource.HitboxShape))
+                    {
+                        type = resource.GetType();
+                        resource.Health--;
+                        return resource.IsDead ? true : false;
+                    }
+            }
+
+            return false;
         }
 
         public void UpdateHitbox() => this._UpdateHitbox();
@@ -154,7 +185,7 @@ namespace TowerDefense.Entities
             UpdateHitbox();
             animationState.Update(dt);
 
-            update_axe();
+            UpdateAxe();
         }
 
         public override void Draw(SpriteBatch spriteBatch)
@@ -168,7 +199,7 @@ namespace TowerDefense.Entities
         {
             base.DrawDebug(spriteBatch);
             HitboxShape.Draw(spriteBatch, Color.Blue, 1);
-            axeHitboxRight.Draw(spriteBatch, Color.Red, 1);
+            axeHitbox.Draw(spriteBatch, Color.Red, 1);
         }
     }
 }
