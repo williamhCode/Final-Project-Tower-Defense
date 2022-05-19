@@ -32,6 +32,18 @@
 /processorParam:TextureFormat=Color
 /build:Sprites/Bandit/bandit.png
 
+#begin Sprites/Player/player_arm.PNG
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Sprites/Player/player_arm.PNG
+
 #begin Sprites/Player/player_idle.png
 /importer:TextureImporter
 /processor:TextureProcessor

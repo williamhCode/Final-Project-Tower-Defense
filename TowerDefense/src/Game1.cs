@@ -61,11 +61,16 @@ namespace TowerDefense
         private const int MAP_WIDTH = 50;
         private const int MAP_HEIGHT = 50;
 
+        private int rockAmount = 0;
+        private int woodAmount = 0;
+        private int goldAmount = 0;
+
         MapHandler mapHandler = new MapHandler(MAP_WIDTH, MAP_HEIGHT, TILE_SIZE);
 
         private MouseStateExtended mouseState;
         private KeyboardStateExtended keyboardState;
         private int debugMode = 0;
+        Random rand = new Random();
 
         public enum Selector
         {
@@ -162,6 +167,11 @@ namespace TowerDefense
             SHGEnemies = new SpatialHashGrid(90);
     
             debugMode = 0;
+
+            for(int i = 0; i < 100; i++)
+            {
+                SpawnEnvironment(rand.Next(0,2));
+            }
         }
 
         /// <summary>
@@ -344,17 +354,20 @@ namespace TowerDefense
                     case Selector.Wall:
                         if (currBuilding == null)
                         {
-                            var wall = new Wall(position);
-                            entities.Add(wall);
-                            buildingTiles[xTilePos][yTilePos] = wall;
-                            SHGBuildings.AddEntity(wall, wall.Position);
-
-                            var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
-                            foreach (var nearbyWall in nearbyWalls)
+                            if(woodAmount >= 2)
                             {
-                                var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
-                                entities.Add(inBetweenWall);
-                                SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
+                                var wall = new Wall(position);
+                                entities.Add(wall);
+                                buildingTiles[xTilePos][yTilePos] = wall;
+                                SHGBuildings.AddEntity(wall, wall.Position);
+                                woodAmount -= 2;
+                                var nearbyWalls = GetNearbyWalls(xTilePos, yTilePos);
+                                foreach (var nearbyWall in nearbyWalls)
+                                {
+                                    var inBetweenWall = new Wall((nearbyWall.Position + wall.Position) / 2);
+                                    entities.Add(inBetweenWall);
+                                    SHGBuildings.AddEntity(inBetweenWall, inBetweenWall.CShape);
+                                }
                             }
                         }
                         break;
@@ -362,10 +375,15 @@ namespace TowerDefense
                     case Selector.BasicTower:
                         if (currBuilding == null)
                         {
-                            var tower = new BasicTower(position);
-                            entities.Add(tower);
-                            buildingTiles[xTilePos][yTilePos] = tower;
-                            SHGBuildings.AddEntity(tower, tower.Position);
+                            if(rockAmount >= 5 && woodAmount >= 10)
+                            {
+                                var tower = new BasicTower(position);
+                                entities.Add(tower);
+                                buildingTiles[xTilePos][yTilePos] = tower;
+                                SHGBuildings.AddEntity(tower, tower.Position);
+                                rockAmount -= 5;
+                                woodAmount -= 10;
+                            }
                         }
                         break;
                     
@@ -498,6 +516,7 @@ namespace TowerDefense
 
             player.Move(dt, direction);
             player.DecideDirection(worldPosition);
+            player.SetAxeDir(worldPosition);
 
             // enemy flocking
             // Parallel.ForEach(enemies, e =>
@@ -538,6 +557,7 @@ namespace TowerDefense
                 if (enemy.IsDead)
                 {
                     entities.Remove(enemy);
+                    goldAmount++;
                 }
             }
         
@@ -554,6 +574,15 @@ namespace TowerDefense
                         buildingTiles[pos.Value.X][pos.Value.Y] = null;
                     } 
                     SHGBuildings.RemoveEntityPosition(building);
+
+                    if(building is Tree)
+                    {
+                        woodAmount += 4;
+                    }
+                    if(building is Rock)
+                    {
+                        rockAmount += 4;
+                    }
                 }
             }
 
@@ -603,6 +632,8 @@ namespace TowerDefense
                 camera.Zoom /= 1.1f;
             }
             camera.LookAt(player.Position);
+
+            SpawnEnvironment(rand.Next(0,200));
         }
 
         protected override void DoDraw(GameTime gameTime)
@@ -645,6 +676,9 @@ namespace TowerDefense
             // Drawing the Text
             SpriteBatch.Begin();
             SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
+            SpriteBatch.DrawString(font, $"Gold: {goldAmount}", new Vector2(10, 60), Color.Black);
+            SpriteBatch.DrawString(font, $"Wood: {woodAmount}", new Vector2(10, 90), Color.Black);
+            SpriteBatch.DrawString(font, $"Rock: {rockAmount}", new Vector2(10, 120), Color.Black);
             SpriteBatch.End();
 
             base.DoDraw(gameTime);
@@ -653,6 +687,36 @@ namespace TowerDefense
         protected override void UnloadContent()
         {
             base.UnloadContent();
+        }
+
+        private int SpawnEnvironment(int kine)
+        {
+            int xTilePos = rand.Next(0, MAP_WIDTH);
+            int yTilePos = rand.Next(0, MAP_HEIGHT);
+            Building randomBuilding = buildingTiles[xTilePos][yTilePos];
+            var position = new Vector2(xTilePos * 32 + 16, yTilePos * 32 + 16);
+
+            if(kine == 0)
+            {
+                if(randomBuilding == null)
+                {
+                    var tree = new Tree(position);
+                    entities.Add(tree);
+                    buildingTiles[xTilePos][yTilePos] = tree;
+                    SHGBuildings.AddEntity(tree, tree.Position);
+                }
+            }
+            else if(kine == 1)
+            {
+                if (randomBuilding == null)
+                {
+                    var rock = new Rock(position);
+                    entities.Add(rock);
+                    buildingTiles[xTilePos][yTilePos] = rock;
+                    SHGBuildings.AddEntity(rock, rock.Position);
+                } 
+            }
+            return 0;
         }
     }
 }

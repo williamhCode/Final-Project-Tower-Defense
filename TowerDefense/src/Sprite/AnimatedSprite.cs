@@ -60,18 +60,17 @@ namespace TowerDefense.Sprite
             }
         }
 
-        public void Draw(SpriteBatch spriteBatch, Vector2 position, Vector2? _offset = null, float rotation = 0)
+        public void Draw(SpriteBatch spriteBatch, Vector2 position, Vector2? _offset = null, float rotation = 0, bool reverse = false)
         {
             // if offset is null, make it Vector2.Zero
             Vector2 offset = _offset ?? Vector2.Zero;
-            position -= offset;
     
             int row = CurrentFrame / columns;
             int column = CurrentFrame % columns;
             Rectangle sourceRectangle = new Rectangle(Width * column, Height * row, Width, Height);
 
-            var flip = Flipped ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
-            spriteBatch.Draw(Texture, position, sourceRectangle, Color.White, rotation, Vector2.Zero, 1, flip, 0);
+            var flip = Flipped ^ reverse ? SpriteEffects.FlipHorizontally : SpriteEffects.None;
+            spriteBatch.Draw(Texture, position, sourceRectangle, Color.White, rotation, offset, 1, flip, 0);
         }
     }
 }
