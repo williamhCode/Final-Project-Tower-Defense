@@ -17,9 +17,9 @@ namespace TowerDefense.Map
 
     public class MapHandler
     {
-        public TileType[][] tileTypeMap { get; private set; }
-        public int[][] tileMap { get; private set; }
-        public Dictionary<int, Texture2D> textureDict { get; private set; }
+        public TileType[][] tileTypeMap { get; }
+        public int[][] tileMap { get; }
+        public Dictionary<int, Texture2D> textureDict { get; }
 
         private readonly int WIDTH;
         private readonly int HEIGHT;
@@ -203,12 +203,6 @@ namespace TowerDefense.Map
         public void LoadMap()
         {
             dynamic map = JObject.Parse(File.ReadAllText("Content/Map.json"));
-
-            tileTypeMap = new TileType[WIDTH][];
-            for (int i = 0; i < WIDTH; i++)
-            {
-                tileTypeMap[i] = new TileType[HEIGHT];
-            }
 
             for (int i = 0; i < HEIGHT; i++)
             {
