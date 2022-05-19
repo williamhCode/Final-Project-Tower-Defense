@@ -55,6 +55,9 @@ namespace TowerDefense.Entities
         private float axeAngle;
         private bool axeReverse;
         private float hitAngle;
+        private CPolygon axeHitbox;
+        private CPolygon axeHitboxRight;
+        private CPolygon axeHitboxLeft;
 
         public static void LoadContent(ContentManager content)
         {
@@ -74,7 +77,7 @@ namespace TowerDefense.Entities
         {
             Position = position;
             Velocity = new Vector2(0, 0);
-            // CShape = new CCircle(position, 5);
+            // CPolygon = new CCircle(position, 5);
             CShape = new CRectangle(position, 16, 6);
 
             animationState = AnimationState.Copy();
@@ -90,6 +93,15 @@ namespace TowerDefense.Entities
             axeOffset = Vector2.Zero;
             hitAngle = 0;
             axeReverse = false;
+
+            var vertices = new Vector2[] {
+                new Vector2(-8, -24),
+                new Vector2(24, -24),
+                new Vector2(-8, 8),
+                new Vector2(24, 8)
+            };
+            vertices = CPolygon.OrderCounterClockwise(vertices);
+            axeHitboxRight = new CPolygon(Vector2.Zero, vertices);
         }
 
         public void Move(float dt, Vector2 direction)
@@ -124,6 +136,10 @@ namespace TowerDefense.Entities
 
             float dir = axeDir.Dot(new Vector2(1, 0));
             axeAngle = dir > 0 ? axeDir.ToAngle() - MathF.PI/2 - hitAngle : axeDir.ToAngle() + MathF.PI/2 + hitAngle;
+
+            axeHitboxRight.Position = axePos;
+            axeHitboxRight.Rotation = MathHelper.ToDegrees(axeAngle);
+            axeHitboxRight.Update();
         }
 
         public void UpdateHitbox() => this._UpdateHitbox();
@@ -152,6 +168,7 @@ namespace TowerDefense.Entities
         {
             base.DrawDebug(spriteBatch);
             HitboxShape.Draw(spriteBatch, Color.Blue, 1);
+            axeHitboxRight.Draw(spriteBatch, Color.Red, 1);
         }
     }
 }
