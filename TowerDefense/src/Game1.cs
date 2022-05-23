@@ -651,8 +651,47 @@ namespace TowerDefense
                     }
                 }
             }
-            //render model
-        SpriteBatch.End();
+
+      
+            
+
+
+            
+            SpriteBatch.End();
+            
+
+            // projectiles have hit get drawn below
+            foreach (var projectile in projectilesLookup[true])
+            {
+                projectile.Draw(SpriteBatch);
+            }
+
+            // draw entities
+            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
+            foreach (var entity in entities_temp)
+            {
+                if (debugMode != 0)
+                    entity.DrawDebug(SpriteBatch);
+                if (debugMode != 2)
+                entity.Draw(SpriteBatch);
+            }
+
+            // projectiles have not hit get drawn above
+            foreach (var projectile in projectilesLookup[false])
+            {
+                projectile.Draw(SpriteBatch);
+            }
+
+            
+
+            // Drawing the Text
+            SpriteBatch.Begin();
+            SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
+            SpriteBatch.End();
+
+              //render model
+            
+        
         GraphicsDevice.Viewport= (modelview);
 
         GraphicsDevice.SetRenderTarget(modelBase);
@@ -699,38 +738,10 @@ for (int i = 0; i < 2; i++)
 
             SpriteBatch.End();
             GraphicsDevice.SetRenderTarget(null);
-            GraphicsDevice.Clear(Color.CornflowerBlue);
+            //GraphicsDevice.Clear(Color.CornflowerBlue);
             SpriteBatch.Begin(samplerState: SamplerState.PointClamp,depthStencilState: DepthStencilState.Default);
             SpriteBatch.Draw(modelBase,Vector2.Zero,null,Color.White,0f,Vector2.Zero,scale,SpriteEffects.None, 0f);
-            SpriteBatch.End();
-
-            // projectiles have hit get drawn below
-            foreach (var projectile in projectilesLookup[true])
-            {
-                projectile.Draw(SpriteBatch);
-            }
-
-            // draw entities
-            var entities_temp = entities.OrderBy(e => e.Position.Y).ToArray();
-            foreach (var entity in entities_temp)
-            {
-                if (debugMode != 0)
-                    entity.DrawDebug(SpriteBatch);
-                if (debugMode != 2)
-                entity.Draw(SpriteBatch);
-            }
-
-            // projectiles have not hit get drawn above
-            foreach (var projectile in projectilesLookup[false])
-            {
-                projectile.Draw(SpriteBatch);
-            }
-
             
-
-            // Drawing the Text
-            SpriteBatch.Begin();
-            SpriteBatch.DrawString(font, $"Frame Rate: {frameRate:N2}", new Vector2(10, 10), Color.Black);
             SpriteBatch.End();
 
             base.DoDraw(gameTime);
